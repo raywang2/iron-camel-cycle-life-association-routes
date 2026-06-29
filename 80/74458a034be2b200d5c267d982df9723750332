@@ -1,0 +1,37 @@
+scripts/validate-output.ts
+  s_1ae7bf14fd87ce::t_24424b218b5da7 4,10-13,15-17,19,21-28,30-31,34-35,37-77,79-86,89-108
+index.html
+  s_1ae7bf14fd87ce::t_23c4ba7c80a109 38
+tsconfig.scripts.json
+  s_1ae7bf14fd87ce::t_23c4ba7c80a109 1-11
+.gitignore
+  s_1ae7bf14fd87ce::t_23c4ba7c80a109 4-5
+tsconfig.json
+  s_1ae7bf14fd87ce::t_23bdd8be8cf4bd 15
+  s_1ae7bf14fd87ce::t_23c4ba7c80a109 8
+  s_1ae7bf14fd87ce::t_70b5aece6a5486 7
+package.json
+  s_1ae7bf14fd87ce::t_56d882ebfb90ac 19-20
+  s_1ae7bf14fd87ce::t_23c4ba7c80a109 7-13
+  s_1ae7bf14fd87ce::t_6eb60c123ef993 18
+tests/validate-output.test.ts
+  s_1ae7bf14fd87ce::t_6bd0644aa430ed 1-114
+package-lock.json
+  s_1ae7bf14fd87ce::t_fdfdb5b091fa3f 13-15,18-412,440-1138,1159-1343
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "8074458a034be2b200d5c267d982df9723750332",
+  "prompts": {},
+  "sessions": {
+    "s_1ae7bf14fd87ce": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f1399-9cdd-7090-bf1a-2b71d472eb20",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Ray Wang <Ray.Wang@westpharma.com>"
+    }
+  }
+}
