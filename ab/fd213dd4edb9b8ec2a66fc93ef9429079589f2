@@ -1,0 +1,23 @@
+package.json
+  s_1ae7bf14fd87ce::t_f93ef04ff70b70 1-11
+data/route-waypoints.json
+  s_1ae7bf14fd87ce::t_f93ef04ff70b70 1-291
+.gitignore
+  s_1ae7bf14fd87ce::t_f93ef04ff70b70 5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "abfd213dd4edb9b8ec2a66fc93ef9429079589f2",
+  "prompts": {},
+  "sessions": {
+    "s_1ae7bf14fd87ce": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f1399-9cdd-7090-bf1a-2b71d472eb20",
+        "model": "gpt-5.4-mini"
+      },
+      "human_author": "Ray Wang <Ray.Wang@westpharma.com>"
+    }
+  }
+}
