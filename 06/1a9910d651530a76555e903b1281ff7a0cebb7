@@ -1,0 +1,25 @@
+tests/leaflet-bundling.test.ts
+  s_1ae7bf14fd87ce::t_6d4fa1792c1794 1-15
+package.json
+  s_1ae7bf14fd87ce::t_0ddb37e8f6f458 21-23
+src/app.ts
+  s_1ae7bf14fd87ce::t_e540f43517d72c 1-2
+package-lock.json
+  s_1ae7bf14fd87ce::t_44297b23a47ee5 10-12,653-658
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "061a9910d651530a76555e903b1281ff7a0cebb7",
+  "prompts": {},
+  "sessions": {
+    "s_1ae7bf14fd87ce": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f1399-9cdd-7090-bf1a-2b71d472eb20",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Ray Wang <Ray.Wang@westpharma.com>"
+    }
+  }
+}
