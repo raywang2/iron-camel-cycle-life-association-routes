@@ -1,13 +1,7 @@
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 import type * as Leaflet from "leaflet";
 import type { RouteDay } from "../types/routes.js";
-
-declare global {
-  interface Window {
-    L: typeof Leaflet;
-  }
-}
-
-const L = window.L;
 const colors = ["#1f7a5b", "#b84a32", "#315da8", "#a56b00", "#6b4ba8", "#277084"];
 
 type LayerKey = "overviewLayer" | "activeLayer";
