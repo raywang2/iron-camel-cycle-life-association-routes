@@ -1,0 +1,11 @@
+{
+  "name": "2026-iron-camel-routes",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build:routes": "node scripts/build-routes.mjs",
+    "validate": "node scripts/validate-output.mjs",
+    "serve": "python3 -m http.server 8080"
+  }
+}
