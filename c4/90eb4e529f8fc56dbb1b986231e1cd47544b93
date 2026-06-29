@@ -1,0 +1,22 @@
+docs/superpowers/plans/2026-06-29-iron-camel-route-website.md
+  s_1ae7bf14fd87ce::t_3162f861d73a47 9,1142-1147,1193,1195
+  s_1ae7bf14fd87ce::t_e74a93b676fff5 1207
+  s_1ae7bf14fd87ce::t_831cda39195d5a 1-8,10-98,100,102-135,393-1141,1148-1192,1194,1196-1206,1208
+  s_1ae7bf14fd87ce::t_642f27ce3b37ba 99,101,136-392
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "c490eb4e529f8fc56dbb1b986231e1cd47544b93",
+  "prompts": {},
+  "sessions": {
+    "s_1ae7bf14fd87ce": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f1399-9cdd-7090-bf1a-2b71d472eb20",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Ray Wang <Ray.Wang@westpharma.com>"
+    }
+  }
+}
