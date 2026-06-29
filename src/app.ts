@@ -1,6 +1,34 @@
+import type * as Leaflet from "leaflet";
+import type { RouteDay } from "../types/routes.js";
+
+declare global {
+  interface Window {
+    L: typeof Leaflet;
+  }
+}
+
+const L = window.L;
 const colors = ["#1f7a5b", "#b84a32", "#315da8", "#a56b00", "#6b4ba8", "#277084"];
 
-const state = {
+type LayerKey = "overviewLayer" | "activeLayer";
+
+interface AppState {
+  routes: RouteDay[];
+  map: Leaflet.Map | null;
+  overviewLayer: Leaflet.FeatureGroup | null;
+  activeLayer: Leaflet.GeoJSON | null;
+  activeDay: RouteDay | null;
+}
+
+function requiredElement<T extends Element>(selector: string, constructor: new () => T): T {
+  const element = document.querySelector(selector);
+  if (!(element instanceof constructor)) {
+    throw new Error(`Missing required element: ${selector}`);
+  }
+  return element;
+}
+
+const state: AppState = {
   routes: [],
   map: null,
   overviewLayer: null,
@@ -9,33 +37,45 @@ const state = {
 };
 
 const elements = {
-  summary: document.querySelector("#summary"),
-  dayList: document.querySelector("#dayList"),
-  overviewButton: document.querySelector("#overviewButton"),
-  detailMeta: document.querySelector("#detailMeta"),
-  detailTitle: document.querySelector("#detailTitle"),
-  detailDistance: document.querySelector("#detailDistance"),
-  detailEndpoints: document.querySelector("#detailEndpoints"),
-  detailDescription: document.querySelector("#detailDescription"),
-  downloadLink: document.querySelector("#downloadLink"),
-  warningText: document.querySelector("#warningText"),
+  summary: requiredElement("#summary", HTMLParagraphElement),
+  dayList: requiredElement("#dayList", HTMLDivElement),
+  overviewButton: requiredElement("#overviewButton", HTMLButtonElement),
+  detailMeta: requiredElement("#detailMeta", HTMLParagraphElement),
+  detailTitle: requiredElement("#detailTitle", HTMLHeadingElement),
+  detailDistance: requiredElement("#detailDistance", HTMLParagraphElement),
+  detailEndpoints: requiredElement("#detailEndpoints", HTMLParagraphElement),
+  detailDescription: requiredElement("#detailDescription", HTMLParagraphElement),
+  downloadLink: requiredElement("#downloadLink", HTMLAnchorElement),
+  warningText: requiredElement("#warningText", HTMLParagraphElement),
 };
 
-function getRideColorIndex(day) {
-  const rideDays = state.routes.filter((route) => route.type === "ride");
+function requireMap(): Leaflet.Map {
+  if (!state.map) {
+    throw new Error("Map is not initialized");
+  }
+
+  return state.map;
+}
+
+function getRideColorIndex(day: RouteDay): number {
+  const rideDays = state.routes.filter(isRideDay);
   const index = rideDays.findIndex((route) => route.day === day.day);
   return index >= 0 ? index : 0;
 }
 
-function routeStyle(index, selected = false) {
+function isRideDay(day: RouteDay): day is RouteDay & { distanceKm: number } {
+  return day.type === "ride" && typeof day.distanceKm === "number";
+}
+
+function routeStyle(index: number, selected = false): Record<string, string | number> {
   return {
-    color: colors[index % colors.length],
+    color: colors[index % colors.length] ?? "#1f7a5b",
     weight: selected ? 7 : 4,
     opacity: selected ? 0.98 : 0.7,
   };
 }
 
-function initMap() {
+function initMap(): void {
   state.map = L.map("map", {
     scrollWheelZoom: true,
     zoomControl: true,
@@ -47,24 +87,24 @@ function initMap() {
   }).addTo(state.map);
 }
 
-function clearLayer(layerName) {
+function clearLayer(layerName: LayerKey): void {
   if (state[layerName]) {
-    state.map.removeLayer(state[layerName]);
+    requireMap().removeLayer(state[layerName]);
     state[layerName] = null;
   }
 }
 
-function clearActiveButton() {
+function clearActiveButton(): void {
   document.querySelectorAll(".day-button").forEach((button) => {
     button.classList.remove("is-active");
   });
 }
 
-function renderDetail(day) {
+function renderDetail(day: RouteDay | null): void {
   state.activeDay = day;
 
   if (!day) {
-    const rideDays = state.routes.filter((route) => route.type === "ride");
+    const rideDays = state.routes.filter(isRideDay);
     const totalDistance = rideDays.reduce((sum, route) => sum + route.distanceKm, 0);
 
     elements.detailMeta.textContent = "全程總覽";
@@ -99,21 +139,21 @@ function renderDetail(day) {
   }
 }
 
-function showOverview() {
+function showOverview(): void {
   clearLayer("activeLayer");
   clearActiveButton();
 
   clearLayer("overviewLayer");
   const layers = state.routes
-    .filter((day) => day.geojson)
+    .filter((day): day is RouteDay & { geojson: NonNullable<RouteDay["geojson"]> } => Boolean(day.geojson))
     .map((day) => L.geoJSON(day.geojson, { style: routeStyle(getRideColorIndex(day)) }));
 
-  state.overviewLayer = L.featureGroup(layers).addTo(state.map);
-  state.map.fitBounds(state.overviewLayer.getBounds(), { padding: [24, 24] });
+  state.overviewLayer = L.featureGroup(layers).addTo(requireMap());
+  requireMap().fitBounds(state.overviewLayer.getBounds(), { padding: [24, 24] });
   renderDetail(null);
 }
 
-function selectDay(dayNumber) {
+function selectDay(dayNumber: number): void {
   const day = state.routes.find((route) => route.day === dayNumber);
   if (!day) {
     return;
@@ -121,21 +161,22 @@ function selectDay(dayNumber) {
 
   state.activeDay = day;
   document.querySelectorAll(".day-button").forEach((button) => {
-    button.classList.toggle("is-active", Number(button.dataset.day) === dayNumber);
+    const dayButton = button as HTMLButtonElement;
+    dayButton.classList.toggle("is-active", Number(dayButton.dataset.day) === dayNumber);
   });
 
   clearLayer("activeLayer");
   clearLayer("overviewLayer");
 
   if (day.geojson) {
-    state.activeLayer = L.geoJSON(day.geojson, { style: routeStyle(getRideColorIndex(day), true) }).addTo(state.map);
-    state.map.fitBounds(state.activeLayer.getBounds(), { padding: [32, 32] });
+    state.activeLayer = L.geoJSON(day.geojson, { style: routeStyle(getRideColorIndex(day), true) }).addTo(requireMap());
+    requireMap().fitBounds(state.activeLayer.getBounds(), { padding: [32, 32] });
   }
 
   renderDetail(day);
 }
 
-function renderDayList() {
+function renderDayList(): void {
   elements.dayList.innerHTML = "";
 
   for (const day of state.routes) {
@@ -161,22 +202,22 @@ function renderDayList() {
   }
 }
 
-async function loadRoutes() {
+async function loadRoutes(): Promise<void> {
   const response = await fetch("data/routes.json");
   if (!response.ok) {
     throw new Error(`路線資料載入失敗：HTTP ${response.status}`);
   }
 
-  state.routes = await response.json();
+  state.routes = (await response.json()) as RouteDay[];
 }
 
-async function main() {
+async function main(): Promise<void> {
   initMap();
 
   try {
     await loadRoutes();
 
-    const rideDays = state.routes.filter((day) => day.type === "ride");
+    const rideDays = state.routes.filter(isRideDay);
     const totalDistance = rideDays.reduce((sum, day) => sum + day.distanceKm, 0);
 
     elements.summary.textContent = `共 ${state.routes.length} 天，${rideDays.length} 個騎乘日，總距離 ${totalDistance.toFixed(1)} km。`;

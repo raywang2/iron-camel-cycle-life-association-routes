@@ -2,6 +2,7 @@ import fs from "node:fs/promises";
 import { execFile } from "node:child_process";
 import path from "node:path";
 import { promisify } from "node:util";
+import type { LineStringGeometry, RouteDay, Waypoint } from "../types/routes.js";
 
 const ROOT = process.cwd();
 const SOURCE_PATH = path.join(ROOT, "data", "route-waypoints.json");
@@ -12,12 +13,28 @@ const ROUTER_PROFILE = process.env.ROUTER_PROFILE || "driving";
 const ALLOW_ROUTE_FALLBACK = process.env.ALLOW_ROUTE_FALLBACK === "1";
 const execFileAsync = promisify(execFile);
 
-function dayId(day) {
+interface CoordinatePoint {
+  lat: number;
+  lon: number;
+}
+
+interface OsrmRouteResponse {
+  code: string;
+  routes?: Array<{
+    geometry?: LineStringGeometry;
+  }>;
+}
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
+function dayId(day: number): string {
   return String(day).padStart(2, "0");
 }
 
-function haversineKm(a, b) {
-  const toRad = (value) => (value * Math.PI) / 180;
+function haversineKm(a: CoordinatePoint, b: CoordinatePoint): number {
+  const toRad = (value: number): number => (value * Math.PI) / 180;
   const radiusKm = 6371;
   const dLat = toRad(b.lat - a.lat);
   const dLon = toRad(b.lon - a.lon);
@@ -29,27 +46,32 @@ function haversineKm(a, b) {
   return 2 * radiusKm * Math.asin(Math.sqrt(h));
 }
 
-function fallbackGeometry(waypoints) {
+function fallbackGeometry(waypoints: Waypoint[]): LineStringGeometry {
   return {
     type: "LineString",
     coordinates: waypoints.map((point) => [point.lon, point.lat]),
   };
 }
 
-function geometryDistanceKm(geometry) {
+function geometryDistanceKm(geometry: LineStringGeometry): number {
   const { coordinates } = geometry;
   let total = 0;
 
   for (let index = 1; index < coordinates.length; index += 1) {
-    const [prevLon, prevLat] = coordinates[index - 1];
-    const [lon, lat] = coordinates[index];
+    const previous = coordinates[index - 1];
+    const current = coordinates[index];
+    if (!previous || !current) {
+      continue;
+    }
+    const [prevLon, prevLat] = previous;
+    const [lon, lat] = current;
     total += haversineKm({ lat: prevLat, lon: prevLon }, { lat, lon });
   }
 
   return Math.round(total * 10) / 10;
 }
 
-function escapeXml(value) {
+function escapeXml(value: unknown): string {
   return String(value)
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
@@ -58,7 +80,7 @@ function escapeXml(value) {
     .replaceAll("'", "&apos;");
 }
 
-function geometryToGpx(day, geometry) {
+function geometryToGpx(day: RouteDay, geometry: LineStringGeometry): string {
   const points = geometry.coordinates
     .map(
       ([lon, lat]) =>
@@ -82,24 +104,24 @@ ${points}
 `;
 }
 
-async function routeWithOsrm(waypoints) {
+async function routeWithOsrm(waypoints: Waypoint[]): Promise<LineStringGeometry> {
   const coordinates = waypoints
     .map((point) => `${point.lon},${point.lat}`)
     .join(";");
   const endpoint = `${ROUTER_URL.replace(/\/$/, "")}/route/v1/${ROUTER_PROFILE}/${coordinates}?overview=full&geometries=geojson&steps=false`;
-  let payload;
+  let payload: OsrmRouteResponse;
 
   try {
     const response = await fetch(endpoint);
     if (!response.ok) {
       throw new Error(`Routing request failed: ${response.status} ${response.statusText}`);
     }
-    payload = await response.json();
+    payload = (await response.json()) as OsrmRouteResponse;
   } catch (error) {
     const { stdout } = await execFileAsync("curl", ["-fsSL", endpoint], {
       maxBuffer: 10 * 1024 * 1024,
     });
-    payload = JSON.parse(stdout);
+    payload = JSON.parse(stdout) as OsrmRouteResponse;
     if (!payload) {
       throw error;
     }
@@ -113,7 +135,7 @@ async function routeWithOsrm(waypoints) {
 }
 
 async function build() {
-  const source = JSON.parse(await fs.readFile(SOURCE_PATH, "utf8"));
+  const source = JSON.parse(await fs.readFile(SOURCE_PATH, "utf8")) as RouteDay[];
   await fs.mkdir(GPX_DIR, { recursive: true });
 
   const output = [];
@@ -143,9 +165,9 @@ async function build() {
       geometry = await routeWithOsrm(day.waypoints);
     } catch (error) {
       if (!ALLOW_ROUTE_FALLBACK) {
-        throw new Error(`Day ${day.day} routing failed: ${error.message}`);
+        throw new Error(`Day ${day.day} routing failed: ${errorMessage(error)}`);
       }
-      warnings.push(`Day ${day.day}: routing failed, using waypoint fallback: ${error.message}`);
+      warnings.push(`Day ${day.day}: routing failed, using waypoint fallback: ${errorMessage(error)}`);
       geometry = fallbackGeometry(day.waypoints);
       routingStatus = "fallback";
     }

@@ -4,8 +4,14 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build:routes": "node scripts/build-routes.mjs",
-    "validate": "node scripts/validate-output.mjs",
-    "serve": "python3 -m http.server 8080"
+    "build": "tsc",
+    "build:routes": "npm run build && node dist/scripts/build-routes.js",
+    "validate": "npm run build && node dist/scripts/validate-output.js",
+    "serve": "npm run build && node dist/scripts/serve.js"
+  },
+  "devDependencies": {
+    "@types/leaflet": "^1.9.21",
+    "@types/node": "^26.0.1",
+    "typescript": "^6.0.3"
   }
 }

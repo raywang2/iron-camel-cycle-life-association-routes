@@ -1,22 +1,23 @@
 import fs from "node:fs/promises";
+import type { RouteDay } from "../types/routes.js";
 
-function assert(condition, message) {
+function assert(condition: unknown, message: string): asserts condition {
   if (!condition) {
     throw new Error(message);
   }
 }
 
-const routes = JSON.parse(await fs.readFile("data/routes.json", "utf8"));
+const routes = JSON.parse(await fs.readFile("data/routes.json", "utf8")) as RouteDay[];
 const gpxFiles = await fs.readdir("gpx", { withFileTypes: true });
-const actualGpxPaths = new Set(
+const actualGpxPaths: Set<string> = new Set(
   gpxFiles.filter((entry) => entry.isFile() && entry.name.endsWith(".gpx")).map((entry) => `gpx/${entry.name}`),
 );
 
 assert(routes.length === 15, `Expected 15 day entries, got ${routes.length}`);
 
 let rideCount = 0;
-const seenGpxPaths = new Set();
-const expectedGpxPaths = new Set();
+const seenGpxPaths: Set<string> = new Set();
+const expectedGpxPaths: Set<string> = new Set();
 for (const day of routes) {
   assert(typeof day.day === "number", "Each day must have a numeric day");
   assert(typeof day.date === "string" && day.date.length > 0, `Day ${day.day} needs a date string`);
