@@ -10,9 +10,9 @@
     "distanceKm": null,
     "lunchStop": null,
     "lunchDistanceKm": null,
+    "endAccommodation": "台體大",
     "description": "報到！行前安全講習(物資發放)",
     "waypoints": [],
-    "endAccommodation": "台體大",
     "generatedDistanceKm": null,
     "distanceDeltaKm": null,
     "distanceWarning": null,
@@ -31,6 +31,7 @@
     "distanceKm": 53.4,
     "lunchStop": "三義",
     "lunchDistanceKm": 34.9,
+    "endAccommodation": "苗栗高中",
     "description": "臺中→崇德路→豐原→豐原大道→豐科路→后里→后科路→台13→三義→銅鑼→山線鐵路自行車道→苗28→貓貍山公園→公園路→苗栗",
     "waypoints": [
       {
@@ -69,7 +70,6 @@
         "lon": 120.8227
       }
     ],
-    "endAccommodation": "苗栗高中",
     "generatedDistanceKm": 56.4,
     "distanceDeltaKm": 3,
     "distanceWarning": null,
@@ -4772,6 +4772,7 @@
     "distanceKm": 62.1,
     "lunchStop": "南寮",
     "lunchDistanceKm": 50.8,
+    "endAccommodation": "培英國中",
     "description": "苗栗→台13→竹南→苗栗濱海自行車道→南寮→南寮-頭前溪自行車道→新竹",
     "waypoints": [
       {
@@ -4790,7 +4791,6 @@
         "lon": 120.9717
       }
     ],
-    "endAccommodation": "培英國中",
     "generatedDistanceKm": 50.1,
     "distanceDeltaKm": -12,
     "distanceWarning": null,
@@ -8250,6 +8250,7 @@
     "distanceKm": 94.6,
     "lunchStop": "大溪",
     "lunchDistanceKm": 47.7,
+    "endAccommodation": "北新國小",
     "description": "新竹→台1→竹北→縣118→新埔→台3→龍潭→台3乙→石門水庫→台4→大溪→A4大鶯綠野景觀自行車道→鶯歌→大漢溪左岸自行車道→新莊→新月橋→板橋→大漢溪左岸自行車道→華江橋自行車便道→萬華→新店溪右岸自行車道→景美→景美溪河濱自行車道→寶僑→新店",
     "waypoints": [
       {
@@ -8288,7 +8289,6 @@
         "lon": 121.5417
       }
     ],
-    "endAccommodation": "北新國小",
     "generatedDistanceKm": 94.7,
     "distanceDeltaKm": 0.1,
     "distanceWarning": null,
@@ -16683,6 +16683,7 @@
     "distanceKm": 51.7,
     "lunchStop": "坪林",
     "lunchDistanceKm": 29.4,
+    "endAccommodation": "羅東國中",
     "description": "新店→台9→坪林→頭城→礁溪→台9→宜蘭→羅東",
     "waypoints": [
       {
@@ -16696,7 +16697,6 @@
         "lon": 121.7746
       }
     ],
-    "endAccommodation": "羅東國中",
     "generatedDistanceKm": 59.2,
     "distanceDeltaKm": 7.5,
     "distanceWarning": null,
@@ -19930,6 +19930,7 @@
     "distanceKm": 33.7,
     "lunchStop": "太魯閣、新城",
     "lunchDistanceKm": 11.3,
+    "endAccommodation": "中原國小",
     "description": "羅東==== 新城車站→台8→太魯閣遊客中心→台8→新城→台9→縣道193→七星潭→台9→花蓮",
     "waypoints": [
       {
@@ -19958,7 +19959,6 @@
         "lon": 121.6015
       }
     ],
-    "endAccommodation": "中原國小",
     "generatedDistanceKm": 29.4,
     "distanceDeltaKm": -4.3,
     "distanceWarning": null,
@@ -22186,9 +22186,9 @@
     "distanceKm": null,
     "lunchStop": "休息一日",
     "lunchDistanceKm": null,
+    "endAccommodation": "中原國小",
     "description": "休息一天 自由行",
     "waypoints": [],
-    "endAccommodation": "中原國小",
     "generatedDistanceKm": null,
     "distanceDeltaKm": null,
     "distanceWarning": null,
@@ -22207,6 +22207,7 @@
     "distanceKm": 83.3,
     "lunchStop": "光復",
     "lunchDistanceKm": 42.8,
+    "endAccommodation": "玉里高中",
     "description": "花蓮市→台9→吉安→壽豐→鳳林→萬榮→光復→瑞穗→台9→玉里",
     "waypoints": [
       {
@@ -22245,7 +22246,6 @@
         "lon": 121.3157
       }
     ],
-    "endAccommodation": "玉里高中",
     "generatedDistanceKm": 88.9,
     "distanceDeltaKm": 5.6,
     "distanceWarning": null,
@@ -27236,6 +27236,7 @@
     "distanceKm": 81.5,
     "lunchStop": "關山",
     "lunchDistanceKm": 42.9,
+    "endAccommodation": "新生國中",
     "description": "玉里→台9→富里→池上→關山→鹿野→卑南→台9→台東",
     "waypoints": [
       {
@@ -27274,7 +27275,6 @@
         "lon": 121.1233
       }
     ],
-    "endAccommodation": "新生國中",
     "generatedDistanceKm": 85.5,
     "distanceDeltaKm": 4,
     "distanceWarning": null,
@@ -33121,6 +33121,7 @@
     "distanceKm": 121,
     "lunchStop": "6點出發，不休息(達仁7-11南迴前最後補給)\n壽卡前最後補給點\n（不集結休息）",
     "lunchDistanceKm": 63.3,
+    "endAccommodation": "恆春國小",
     "description": "台東→台11→知本→美和→台9→太麻里→大武→達仁→南迴公路→壽卡→縣199→東源→牡丹→車城→統埔→山腳路→保力→台26→恆春",
     "waypoints": [
       {
@@ -33134,7 +33135,6 @@
         "lon": 120.7443
       }
     ],
-    "endAccommodation": "恆春國小",
     "generatedDistanceKm": 118.9,
     "distanceDeltaKm": -2.1,
     "distanceWarning": null,
@@ -42766,9 +42766,9 @@
     "distanceKm": null,
     "lunchStop": "休息一日",
     "lunchDistanceKm": null,
+    "endAccommodation": "恆春國小",
     "description": "休息一天 自由行",
     "waypoints": [],
-    "endAccommodation": "恆春國小",
     "generatedDistanceKm": null,
     "distanceDeltaKm": null,
     "distanceWarning": null,
@@ -42787,6 +42787,7 @@
     "distanceKm": 103,
     "lunchStop": "潮州國小",
     "lunchDistanceKm": 76.6,
+    "endAccommodation": "左營高中",
     "description": "恆春→台26→楓港→台1→枋寮→台17→東港→林園→小港→前鎮→台17→高雄左營",
     "waypoints": [
       {
@@ -42830,7 +42831,6 @@
         "lon": 120.3097
       }
     ],
-    "endAccommodation": "左營高中",
     "generatedDistanceKm": 105.1,
     "distanceDeltaKm": 2.1,
     "distanceWarning": null,
@@ -50583,6 +50583,7 @@
     "distanceKm": 121.6,
     "lunchStop": "將軍驛站",
     "lunchDistanceKm": 72.1,
+    "endAccommodation": "崇文國小",
     "description": "高雄左營→台17→楠梓→梓官→永安→茄萣→台南市南區→台南中西區→安南→將軍→南18→苓子寮→南19→學甲→台19→鹽水→縣172→南80→菁寮→南84→後壁→台1→水上→嘉義",
     "waypoints": [
       {
@@ -50656,7 +50657,6 @@
         "lon": 120.4417
       }
     ],
-    "endAccommodation": "崇文國小",
     "generatedDistanceKm": 131.6,
     "distanceDeltaKm": 10,
     "distanceWarning": null,
@@ -59582,6 +59582,7 @@
     "distanceKm": 111.4,
     "lunchStop": "竹山",
     "lunchDistanceKm": 68.5,
+    "endAccommodation": "溪南國小",
     "description": "嘉義→台1→民雄→斗南→台1丁→斗六→台3→林內→南投竹山→社寮→台3丙→集集→台16→水里→台21→日月潭→魚池→埔里",
     "waypoints": [
       {
@@ -59640,7 +59641,6 @@
         "lon": 120.9692
       }
     ],
-    "endAccommodation": "溪南國小",
     "generatedDistanceKm": 119.6,
     "distanceDeltaKm": 8.2,
     "distanceWarning": null,
@@ -70005,6 +70005,7 @@
     "distanceKm": 59.4,
     "lunchStop": null,
     "lunchDistanceKm": null,
+    "endAccommodation": "賦歸",
     "description": "埔里→台14→國姓→草屯→台3→霧峰→大里→台中市",
     "waypoints": [
       {
@@ -70028,7 +70029,6 @@
         "lon": 120.685
       }
     ],
-    "endAccommodation": "賦歸",
     "generatedDistanceKm": 60.9,
     "distanceDeltaKm": 1.5,
     "distanceWarning": null,

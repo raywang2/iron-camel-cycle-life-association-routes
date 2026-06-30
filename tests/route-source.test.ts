@@ -12,6 +12,19 @@ function routesCsv(): string {
 }
 
 describe("route waypoint source", () => {
+  it("keeps end accommodation in route-waypoints source data", () => {
+    const routes = sourceRoutes();
+    const day0 = routes.find((route) => route.day === 0)!;
+    const day1 = routes.find((route) => route.day === 1)!;
+    const day9 = routes.find((route) => route.day === 9)!;
+    const day14 = routes.find((route) => route.day === 14)!;
+
+    expect(day0.endAccommodation).toBe("台體大");
+    expect(day1.endAccommodation).toBe("苗栗高中");
+    expect(day9.endAccommodation).toBe("恆春國小");
+    expect(day14.endAccommodation).toBe("賦歸");
+  });
+
   it("parses route metadata from the current routes.csv", () => {
     const schedule = parseRouteScheduleCsv(routesCsv());
     const day0 = schedule.find((route) => route.day === 0)!;
