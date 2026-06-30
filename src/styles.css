@@ -299,7 +299,7 @@ li::before {
   justify-content: space-between;
 }
 
-.store-heading b {
+.store-name {
   color: #f8fafc;
 }
 
@@ -310,6 +310,7 @@ li::before {
   white-space: nowrap;
 }
 
+.store-name-row,
 .store-address,
 .store-map {
   margin-top: 4px;
@@ -329,6 +330,25 @@ li::before {
 .store-popup {
   min-width: 220px;
   max-width: 320px;
+}
+
+#map .leaflet-popup-content-wrapper {
+  background: #0f172a;
+  border: 1px solid rgba(148, 163, 184, 0.32);
+  color: #f8fafc;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.42);
+}
+
+#map .leaflet-popup-content {
+  color: #f8fafc;
+}
+
+#map .leaflet-popup-tip {
+  background: #0f172a;
+}
+
+#map .leaflet-popup-close-button {
+  color: #e2e8f0;
 }
 
 .route-marker span {

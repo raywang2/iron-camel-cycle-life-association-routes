@@ -212,9 +212,10 @@ function storeMapLink(store: NonNullable<RouteDay["convenienceStores"]>[number])
 function storeDetailMarkup(store: NonNullable<RouteDay["convenienceStores"]>[number]): string {
   return `
     <div class="store-heading">
-      <b>${store.targetKm}km｜${escapeHtml(store.name)}</b>
+      <b class="store-name">${store.targetKm}km｜${escapeHtml(store.displayName)}</b>
       <span class="store-distance">實際 ${store.routeProgressKm.toFixed(1)}km｜${Math.round(store.distanceFromRouteM)}m｜${formatStoreSide(store.sideOfRoute)}</span>
     </div>
+    <div class="store-name-row">店名：${escapeHtml(store.displayName)}</div>
     <div class="store-address">地址：${escapeHtml(store.address)}</div>
     <div class="store-map">Google Maps：${storeMapLink(store)}</div>
   `;

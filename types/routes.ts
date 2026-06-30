@@ -30,6 +30,8 @@ export interface RouteReview {
 export interface ConvenienceStore {
   id: string;
   name: string;
+  displayName: string;
+  metadataVersion?: number;
   brand: string | null;
   address: string;
   addressSource: "osm" | "reverse-geocode" | "coordinate-fallback";

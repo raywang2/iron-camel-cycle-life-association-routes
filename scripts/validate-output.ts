@@ -89,15 +89,17 @@ export function validateRouteOutput(routes: RouteDay[], gpxFiles: GpxFile[]): vo
         const expectedTargetKm = expectedRestTargets[storeIndex]!;
         assert(typeof store.id === "string" && store.id.length > 0, `Day ${day.day} convenience store needs id`);
         assert(typeof store.name === "string" && store.name.length > 0, `Day ${day.day} convenience store needs name`);
+        assert(
+          typeof store.displayName === "string" && store.displayName.length > 0,
+          `Day ${day.day} convenience store needs display name`,
+        );
         assert(!isExcludedRestStopName(store.name), `Day ${day.day} convenience store must be a rest-stop convenience store`);
         assert(
           typeof store.address === "string" && store.address.length > 0,
           `Day ${day.day} convenience store needs display address`,
         );
         assert(
-          store.addressSource === "osm" ||
-            store.addressSource === "reverse-geocode" ||
-            store.addressSource === "coordinate-fallback",
+          store.addressSource === "osm" || store.addressSource === "reverse-geocode",
           `Day ${day.day} convenience store needs address source`,
         );
         assert(

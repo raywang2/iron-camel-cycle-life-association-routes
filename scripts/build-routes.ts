@@ -36,6 +36,7 @@ const OVERPASS_TIMEOUT_MS = Number(process.env.OVERPASS_TIMEOUT_MS || "45000");
 const OSM_API_DELAY_MS = Number(process.env.OSM_API_DELAY_MS || "200");
 const NOMINATIM_DELAY_MS = Number(process.env.NOMINATIM_DELAY_MS || "1100");
 const EXCLUDED_STORE_NAME_PATTERNS = [/shopee/i, /蝦皮/i];
+const STORE_METADATA_VERSION = 3;
 const execFileAsync = promisify(execFile);
 let lastOverpassRequestAt = 0;
 let lastNominatimRequestAt = 0;
@@ -277,6 +278,8 @@ function withStoreDisplayFields(store: ConvenienceStore): ConvenienceStore {
   const fallback = !store.address?.trim();
   return {
     ...store,
+    displayName: store.displayName?.trim() || store.name,
+    metadataVersion: store.metadataVersion ?? 1,
     address: fallback ? fallbackAddress(store.lat, store.lon) : store.address.trim(),
     addressSource: store.addressSource ?? (fallback ? "coordinate-fallback" : "osm"),
     googleMapsUrl: store.googleMapsUrl?.trim() || googleMapsUrl(store.lat, store.lon),
@@ -291,6 +294,7 @@ function hasStoreDisplayFields(store: ConvenienceStore): boolean {
       store.addressSource === "osm" ||
       store.addressSource === "reverse-geocode"
     ) &&
+    store.metadataVersion === STORE_METADATA_VERSION &&
     typeof store.googleMapsUrl === "string" &&
     store.googleMapsUrl.startsWith("https://www.google.com/maps/search/?api=1&query=")
   );
@@ -728,6 +732,13 @@ function storeName(tags: Record<string, string> | undefined, brand: string | nul
   return tags?.name || brand || "便利商店";
 }
 
+function storeDisplayName(tags: Record<string, string> | undefined, name: string, brand: string | null): string {
+  const baseName = firstTag(tags, ["name", "name:zh", "brand"]) || brand || name;
+  const branch = firstTag(tags, ["branch", "branch:zh", "ref"]);
+  const parts = uniqueParts([baseName, branch]);
+  return parts.join(" ") || name;
+}
+
 function isExcludedRestStop(tags: Record<string, string> | undefined, displayName: string): boolean {
   const searchableText = [displayName, tags?.name, tags?.brand, tags?.operator]
     .filter((value): value is string => typeof value === "string")
@@ -887,6 +898,8 @@ function convenienceStoresNearRoute(elements: OverpassElement[], geometry: LineS
     const store: ConvenienceStore = {
       id: `${element.type}/${element.id}`,
       name,
+      displayName: storeDisplayName(element.tags, name, brand),
+      metadataVersion: STORE_METADATA_VERSION,
       brand,
       ...address,
       googleMapsUrl: googleMapsUrl(lat, lon),
@@ -968,6 +981,8 @@ async function enrichCachedConvenienceStores(stores: ConvenienceStore[]): Promis
     const element = elementById.get(store.id);
     const lat = element?.lat ?? element?.center?.lat ?? store.lat;
     const lon = element?.lon ?? element?.center?.lon ?? store.lon;
+    const brand = normalizeStoreBrand(element?.tags) ?? store.brand;
+    const name = storeName(element?.tags, brand) || store.name;
     let address = formatAddress(element?.tags, lat, lon);
     if (address.addressSource === "coordinate-fallback") {
       try {
@@ -982,6 +997,10 @@ async function enrichCachedConvenienceStores(stores: ConvenienceStore[]): Promis
 
     enrichedStores.push({
       ...store,
+      name,
+      displayName: storeDisplayName(element?.tags, name, brand),
+      metadataVersion: STORE_METADATA_VERSION,
+      brand,
       ...address,
       googleMapsUrl: googleMapsUrl(lat, lon),
     });

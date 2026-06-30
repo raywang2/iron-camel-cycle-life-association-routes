@@ -29,6 +29,7 @@ describe("reference-style route UI", () => {
     expect(app).toContain("drawDay(");
     expect(app).toContain("drawOverview(");
     expect(app).toContain("drawConvenienceStores(");
+    expect(app).toContain("store.displayName");
     expect(app).toContain("store.address");
     expect(app).toContain("store.googleMapsUrl");
     expect(app).toContain("L.marker(");
@@ -62,5 +63,7 @@ describe("reference-style route UI", () => {
     expect(css).toContain(".pill");
     expect(css).toContain(".store-list");
     expect(css).toContain(".store-marker");
+    expect(css).toContain(".leaflet-popup-content-wrapper");
+    expect(css).toContain(".store-name");
   });
 });

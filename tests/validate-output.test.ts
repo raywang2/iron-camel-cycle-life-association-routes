@@ -47,6 +47,7 @@ function rideDay(day: number): RouteDay {
       {
         id: "node/1",
         name: "7-ELEVEN",
+        displayName: "7-ELEVEN 測試門市",
         brand: "7-ELEVEN",
         address: "台中市北區測試路1號",
         addressSource: "osm",
@@ -61,6 +62,7 @@ function rideDay(day: number): RouteDay {
       {
         id: "node/2",
         name: "FamilyMart",
+        displayName: "FamilyMart 測試門市",
         brand: "FamilyMart",
         address: "台中市北區測試路2號",
         addressSource: "osm",
@@ -75,6 +77,7 @@ function rideDay(day: number): RouteDay {
       {
         id: "node/3",
         name: "Hi-Life",
+        displayName: "Hi-Life 測試門市",
         brand: "Hi-Life",
         address: "台中市北區測試路3號",
         addressSource: "osm",
@@ -215,6 +218,7 @@ describe("validateRouteOutput", () => {
         {
           id: "node/1",
           name: "7-ELEVEN",
+          displayName: "7-ELEVEN 測試門市",
           brand: "7-ELEVEN",
           address: "台中市北區測試路1號",
           addressSource: "osm",
@@ -229,6 +233,7 @@ describe("validateRouteOutput", () => {
         {
           id: "node/2",
           name: "FamilyMart",
+          displayName: "FamilyMart 測試門市",
           brand: "FamilyMart",
           address: "台中市北區測試路2號",
           addressSource: "osm",
@@ -243,6 +248,7 @@ describe("validateRouteOutput", () => {
         {
           id: "node/3",
           name: "Hi-Life",
+          displayName: "Hi-Life 測試門市",
           brand: "Hi-Life",
           address: "台中市北區測試路3號",
           addressSource: "osm",
@@ -257,6 +263,7 @@ describe("validateRouteOutput", () => {
         {
           id: "node/4",
           name: "OK Mart",
+          displayName: "OK Mart 測試門市",
           brand: "OK Mart",
           address: "台中市北區測試路4號",
           addressSource: "osm",
@@ -271,6 +278,7 @@ describe("validateRouteOutput", () => {
         {
           id: "node/5",
           name: "7-ELEVEN",
+          displayName: "7-ELEVEN 測試門市",
           brand: "7-ELEVEN",
           address: "台中市北區測試路5號",
           addressSource: "osm",
@@ -297,6 +305,7 @@ describe("validateRouteOutput", () => {
         {
           id: "node/1",
           name: "7-ELEVEN",
+          displayName: "7-ELEVEN 測試門市",
           brand: "7-ELEVEN",
           address: "台中市北區測試路1號",
           addressSource: "osm",
@@ -311,6 +320,7 @@ describe("validateRouteOutput", () => {
         {
           id: "node/2",
           name: "FamilyMart",
+          displayName: "FamilyMart 測試門市",
           brand: "FamilyMart",
           address: "台中市北區測試路2號",
           addressSource: "osm",
@@ -325,6 +335,7 @@ describe("validateRouteOutput", () => {
         {
           id: "node/3",
           name: "Hi-Life",
+          displayName: "Hi-Life 測試門市",
           brand: "Hi-Life",
           address: "台中市北區測試路3號",
           addressSource: "osm",
@@ -353,6 +364,7 @@ describe("validateRouteOutput", () => {
         {
           id: "node/1",
           name: "7-ELEVEN",
+          displayName: "7-ELEVEN 測試門市",
           brand: "7-ELEVEN",
           address: "台中市北區測試路1號",
           addressSource: "osm",
@@ -380,6 +392,7 @@ describe("validateRouteOutput", () => {
         {
           id: "node/1",
           name: "蝦皮店到店",
+          displayName: "蝦皮店到店",
           brand: null,
           address: "台中市北區測試路1號",
           addressSource: "osm",
@@ -394,6 +407,7 @@ describe("validateRouteOutput", () => {
         {
           id: "node/2",
           name: "7-ELEVEN",
+          displayName: "7-ELEVEN 測試門市",
           brand: "7-ELEVEN",
           address: "台中市北區測試路2號",
           addressSource: "osm",
@@ -408,6 +422,7 @@ describe("validateRouteOutput", () => {
         {
           id: "node/3",
           name: "FamilyMart",
+          displayName: "FamilyMart 測試門市",
           brand: "FamilyMart",
           address: "台中市北區測試路3號",
           addressSource: "osm",
@@ -447,6 +462,26 @@ describe("validateRouteOutput", () => {
     );
   });
 
+  it("rejects coordinate-only fallback addresses", () => {
+    const routes = validRoutes();
+    routes[1] = {
+      ...routes[1]!,
+      convenienceStores: [
+        {
+          ...routes[1]!.convenienceStores![0]!,
+          address: "地址暫無資料（座標 24.000000, 120.000000）",
+          addressSource: "coordinate-fallback",
+        },
+        routes[1]!.convenienceStores![1]!,
+        routes[1]!.convenienceStores![2]!,
+      ],
+    };
+
+    expect(() => validateRouteOutput(routes, gpxFor(routes))).toThrow(
+      "Day 1 convenience store needs address source",
+    );
+  });
+
   it("rejects convenience stores whose target would be near the finish", () => {
     const routes = validRoutes();
     routes[1] = {
@@ -456,6 +491,7 @@ describe("validateRouteOutput", () => {
         {
           id: "node/1",
           name: "7-ELEVEN",
+          displayName: "7-ELEVEN 測試門市",
           brand: "7-ELEVEN",
           address: "台中市北區測試路1號",
           addressSource: "osm",
@@ -470,6 +506,7 @@ describe("validateRouteOutput", () => {
         {
           id: "node/2",
           name: "FamilyMart",
+          displayName: "FamilyMart 測試門市",
           brand: "FamilyMart",
           address: "台中市北區測試路2號",
           addressSource: "osm",
