@@ -14,20 +14,37 @@ function routesCsv(): string {
 describe("route waypoint source", () => {
   it("keeps end accommodation in route-waypoints source data", () => {
     const routes = sourceRoutes();
-    const day0 = routes.find((route) => route.day === 0)!;
-    const day1 = routes.find((route) => route.day === 1)!;
-    const day9 = routes.find((route) => route.day === 9)!;
-    const day14 = routes.find((route) => route.day === 14)!;
+    const schedule = parseRouteScheduleCsv(routesCsv());
+    const scheduleByDay = new Map(schedule.map((route) => [route.day, route]));
 
-    expect(day0.endAccommodation).toBe("台體大");
-    expect(day1.endAccommodation).toBe("苗栗高中");
-    expect(day9.endAccommodation).toBe("恆春國小");
-    expect(day14.endAccommodation).toBe("賦歸");
+    for (const route of routes) {
+      expect(route.endAccommodation).toBe(scheduleByDay.get(route.day)?.endAccommodation);
+    }
+  });
+
+  it("uses the accommodation as the daily endpoint in route-waypoints source data", () => {
+    const routes = sourceRoutes();
+    const routesWithAccommodation = routes.filter((route) => route.endAccommodation);
+
+    expect(routesWithAccommodation).toHaveLength(15);
+    for (const route of routesWithAccommodation) {
+      expect(route.end).toBe(route.endAccommodation);
+    }
+  });
+
+  it("routes ride-day map waypoints to the accommodation endpoint", () => {
+    const routes = sourceRoutes().filter((route) => route.type === "ride");
+
+    expect(routes).toHaveLength(12);
+    for (const route of routes) {
+      expect(route.waypoints.at(-1)?.name).toBe(route.endAccommodation);
+    }
   });
 
   it("parses route metadata from the current routes.csv", () => {
     const schedule = parseRouteScheduleCsv(routesCsv());
     const day0 = schedule.find((route) => route.day === 0)!;
+    const day1 = schedule.find((route) => route.day === 1)!;
     const day9 = schedule.find((route) => route.day === 9)!;
     const day14 = schedule.find((route) => route.day === 14)!;
 
@@ -35,13 +52,14 @@ describe("route waypoint source", () => {
     expect(day0.date).toBe("2026-07-04");
     expect(day0.weekday).toBe("六");
     expect(day0.distanceKm).toBeNull();
-    expect(day0.endAccommodation).toBe("台體大");
+    expect(day0.endAccommodation).toBe("台體大國立臺灣體育運動大學");
+    expect(day1.endAccommodation).toBe("苗栗高中");
     expect(day9.lunchStop).toBe("6點出發，不休息(達仁7-11南迴前最後補給)\n壽卡前最後補給點\n（不集結休息）");
     expect(day9.lunchDistanceKm).toBe(63.3);
     expect(day9.endAccommodation).toBe("恆春國小");
     expect(day14.lunchStop).toBeNull();
     expect(day14.lunchDistanceKm).toBeNull();
-    expect(day14.endAccommodation).toBe("賦歸");
+    expect(day14.endAccommodation).toBe("國立臺灣體育運動大學");
   });
 
   it("merges the updated CSV route text, lunch-stop fields, and lodging into route source", () => {
@@ -59,9 +77,11 @@ describe("route waypoint source", () => {
     expect(day9.description).toContain("大武→達仁→南迴公路");
     expect(day9.lunchStop).toContain("達仁7-11南迴前最後補給");
     expect(day9.lunchDistanceKm).toBe(63.3);
+    expect(day9.end).toBe("恆春國小");
     expect(day9.endAccommodation).toBe("恆春國小");
     expect(day14.lunchStop).toBeNull();
     expect(day14.lunchDistanceKm).toBeNull();
-    expect(day14.endAccommodation).toBe("賦歸");
+    expect(day14.end).toBe("國立臺灣體育運動大學");
+    expect(day14.endAccommodation).toBe("國立臺灣體育運動大學");
   });
 });

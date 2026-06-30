@@ -27,6 +27,7 @@ const OVERPASS_URLS = (
 const OSM_API_URL = process.env.OSM_API_URL || "https://api.openstreetmap.org/api/0.6";
 const NOMINATIM_URL = process.env.NOMINATIM_URL || "https://nominatim.openstreetmap.org";
 const FETCH_CONVENIENCE_STORES = process.env.FETCH_CONVENIENCE_STORES !== "0";
+const USE_CACHED_CONVENIENCE_STORES = process.env.USE_CACHED_CONVENIENCE_STORES === "1";
 const POI_RADIUS_M = Number(process.env.POI_RADIUS_M || "1200");
 const REST_INTERVAL_KM = Number(process.env.REST_INTERVAL_KM || "10");
 const REST_WINDOW_KM = Number(process.env.REST_WINDOW_KM || "6");
@@ -1023,6 +1024,13 @@ async function fetchConvenienceStores(
 
   const generatedDistanceKm = geometryDistanceKm(geometry);
   const expectedCount = expectedRestStopCount(generatedDistanceKm);
+  if (USE_CACHED_CONVENIENCE_STORES) {
+    const fallbackCachedStores = fallbackCachedConvenienceStores(cachedDay, generatedDistanceKm);
+    if (fallbackCachedStores) {
+      console.log(`Day ${day.day}: using cached convenience store rest stops by request`);
+      return fallbackCachedStores;
+    }
+  }
   const cachedStores = cachedConvenienceStores(cachedDay, selectedCandidate, generatedDistanceKm);
   if (cachedStores) {
     console.log(`Day ${day.day}: using cached convenience store rest stops`);
@@ -1051,6 +1059,11 @@ async function fetchConvenienceStores(
     const stores = convenienceStoresNearRoute(elements, geometry);
     if (stores.length < expectedCount) {
       console.warn(`Day ${day.day}: Overpass returned ${stores.length}/${expectedCount} convenience store rest stops`);
+      const fallbackCachedStores = fallbackCachedConvenienceStores(cachedDay, generatedDistanceKm);
+      if (fallbackCachedStores) {
+        console.warn(`Day ${day.day}: using cached convenience store rest stops after incomplete Overpass result`);
+        return fallbackCachedStores;
+      }
     }
     console.log(
       `Day ${day.day}: selected ${stores.length} convenience store rest stops every ${REST_INTERVAL_KM}km`,

@@ -194,6 +194,7 @@ export function mergeRouteSchedule(routes: RouteDay[], schedule: RouteScheduleEn
       ...route,
       date: scheduleEntry.date,
       weekday: scheduleEntry.weekday,
+      end: scheduleEntry.endAccommodation ?? route.end,
       distanceKm: scheduleEntry.distanceKm,
       description: scheduleEntry.description,
       lunchStop: scheduleEntry.lunchStop,

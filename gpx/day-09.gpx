@@ -2351,11 +2351,13 @@
       <trkpt lat="22.005893" lon="120.743843"></trkpt>
       <trkpt lat="22.005846" lon="120.743890"></trkpt>
       <trkpt lat="22.005751" lon="120.743978"></trkpt>
-      <trkpt lat="22.005610" lon="120.743989"></trkpt>
-      <trkpt lat="22.005547" lon="120.743994"></trkpt>
-      <trkpt lat="22.005250" lon="120.744014"></trkpt>
-      <trkpt lat="22.004394" lon="120.744094"></trkpt>
-      <trkpt lat="22.004088" lon="120.744119"></trkpt>
+      <trkpt lat="22.005823" lon="120.744096"></trkpt>
+      <trkpt lat="22.005847" lon="120.744142"></trkpt>
+      <trkpt lat="22.006182" lon="120.744735"></trkpt>
+      <trkpt lat="22.006223" lon="120.744810"></trkpt>
+      <trkpt lat="22.006315" lon="120.744974"></trkpt>
+      <trkpt lat="22.006705" lon="120.745698"></trkpt>
+      <trkpt lat="22.007107" lon="120.746445"></trkpt>
     </trkseg>
   </trk>
 </gpx>
