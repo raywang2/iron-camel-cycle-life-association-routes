@@ -23,8 +23,10 @@ const OVERPASS_URLS = (
   "https://overpass-api.de/api/interpreter,https://overpass.kumi.systems/api/interpreter"
 ).split(",");
 const FETCH_CONVENIENCE_STORES = process.env.FETCH_CONVENIENCE_STORES !== "0";
-const POI_RADIUS_M = Number(process.env.POI_RADIUS_M || "300");
-const MAX_STORES_PER_DAY = Number(process.env.MAX_STORES_PER_DAY || "60");
+const POI_RADIUS_M = Number(process.env.POI_RADIUS_M || "600");
+const REST_TARGET_KM = Number(process.env.REST_TARGET_KM || "20");
+const REST_WINDOW_KM = Number(process.env.REST_WINDOW_KM || "8");
+const FINISH_EXCLUSION_KM = Number(process.env.FINISH_EXCLUSION_KM || "5");
 const OVERPASS_DELAY_MS = Number(process.env.OVERPASS_DELAY_MS || "3500");
 const OVERPASS_TIMEOUT_MS = Number(process.env.OVERPASS_TIMEOUT_MS || "45000");
 const execFileAsync = promisify(execFile);
@@ -71,6 +73,13 @@ interface OverpassResponse {
 
 interface StoreWithSegment extends ConvenienceStore {
   segmentIndex: number;
+  score: number;
+}
+
+interface SegmentProjection {
+  distanceM: number;
+  t: number;
+  sideOfRoute: ConvenienceStore["sideOfRoute"];
 }
 
 function errorMessage(error: unknown): string {
@@ -474,7 +483,7 @@ function pointToSegmentDistanceM(
   point: CoordinatePoint,
   segmentStart: CoordinatePoint,
   segmentEnd: CoordinatePoint,
-): number {
+): SegmentProjection {
   const meanLat = ((point.lat + segmentStart.lat + segmentEnd.lat) / 3) * (Math.PI / 180);
   const metersPerLat = 111_320;
   const metersPerLon = Math.cos(meanLat) * 111_320;
@@ -490,15 +499,25 @@ function pointToSegmentDistanceM(
   const t = lengthSquared === 0 ? 0 : Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / lengthSquared));
   const closestX = ax + t * dx;
   const closestY = ay + t * dy;
-  return Math.hypot(px - closestX, py - closestY);
+  const cross = dx * (py - ay) - dy * (px - ax);
+  const sideOfRoute = Math.abs(cross) < 20 ? "on-route" : cross < 0 ? "right" : "left";
+
+  return {
+    distanceM: Math.hypot(px - closestX, py - closestY),
+    t,
+    sideOfRoute,
+  };
 }
 
 function nearestRouteDistance(
   store: CoordinatePoint,
   geometry: LineStringGeometry,
-): { distanceM: number; segmentIndex: number } {
+): { distanceM: number; segmentIndex: number; routeProgressKm: number; sideOfRoute: ConvenienceStore["sideOfRoute"] } {
   let bestDistance = Number.POSITIVE_INFINITY;
   let bestSegmentIndex = 0;
+  let bestRouteProgressKm = 0;
+  let bestSideOfRoute: ConvenienceStore["sideOfRoute"] = "on-route";
+  let cumulativeKm = 0;
 
   for (let index = 1; index < geometry.coordinates.length; index += 1) {
     const previous = geometry.coordinates[index - 1];
@@ -506,22 +525,56 @@ function nearestRouteDistance(
     if (!previous || !current) {
       continue;
     }
-    const distanceM = pointToSegmentDistanceM(
+    const segmentStart = { lat: previous[1], lon: previous[0] };
+    const segmentEnd = { lat: current[1], lon: current[0] };
+    const segmentKm = haversineKm(segmentStart, segmentEnd);
+    const projection = pointToSegmentDistanceM(
       store,
-      { lat: previous[1], lon: previous[0] },
-      { lat: current[1], lon: current[0] },
+      segmentStart,
+      segmentEnd,
     );
-    if (distanceM < bestDistance) {
-      bestDistance = distanceM;
+    if (projection.distanceM < bestDistance) {
+      bestDistance = projection.distanceM;
       bestSegmentIndex = index;
+      bestRouteProgressKm = Math.round((cumulativeKm + segmentKm * projection.t) * 10) / 10;
+      bestSideOfRoute = projection.sideOfRoute;
     }
+    cumulativeKm += segmentKm;
   }
 
-  return { distanceM: bestDistance, segmentIndex: bestSegmentIndex };
+  return {
+    distanceM: bestDistance,
+    segmentIndex: bestSegmentIndex,
+    routeProgressKm: bestRouteProgressKm,
+    sideOfRoute: bestSideOfRoute,
+  };
+}
+
+function storeScore(store: ConvenienceStore): number {
+  const progressPenalty = Math.abs(store.routeProgressKm - REST_TARGET_KM) * 100;
+  const distancePenalty = store.distanceFromRouteM;
+  const sidePenalty = store.sideOfRoute === "right" || store.sideOfRoute === "on-route" ? 0 : 300;
+  return progressPenalty + distancePenalty + sidePenalty;
+}
+
+function selectRestStop(stores: StoreWithSegment[], generatedDistanceKm: number): ConvenienceStore[] {
+  const notNearFinish = stores.filter((store) => store.routeProgressKm <= generatedDistanceKm - FINISH_EXCLUSION_KM);
+  const around20km = notNearFinish.filter(
+    (store) => Math.abs(store.routeProgressKm - REST_TARGET_KM) <= REST_WINDOW_KM,
+  );
+  const pool = around20km.length > 0 ? around20km : notNearFinish;
+  const selected = pool.sort((a, b) => a.score - b.score)[0];
+  if (!selected) {
+    return [];
+  }
+
+  const { segmentIndex: _segmentIndex, score: _score, ...store } = selected;
+  return [store];
 }
 
 function convenienceStoresNearRoute(elements: OverpassElement[], geometry: LineStringGeometry): ConvenienceStore[] {
   const stores: StoreWithSegment[] = [];
+  const generatedDistanceKm = geometryDistanceKm(geometry);
 
   for (const element of elements) {
     const lat = element.lat ?? element.center?.lat;
@@ -530,27 +583,32 @@ function convenienceStoresNearRoute(elements: OverpassElement[], geometry: LineS
       continue;
     }
 
-    const { distanceM, segmentIndex } = nearestRouteDistance({ lat, lon }, geometry);
+    const { distanceM, segmentIndex, routeProgressKm, sideOfRoute } = nearestRouteDistance({ lat, lon }, geometry);
     if (distanceM > POI_RADIUS_M) {
       continue;
     }
 
     const brand = normalizeStoreBrand(element.tags);
-    stores.push({
+    const store: ConvenienceStore = {
       id: `${element.type}/${element.id}`,
       name: storeName(element.tags, brand),
       brand,
       lat,
       lon,
       distanceFromRouteM: Math.round(distanceM),
+      routeProgressKm,
+      sideOfRoute,
+    };
+    stores.push({
+      ...store,
       segmentIndex,
+      score: storeScore(store),
     });
   }
 
-  return stores
-    .sort((a, b) => a.segmentIndex - b.segmentIndex || a.distanceFromRouteM - b.distanceFromRouteM)
-    .slice(0, MAX_STORES_PER_DAY)
-    .map(({ segmentIndex: _segmentIndex, ...store }) => store);
+  const candidates = stores
+    .sort((a, b) => a.segmentIndex - b.segmentIndex || a.distanceFromRouteM - b.distanceFromRouteM);
+  return selectRestStop(candidates, generatedDistanceKm);
 }
 
 async function fetchConvenienceStores(day: RouteDay, geometry: LineStringGeometry): Promise<ConvenienceStore[]> {
@@ -561,7 +619,9 @@ async function fetchConvenienceStores(day: RouteDay, geometry: LineStringGeometr
   try {
     const elements = await fetchOverpassElements(geometry);
     const stores = convenienceStoresNearRoute(elements, geometry);
-    console.log(`Day ${day.day}: found ${stores.length} convenience stores within ${POI_RADIUS_M}m`);
+    console.log(
+      `Day ${day.day}: selected ${stores[0]?.name ?? "no"} convenience store around ${REST_TARGET_KM}km`,
+    );
     return stores;
   } catch (error) {
     console.warn(`Day ${day.day}: convenience store lookup failed: ${errorMessage(error)}`);

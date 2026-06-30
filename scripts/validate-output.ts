@@ -61,7 +61,7 @@ export function validateRouteOutput(routes: RouteDay[], gpxFiles: GpxFile[]): vo
         `Day ${day.day} needs a selected route candidate`,
       );
       assert(Array.isArray(day.convenienceStores), `Day ${day.day} needs convenience store output`);
-      assert(day.convenienceStores.length > 0, `Day ${day.day} needs at least one convenience store`);
+      assert(day.convenienceStores.length === 1, `Day ${day.day} needs exactly one convenience store rest stop`);
       for (const store of day.convenienceStores) {
         assert(typeof store.id === "string" && store.id.length > 0, `Day ${day.day} convenience store needs id`);
         assert(typeof store.name === "string" && store.name.length > 0, `Day ${day.day} convenience store needs name`);
@@ -70,6 +70,22 @@ export function validateRouteOutput(routes: RouteDay[], gpxFiles: GpxFile[]): vo
         assert(
           typeof store.distanceFromRouteM === "number" && store.distanceFromRouteM >= 0,
           `Day ${day.day} convenience store needs route distance`,
+        );
+        assert(
+          typeof store.routeProgressKm === "number" && store.routeProgressKm >= 0,
+          `Day ${day.day} convenience store needs route progress`,
+        );
+        assert(
+          store.routeProgressKm >= 10 && store.routeProgressKm <= 32,
+          `Day ${day.day} convenience store should be around 20km from start`,
+        );
+        assert(
+          typeof day.generatedDistanceKm !== "number" || store.routeProgressKm <= day.generatedDistanceKm - 5,
+          `Day ${day.day} convenience store should not be near the finish`,
+        );
+        assert(
+          ["right", "left", "on-route"].includes(store.sideOfRoute),
+          `Day ${day.day} convenience store needs route side`,
         );
       }
       assert(day.gpxPath === expectedGpxPath, `Day ${day.day} must use ${expectedGpxPath}`);
