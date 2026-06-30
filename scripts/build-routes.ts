@@ -27,6 +27,8 @@ const POI_RADIUS_M = Number(process.env.POI_RADIUS_M || "600");
 const REST_INTERVAL_KM = Number(process.env.REST_INTERVAL_KM || "20");
 const REST_WINDOW_KM = Number(process.env.REST_WINDOW_KM || "12");
 const FINISH_EXCLUSION_KM = Number(process.env.FINISH_EXCLUSION_KM || "15");
+const MEANINGFUL_ROUTE_SAVING_KM = Number(process.env.MEANINGFUL_ROUTE_SAVING_KM || "8");
+const COMPARABLE_DISTANCE_DELTA_KM = Number(process.env.COMPARABLE_DISTANCE_DELTA_KM || "2");
 const OVERPASS_DELAY_MS = Number(process.env.OVERPASS_DELAY_MS || "3500");
 const OVERPASS_TIMEOUT_MS = Number(process.env.OVERPASS_TIMEOUT_MS || "45000");
 const EXCLUDED_STORE_NAME_PATTERNS = [/shopee/i, /蝦皮/i];
@@ -306,6 +308,20 @@ function selectRouteCandidate(day: RouteDay, candidates: BuiltRouteCandidate[]):
     .reduce((best, candidate) =>
       Math.abs((candidate.distanceDeltaKm ?? 0)) < Math.abs((best.distanceDeltaKm ?? 0)) ? candidate : best,
     );
+  const shorterComparableCandidate = pool
+    .filter((candidate) => candidate.generatedDistanceKm < closestToPdf.generatedDistanceKm)
+    .filter((candidate) => closestToPdf.generatedDistanceKm - candidate.generatedDistanceKm >= MEANINGFUL_ROUTE_SAVING_KM)
+    .filter(
+      (candidate) =>
+        Math.abs(candidate.distanceDeltaKm ?? 0) <=
+        Math.abs(closestToPdf.distanceDeltaKm ?? 0) + COMPARABLE_DISTANCE_DELTA_KM,
+    )
+    .sort((a, b) => a.generatedDistanceKm - b.generatedDistanceKm)[0];
+
+  if (shorterComparableCandidate) {
+    return shorterComparableCandidate;
+  }
+
   const improvementKm = Math.round((pdfCandidate.generatedDistanceKm - closestToPdf.generatedDistanceKm) * 10) / 10;
 
   if (closestToPdf.id !== pdfCandidate.id && improvementKm >= 5) {
@@ -567,6 +583,10 @@ function restStopTargets(generatedDistanceKm: number): number[] {
   return targets;
 }
 
+function expectedRestStopCount(generatedDistanceKm: number): number {
+  return restStopTargets(generatedDistanceKm).length;
+}
+
 function storeScore(store: ConvenienceStore, targetKm: number): number {
   const progressPenalty = Math.abs(store.routeProgressKm - targetKm) * 100;
   const distancePenalty = store.distanceFromRouteM;
@@ -646,14 +666,56 @@ function convenienceStoresNearRoute(elements: OverpassElement[], geometry: LineS
   return selectRestStops(candidates, generatedDistanceKm);
 }
 
-async function fetchConvenienceStores(day: RouteDay, geometry: LineStringGeometry): Promise<ConvenienceStore[]> {
+function cachedConvenienceStores(
+  cachedDay: RouteDay | undefined,
+  selectedCandidate: string,
+  generatedDistanceKm: number,
+): ConvenienceStore[] | null {
+  if (
+    !cachedDay ||
+    cachedDay.routeReview?.selectedCandidate !== selectedCandidate ||
+    typeof cachedDay.generatedDistanceKm !== "number" ||
+    Math.abs(cachedDay.generatedDistanceKm - generatedDistanceKm) > 0.2 ||
+    !Array.isArray(cachedDay.convenienceStores)
+  ) {
+    return null;
+  }
+
+  const expectedTargets = restStopTargets(generatedDistanceKm);
+  if (cachedDay.convenienceStores.length !== expectedTargets.length) {
+    return null;
+  }
+
+  const matchesTargets = cachedDay.convenienceStores.every(
+    (store, index) => store.targetKm === expectedTargets[index],
+  );
+  return matchesTargets ? cachedDay.convenienceStores : null;
+}
+
+async function fetchConvenienceStores(
+  day: RouteDay,
+  geometry: LineStringGeometry,
+  cachedDay: RouteDay | undefined,
+  selectedCandidate: string,
+): Promise<ConvenienceStore[]> {
   if (!FETCH_CONVENIENCE_STORES) {
     return [];
+  }
+
+  const generatedDistanceKm = geometryDistanceKm(geometry);
+  const expectedCount = expectedRestStopCount(generatedDistanceKm);
+  const cachedStores = cachedConvenienceStores(cachedDay, selectedCandidate, generatedDistanceKm);
+  if (cachedStores) {
+    console.log(`Day ${day.day}: using cached convenience store rest stops`);
+    return cachedStores;
   }
 
   try {
     const elements = await fetchOverpassElements(geometry);
     const stores = convenienceStoresNearRoute(elements, geometry);
+    if (stores.length < expectedCount) {
+      console.warn(`Day ${day.day}: Overpass returned ${stores.length}/${expectedCount} convenience store rest stops`);
+    }
     console.log(
       `Day ${day.day}: selected ${stores.length} convenience store rest stops every ${REST_INTERVAL_KM}km`,
     );
@@ -664,8 +726,18 @@ async function fetchConvenienceStores(day: RouteDay, geometry: LineStringGeometr
   }
 }
 
+async function readExistingRoutes(): Promise<Map<number, RouteDay>> {
+  try {
+    const routes = JSON.parse(await fs.readFile(ROUTES_PATH, "utf8")) as RouteDay[];
+    return new Map(routes.map((route) => [route.day, route]));
+  } catch {
+    return new Map();
+  }
+}
+
 async function build() {
   const source = JSON.parse(await fs.readFile(SOURCE_PATH, "utf8")) as RouteDay[];
+  const existingRoutes = await readExistingRoutes();
   await fs.mkdir(GPX_DIR, { recursive: true });
 
   const output = [];
@@ -701,7 +773,12 @@ async function build() {
       geometry = selectedCandidate.geometry;
       selectedWaypoints = selectedCandidate.waypoints;
       routeReview = createRouteReview(day, selectedCandidate, candidates);
-      convenienceStores = await fetchConvenienceStores(day, geometry);
+      convenienceStores = await fetchConvenienceStores(
+        day,
+        geometry,
+        existingRoutes.get(day.day),
+        routeReview?.selectedCandidate ?? "fallback-waypoints",
+      );
     } catch (error) {
       if (!ALLOW_ROUTE_FALLBACK) {
         throw new Error(`Day ${day.day} routing failed: ${errorMessage(error)}`);

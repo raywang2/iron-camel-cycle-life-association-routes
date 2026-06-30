@@ -30,6 +30,8 @@ describe("reference-style route UI", () => {
     expect(app).toContain("drawOverview(");
     expect(app).toContain("drawConvenienceStores(");
     expect(app).toContain("L.marker(");
+    expect(app).toContain("initialRouteIndex(");
+    expect(app).toContain('searchParams.get("day")');
   });
 
   it("uses distinct map markers for route start and finish", () => {

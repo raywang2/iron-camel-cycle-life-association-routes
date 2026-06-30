@@ -393,6 +393,20 @@ async function loadRoutes(): Promise<void> {
   state.routes = (await response.json()) as RouteDay[];
 }
 
+function initialRouteIndex(): number {
+  const dayParam = new URL(window.location.href).searchParams.get("day");
+  const requestedDay = dayParam ? Number(dayParam) : Number.NaN;
+  if (Number.isInteger(requestedDay)) {
+    const requestedIndex = state.routes.findIndex((route) => route.day === requestedDay);
+    if (requestedIndex >= 0) {
+      return requestedIndex;
+    }
+  }
+
+  const firstRideIndex = state.routes.findIndex(isRideDay);
+  return firstRideIndex >= 0 ? firstRideIndex : 0;
+}
+
 async function main(): Promise<void> {
   initMap();
 
@@ -410,8 +424,7 @@ async function main(): Promise<void> {
       drawDay(state.currentIndex);
     });
 
-    const firstRideIndex = state.routes.findIndex(isRideDay);
-    drawDay(firstRideIndex >= 0 ? firstRideIndex : 0);
+    drawDay(initialRouteIndex());
   } catch (error) {
     elements.summary.textContent = "路線資料載入失敗。";
     elements.info.innerHTML = `
