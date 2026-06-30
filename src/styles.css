@@ -283,8 +283,24 @@ li::before {
   font-size: 12px;
 }
 
-.store-list li {
+.store-list .store-item {
+  display: block;
+}
+
+.store-list .store-item::before {
+  display: inline-block;
+  margin-right: 8px;
+}
+
+.store-heading {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
   justify-content: space-between;
+}
+
+.store-heading b {
+  color: #f8fafc;
 }
 
 .store-distance {
@@ -292,6 +308,27 @@ li::before {
   font-size: 12px;
   font-weight: 800;
   white-space: nowrap;
+}
+
+.store-address,
+.store-map {
+  margin-top: 4px;
+  color: #cbd5e1;
+  font-size: 12px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.store-map-link {
+  color: #7dd3fc;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  overflow-wrap: anywhere;
+}
+
+.store-popup {
+  min-width: 220px;
+  max-width: 320px;
 }
 
 .route-marker span {

@@ -31,6 +31,9 @@ export interface ConvenienceStore {
   id: string;
   name: string;
   brand: string | null;
+  address: string;
+  addressSource: "osm" | "reverse-geocode" | "coordinate-fallback";
+  googleMapsUrl: string;
   lat: number;
   lon: number;
   distanceFromRouteM: number;

@@ -123,7 +123,10 @@
         "distanceFromRouteM": 184,
         "targetKm": 10,
         "routeProgressKm": 10.9,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "臺中市豐原區豐田里豐南街66巷",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=24.2393306%2C120.7135242",
+        "addressSource": "reverse-geocode"
       },
       {
         "id": "node/4132605203",
@@ -134,7 +137,10 @@
         "distanceFromRouteM": 11,
         "targetKm": 20,
         "routeProgressKm": 19.7,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "臺中市后里區義德里甲后路一段",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=24.3089181%2C120.7246058",
+        "addressSource": "reverse-geocode"
       },
       {
         "id": "way/965223091",
@@ -145,7 +151,10 @@
         "distanceFromRouteM": 23,
         "targetKm": 30,
         "routeProgressKm": 30.2,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "苗栗縣西湖村尖豐公路",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=24.3789693%2C120.7503643",
+        "addressSource": "reverse-geocode"
       },
       {
         "id": "node/3303577752",
@@ -156,7 +165,10 @@
         "distanceFromRouteM": 26,
         "targetKm": 40,
         "routeProgressKm": 36.4,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "苗栗縣双湖村中正路",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=24.4251874%2C120.7748219",
+        "addressSource": "reverse-geocode"
       }
     ],
     "routingStatus": "routed",
@@ -4818,7 +4830,10 @@
         "distanceFromRouteM": 24,
         "targetKm": 10,
         "routeProgressKm": 9.5,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "苗栗縣溪洲里勝利路",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=24.6205388%2C120.7797923",
+        "addressSource": "reverse-geocode"
       },
       {
         "id": "node/3303520406",
@@ -4829,7 +4844,10 @@
         "distanceFromRouteM": 732,
         "targetKm": 20,
         "routeProgressKm": 22.1,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "苗栗縣大山里龍文路",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=24.6438837%2C120.8075405",
+        "addressSource": "reverse-geocode"
       },
       {
         "id": "node/3303577865",
@@ -4840,7 +4858,10 @@
         "distanceFromRouteM": 61,
         "targetKm": 30,
         "routeProgressKm": 33.7,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "苗栗縣大埔里仁愛路",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=24.7087633%2C120.8864319",
+        "addressSource": "reverse-geocode"
       }
     ],
     "routingStatus": "routed",
@@ -8309,7 +8330,10 @@
         "distanceFromRouteM": 16,
         "targetKm": 10,
         "routeProgressKm": 10.8,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "新竹縣新埔鎮文山路亞東段",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=24.8261755%2C121.0529755",
+        "addressSource": "reverse-geocode"
       },
       {
         "id": "node/6277873886",
@@ -8320,7 +8344,10 @@
         "distanceFromRouteM": 7,
         "targetKm": 20,
         "routeProgressKm": 19.3,
-        "sideOfRoute": "left"
+        "sideOfRoute": "left",
+        "address": "新竹縣關西鎮118",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=24.8122777%2C121.1309124",
+        "addressSource": "reverse-geocode"
       },
       {
         "id": "way/572790291",
@@ -8331,7 +8358,10 @@
         "distanceFromRouteM": 503,
         "targetKm": 30,
         "routeProgressKm": 33.4,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "桃園市三林里石門山-觀音像路徑",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=24.8164916%2C121.2307398",
+        "addressSource": "reverse-geocode"
       },
       {
         "id": "node/9671363014",
@@ -8342,7 +8372,10 @@
         "distanceFromRouteM": 20,
         "targetKm": 40,
         "routeProgressKm": 40.5,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "桃園市龍潭區中正路三坑段563號",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=24.8354059%2C121.246211",
+        "addressSource": "osm"
       },
       {
         "id": "node/2694569824",
@@ -8353,7 +8386,10 @@
         "distanceFromRouteM": 76,
         "targetKm": 50,
         "routeProgressKm": 50.4,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "335桃園市大溪區埔頂路一段468號",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=24.9051707%2C121.2770849",
+        "addressSource": "osm"
       },
       {
         "id": "node/4175052362",
@@ -8364,7 +8400,10 @@
         "distanceFromRouteM": 91,
         "targetKm": 60,
         "routeProgressKm": 60.6,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "新北市三峽區中山路303號",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=24.9377309%2C121.3612779",
+        "addressSource": "osm"
       },
       {
         "id": "node/4112036032",
@@ -8375,7 +8414,10 @@
         "distanceFromRouteM": 48,
         "targetKm": 70,
         "routeProgressKm": 68.8,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "新北市樹林區南園里佳園路三段",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=24.9513302%2C121.3873906",
+        "addressSource": "reverse-geocode"
       }
     ],
     "routingStatus": "routed",
@@ -16670,7 +16712,10 @@
         "distanceFromRouteM": 338,
         "targetKm": 10,
         "routeProgressKm": 10,
-        "sideOfRoute": "left"
+        "sideOfRoute": "left",
+        "address": "新北市深坑區深坑里北深路二段",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=25.0010739%2C121.6121375",
+        "addressSource": "reverse-geocode"
       },
       {
         "id": "node/10779826817",
@@ -16681,7 +16726,10 @@
         "distanceFromRouteM": 88,
         "targetKm": 20,
         "routeProgressKm": 16.1,
-        "sideOfRoute": "left"
+        "sideOfRoute": "left",
+        "address": "新北市石碇區碇坪路一段50-1;50-2號",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=24.9916519%2C121.6556888",
+        "addressSource": "osm"
       },
       {
         "id": "node/2194092389",
@@ -16692,7 +16740,10 @@
         "distanceFromRouteM": 669,
         "targetKm": 30,
         "routeProgressKm": 25.1,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "新北市坪林區坪林里北宜路八段",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=24.9348108%2C121.7090639",
+        "addressSource": "reverse-geocode"
       },
       {
         "id": "node/10165763575",
@@ -16703,7 +16754,10 @@
         "distanceFromRouteM": 136,
         "targetKm": 40,
         "routeProgressKm": 39.2,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "宜蘭縣頭城鎮青雲路一段1號",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=24.8377023%2C121.788497",
+        "addressSource": "osm"
       }
     ],
     "routingStatus": "routed",
@@ -19907,7 +19961,10 @@
         "distanceFromRouteM": 176,
         "targetKm": 10,
         "routeProgressKm": 9.9,
-        "sideOfRoute": "left"
+        "sideOfRoute": "left",
+        "address": "花蓮縣新城村博愛路",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=24.1268054%2C121.6514465",
+        "addressSource": "reverse-geocode"
       },
       {
         "id": "node/6807160560",
@@ -19918,7 +19975,10 @@
         "distanceFromRouteM": 467,
         "targetKm": 20,
         "routeProgressKm": 16.5,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "花蓮縣康樂村蘇花公路",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=24.0906442%2C121.6126603",
+        "addressSource": "reverse-geocode"
       }
     ],
     "routingStatus": "routed",
@@ -22181,7 +22241,10 @@
         "distanceFromRouteM": 42,
         "targetKm": 10,
         "routeProgressKm": 15.8,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "花蓮縣壽豐鄉中華路二段125號",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=23.8902507%2C121.5245652",
+        "addressSource": "osm"
       },
       {
         "id": "node/6802316548",
@@ -22192,7 +22255,10 @@
         "distanceFromRouteM": 13,
         "targetKm": 20,
         "routeProgressKm": 21.6,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "花蓮縣豐山村中山路",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=23.8491703%2C121.495488",
+        "addressSource": "reverse-geocode"
       },
       {
         "id": "node/13947419660",
@@ -22203,7 +22269,10 @@
         "distanceFromRouteM": 20,
         "targetKm": 30,
         "routeProgressKm": 28.2,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "花蓮縣林榮里花東縱谷公路",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=23.8001101%2C121.4611587",
+        "addressSource": "reverse-geocode"
       },
       {
         "id": "node/6802108133",
@@ -22214,7 +22283,10 @@
         "distanceFromRouteM": 27,
         "targetKm": 40,
         "routeProgressKm": 39.1,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "花蓮縣長橋里花東縱谷公路",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=23.7139516%2C121.4222449",
+        "addressSource": "reverse-geocode"
       },
       {
         "id": "node/13202322594",
@@ -22225,7 +22297,10 @@
         "distanceFromRouteM": 33,
         "targetKm": 50,
         "routeProgressKm": 48.2,
-        "sideOfRoute": "left"
+        "sideOfRoute": "left",
+        "address": "花蓮縣光復鄉民治街",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=23.6452672%2C121.4156118",
+        "addressSource": "reverse-geocode"
       },
       {
         "id": "node/2536738917",
@@ -22236,7 +22311,10 @@
         "distanceFromRouteM": 40,
         "targetKm": 60,
         "routeProgressKm": 63.5,
-        "sideOfRoute": "left"
+        "sideOfRoute": "left",
+        "address": "97842花蓮縣瑞穗鄉瑞北30-2號",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=23.517009%2C121.3768916",
+        "addressSource": "osm"
       },
       {
         "id": "node/5273552363",
@@ -22247,7 +22325,10 @@
         "distanceFromRouteM": 13,
         "targetKm": 70,
         "routeProgressKm": 65.4,
-        "sideOfRoute": "left"
+        "sideOfRoute": "left",
+        "address": "花蓮縣瑞穗村民生街",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=23.499841%2C121.3774618",
+        "addressSource": "reverse-geocode"
       }
     ],
     "routingStatus": "routed",
@@ -27172,7 +27253,10 @@
         "distanceFromRouteM": 20,
         "targetKm": 10,
         "routeProgressKm": 10.5,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "花蓮縣東里村花東縱谷公路(機慢車道)",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=23.2665869%2C121.3019063",
+        "addressSource": "reverse-geocode"
       },
       {
         "id": "node/10209212717",
@@ -27183,7 +27267,10 @@
         "distanceFromRouteM": 8,
         "targetKm": 20,
         "routeProgressKm": 22.2,
-        "sideOfRoute": "left"
+        "sideOfRoute": "left",
+        "address": "花蓮縣富里村車站街",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=23.179259%2C121.2488512",
+        "addressSource": "reverse-geocode"
       },
       {
         "id": "node/7781218391",
@@ -27194,7 +27281,10 @@
         "distanceFromRouteM": 47,
         "targetKm": 30,
         "routeProgressKm": 29.9,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "臺東縣池上鄉中山路241號",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=23.1253181%2C121.2194818",
+        "addressSource": "osm"
       },
       {
         "id": "node/4121246031",
@@ -27205,7 +27295,10 @@
         "distanceFromRouteM": 16,
         "targetKm": 40,
         "routeProgressKm": 41,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "臺東縣中福里中山路",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=23.0471355%2C121.1636497",
+        "addressSource": "reverse-geocode"
       },
       {
         "id": "node/6799592435",
@@ -27216,7 +27309,10 @@
         "distanceFromRouteM": 24,
         "targetKm": 50,
         "routeProgressKm": 48.6,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "臺東縣瑞豐村中山路",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=22.9823922%2C121.1387515",
+        "addressSource": "reverse-geocode"
       },
       {
         "id": "node/5631842723",
@@ -27227,7 +27323,10 @@
         "distanceFromRouteM": 6,
         "targetKm": 60,
         "routeProgressKm": 57.8,
-        "sideOfRoute": "left"
+        "sideOfRoute": "left",
+        "address": "臺東縣鹿野村中華路二段",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=22.9106776%2C121.1362273",
+        "addressSource": "reverse-geocode"
       },
       {
         "id": "node/6799298858",
@@ -27238,7 +27337,10 @@
         "distanceFromRouteM": 18,
         "targetKm": 70,
         "routeProgressKm": 65.3,
-        "sideOfRoute": "left"
+        "sideOfRoute": "left",
+        "address": "臺東縣鹿野村中華路一段",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=22.8961754%2C121.0954469",
+        "addressSource": "reverse-geocode"
       }
     ],
     "routingStatus": "routed",
@@ -32997,7 +33099,10 @@
         "distanceFromRouteM": 67,
         "targetKm": 10,
         "routeProgressKm": 6.6,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "臺東縣臺東市豐盛路1號",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=22.7455472%2C121.141094",
+        "addressSource": "osm"
       },
       {
         "id": "node/5253180621",
@@ -33008,7 +33113,10 @@
         "distanceFromRouteM": 14,
         "targetKm": 20,
         "routeProgressKm": 21.6,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "臺東縣三和村南迴公路",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=22.674551%2C121.0397501",
+        "addressSource": "reverse-geocode"
       },
       {
         "id": "node/5313743637",
@@ -33019,7 +33127,10 @@
         "distanceFromRouteM": 6,
         "targetKm": 30,
         "routeProgressKm": 29.7,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "臺東縣泰和村外環路",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=22.6097367%2C121.005654",
+        "addressSource": "reverse-geocode"
       },
       {
         "id": "way/510959786",
@@ -33030,7 +33141,10 @@
         "distanceFromRouteM": 418,
         "targetKm": 40,
         "routeProgressKm": 40.1,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "963臺東縣太麻里鄉金崙路262;262-1號",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=22.5314138%2C120.9638173",
+        "addressSource": "osm"
       },
       {
         "id": "way/427804281",
@@ -33041,7 +33155,10 @@
         "distanceFromRouteM": 30,
         "targetKm": 50,
         "routeProgressKm": 49.3,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "台東縣大武鄉大竹8號",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=22.4549135%2C120.9434714",
+        "addressSource": "osm"
       },
       {
         "id": "way/369606402",
@@ -33052,7 +33169,10 @@
         "distanceFromRouteM": 11,
         "targetKm": 60,
         "routeProgressKm": 63.6,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "臺東縣尚武村環港路",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=22.3397972%2C120.8930266",
+        "addressSource": "reverse-geocode"
       },
       {
         "id": "node/8690812620",
@@ -33063,7 +33183,10 @@
         "distanceFromRouteM": 13,
         "targetKm": 70,
         "routeProgressKm": 68.8,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "台東縣達仁鄉復興路21號",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=22.2948431%2C120.8867064",
+        "addressSource": "osm"
       },
       {
         "id": "node/9396746931",
@@ -33074,7 +33197,10 @@
         "distanceFromRouteM": 17,
         "targetKm": 80,
         "routeProgressKm": 82.6,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "943屏東縣獅子鄉草埔六巷23-1號",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=22.2212093%2C120.7948619",
+        "addressSource": "osm"
       },
       {
         "id": "node/11273481309",
@@ -33085,7 +33211,10 @@
         "distanceFromRouteM": 57,
         "targetKm": 90,
         "routeProgressKm": 95.9,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "屏東縣楓港村善餘屏鵝公路",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=22.1951184%2C120.6915046",
+        "addressSource": "reverse-geocode"
       },
       {
         "id": "node/4903989535",
@@ -33096,7 +33225,10 @@
         "distanceFromRouteM": 475,
         "targetKm": 100,
         "routeProgressKm": 95.7,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "屏東縣楓港村善餘屏鵝公路",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=22.198803%2C120.6894936",
+        "addressSource": "reverse-geocode"
       }
     ],
     "routingStatus": "routed",
@@ -42634,7 +42766,10 @@
         "distanceFromRouteM": 7,
         "targetKm": 10,
         "routeProgressKm": 8.6,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "屏東縣車城鄉中山路15號",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=22.0724803%2C120.7141075",
+        "addressSource": "osm"
       },
       {
         "id": "node/4903989535",
@@ -42645,7 +42780,10 @@
         "distanceFromRouteM": 19,
         "targetKm": 20,
         "routeProgressKm": 24.2,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "屏東縣楓港村善餘屏鵝公路",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=22.198803%2C120.6894936",
+        "addressSource": "reverse-geocode"
       },
       {
         "id": "node/4903989567",
@@ -42656,7 +42794,10 @@
         "distanceFromRouteM": 26,
         "targetKm": 30,
         "routeProgressKm": 30,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "屏東縣枋山鄉中山路三段38號",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=22.2435752%2C120.6646562",
+        "addressSource": "osm"
       },
       {
         "id": "node/5440436984",
@@ -42667,7 +42808,10 @@
         "distanceFromRouteM": 8,
         "targetKm": 40,
         "routeProgressKm": 41.1,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "屏東縣枋山鄉加祿122-1 122-2 122-3號",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=22.3301581%2C120.6203517",
+        "addressSource": "osm"
       },
       {
         "id": "node/4264742693",
@@ -42678,7 +42822,10 @@
         "distanceFromRouteM": 5,
         "targetKm": 50,
         "routeProgressKm": 48.4,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "屏東縣人和村中山路二段",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=22.3844673%2C120.5953575",
+        "addressSource": "reverse-geocode"
       },
       {
         "id": "node/4895249117",
@@ -42689,7 +42836,10 @@
         "distanceFromRouteM": 10,
         "targetKm": 60,
         "routeProgressKm": 59.2,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "927屏東縣林邊鄉中山路312號",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=22.4373932%2C120.5126435",
+        "addressSource": "osm"
       },
       {
         "id": "node/4893886559",
@@ -42700,7 +42850,10 @@
         "distanceFromRouteM": 9,
         "targetKm": 70,
         "routeProgressKm": 66.8,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "屏東縣東港鎮延平路107號",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=22.4676443%2C120.4486513",
+        "addressSource": "osm"
       },
       {
         "id": "node/4893452902",
@@ -42711,7 +42864,10 @@
         "distanceFromRouteM": 16,
         "targetKm": 80,
         "routeProgressKm": 75.4,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "高雄市林園區東林里鳳林路一段",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=22.5011189%2C120.3981024",
+        "addressSource": "reverse-geocode"
       },
       {
         "id": "node/13826919621",
@@ -42722,7 +42878,10 @@
         "distanceFromRouteM": 148,
         "targetKm": 90,
         "routeProgressKm": 88.9,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "高雄市小港區中厝里中山四路機慢車道",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=22.571123%2C120.3411009",
+        "addressSource": "reverse-geocode"
       }
     ],
     "routingStatus": "routed",
@@ -50421,7 +50580,10 @@
         "distanceFromRouteM": 50,
         "targetKm": 10,
         "routeProgressKm": 9.9,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "高雄市橋頭區橋南里糖廠路2-1",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=22.7546322%2C120.3122954",
+        "addressSource": "reverse-geocode"
       },
       {
         "id": "node/2890201401",
@@ -50432,7 +50594,10 @@
         "distanceFromRouteM": 10,
         "targetKm": 20,
         "routeProgressKm": 22.2,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "828高雄市永安區維新路155-1號",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=22.8081509%2C120.2433941",
+        "addressSource": "osm"
       },
       {
         "id": "node/8419633383",
@@ -50443,7 +50608,10 @@
         "distanceFromRouteM": 10,
         "targetKm": 30,
         "routeProgressKm": 31.2,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "高雄市路竹區華正路390號",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=22.8597923%2C120.227868",
+        "addressSource": "osm"
       },
       {
         "id": "node/4349618897",
@@ -50454,7 +50622,10 @@
         "distanceFromRouteM": 20,
         "targetKm": 40,
         "routeProgressKm": 41.2,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "高雄市茄萣區茄萣路二段403號",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=22.9065113%2C120.18357",
+        "addressSource": "osm"
       },
       {
         "id": "node/3800541816",
@@ -50465,7 +50636,10 @@
         "distanceFromRouteM": 11,
         "targetKm": 50,
         "routeProgressKm": 49.7,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "臺南市南區府南里大成路二段",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=22.9748131%2C120.1911106",
+        "addressSource": "reverse-geocode"
       },
       {
         "id": "node/8118207076",
@@ -50476,7 +50650,10 @@
         "distanceFromRouteM": 7,
         "targetKm": 60,
         "routeProgressKm": 59.4,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "臺南市安南區海佃路四段2號",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=23.0536722%2C120.1783597",
+        "addressSource": "osm"
       },
       {
         "id": "node/6849251285",
@@ -50487,7 +50664,10 @@
         "distanceFromRouteM": 13,
         "targetKm": 70,
         "routeProgressKm": 72,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "臺南市七股里西部濱海公路",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=23.1335883%2C120.133451",
+        "addressSource": "reverse-geocode"
       },
       {
         "id": "node/2029860573",
@@ -50498,7 +50678,10 @@
         "distanceFromRouteM": 208,
         "targetKm": 80,
         "routeProgressKm": 78.6,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "臺南市海澄里南27",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=23.1801004%2C120.1546679",
+        "addressSource": "reverse-geocode"
       },
       {
         "id": "node/11780433888",
@@ -50509,7 +50692,10 @@
         "distanceFromRouteM": 57,
         "targetKm": 90,
         "routeProgressKm": 86,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "台南市學甲區華宗路328號",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=23.2313156%2C120.1826674",
+        "addressSource": "osm"
       },
       {
         "id": "node/3198261961",
@@ -50520,7 +50706,10 @@
         "distanceFromRouteM": 10,
         "targetKm": 100,
         "routeProgressKm": 99.8,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "737台南市鹽水區中正路35號",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=23.3199227%2C120.2678155",
+        "addressSource": "osm"
       },
       {
         "id": "node/13622112269",
@@ -50531,7 +50720,10 @@
         "distanceFromRouteM": 13,
         "targetKm": 110,
         "routeProgressKm": 110,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "臺南市菁寮里南82",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=23.3779645%2C120.3360986",
+        "addressSource": "reverse-geocode"
       }
     ],
     "routingStatus": "routed",
@@ -59342,7 +59534,10 @@
         "distanceFromRouteM": 18,
         "targetKm": 10,
         "routeProgressKm": 10.1,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "嘉義縣東榮村文化路",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=23.5534122%2C120.430356",
+        "addressSource": "reverse-geocode"
       },
       {
         "id": "node/13322124643",
@@ -59353,7 +59548,10 @@
         "distanceFromRouteM": 1007,
         "targetKm": 20,
         "routeProgressKm": 18.7,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "嘉義縣大林鎮甘蔗崙37之2號",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=23.608406%2C120.446564",
+        "addressSource": "osm"
       },
       {
         "id": "node/4504499418",
@@ -59364,7 +59562,10 @@
         "distanceFromRouteM": 18,
         "targetKm": 30,
         "routeProgressKm": 30.8,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "雲林縣北銘里文昌路130巷",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=23.6798694%2C120.4811139",
+        "addressSource": "reverse-geocode"
       },
       {
         "id": "node/10915454874",
@@ -59375,7 +59576,10 @@
         "distanceFromRouteM": 19,
         "targetKm": 40,
         "routeProgressKm": 40.5,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "雲林縣斗六市明德北路一段165號",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=23.7169794%2C120.5511799",
+        "addressSource": "osm"
       },
       {
         "id": "node/8493655340",
@@ -59386,7 +59590,10 @@
         "distanceFromRouteM": 15,
         "targetKm": 50,
         "routeProgressKm": 49,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "雲林縣林內鄉中正路373 375號",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=23.7556518%2C120.6133327",
+        "addressSource": "osm"
       },
       {
         "id": "node/1638690339",
@@ -59397,7 +59604,10 @@
         "distanceFromRouteM": 73,
         "targetKm": 60,
         "routeProgressKm": 57.7,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "557南投縣竹山鎮自強路1號一樓",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=23.7539102%2C120.677547",
+        "addressSource": "osm"
       },
       {
         "id": "node/6231856405",
@@ -59408,7 +59618,10 @@
         "distanceFromRouteM": 39,
         "targetKm": 70,
         "routeProgressKm": 65.5,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "557南投縣竹山鎮集山路二段75號一樓",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=23.8002705%2C120.7141723",
+        "addressSource": "osm"
       },
       {
         "id": "node/3679771397",
@@ -59419,7 +59632,10 @@
         "distanceFromRouteM": 12,
         "targetKm": 80,
         "routeProgressKm": 84.2,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "南投縣水里鄉民生路175號",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=23.8109052%2C120.8556124",
+        "addressSource": "osm"
       },
       {
         "id": "node/12251125209",
@@ -59430,7 +59646,10 @@
         "distanceFromRouteM": 18,
         "targetKm": 90,
         "routeProgressKm": 86,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "南投縣水里鄉水信路一段385號",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=23.7982837%2C120.8643132",
+        "addressSource": "osm"
       },
       {
         "id": "node/9247406460",
@@ -59441,7 +59660,10 @@
         "distanceFromRouteM": 24,
         "targetKm": 100,
         "routeProgressKm": 100.7,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "南投縣水社村中山路",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=23.8664095%2C120.9111545",
+        "addressSource": "reverse-geocode"
       }
     ],
     "routingStatus": "routed",
@@ -69670,7 +69892,10 @@
         "distanceFromRouteM": 537,
         "targetKm": 10,
         "routeProgressKm": 13.6,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "南投縣北山村中正路四段",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=23.9816242%2C120.8726324",
+        "addressSource": "reverse-geocode"
       },
       {
         "id": "node/4699382254",
@@ -69681,7 +69906,10 @@
         "distanceFromRouteM": 410,
         "targetKm": 20,
         "routeProgressKm": 23.8,
-        "sideOfRoute": "left"
+        "sideOfRoute": "left",
+        "address": "南投縣雙冬里中正路",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=23.9833827%2C120.7921385",
+        "addressSource": "reverse-geocode"
       },
       {
         "id": "node/12056667079",
@@ -69692,7 +69920,10 @@
         "distanceFromRouteM": 104,
         "targetKm": 30,
         "routeProgressKm": 31,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "南投縣北勢里在地小農市集廣場",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=24.0050743%2C120.7329645",
+        "addressSource": "reverse-geocode"
       },
       {
         "id": "node/4389548727",
@@ -69703,7 +69934,10 @@
         "distanceFromRouteM": 30,
         "targetKm": 40,
         "routeProgressKm": 40.9,
-        "sideOfRoute": "right"
+        "sideOfRoute": "right",
+        "address": "南投縣新庄里史館路",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=23.9911799%2C120.6683446",
+        "addressSource": "reverse-geocode"
       }
     ],
     "routingStatus": "routed",

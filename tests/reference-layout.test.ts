@@ -29,6 +29,8 @@ describe("reference-style route UI", () => {
     expect(app).toContain("drawDay(");
     expect(app).toContain("drawOverview(");
     expect(app).toContain("drawConvenienceStores(");
+    expect(app).toContain("store.address");
+    expect(app).toContain("store.googleMapsUrl");
     expect(app).toContain("L.marker(");
     expect(app).toContain("initialRouteIndex(");
     expect(app).toContain('searchParams.get("day")');

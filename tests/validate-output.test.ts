@@ -48,6 +48,9 @@ function rideDay(day: number): RouteDay {
         id: "node/1",
         name: "7-ELEVEN",
         brand: "7-ELEVEN",
+        address: "台中市北區測試路1號",
+        addressSource: "osm",
+        googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=24%2C120",
         lat: 24,
         lon: 120,
         distanceFromRouteM: 30,
@@ -59,6 +62,9 @@ function rideDay(day: number): RouteDay {
         id: "node/2",
         name: "FamilyMart",
         brand: "FamilyMart",
+        address: "台中市北區測試路2號",
+        addressSource: "osm",
+        googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=24%2C120",
         lat: 24,
         lon: 120,
         distanceFromRouteM: 30,
@@ -70,6 +76,9 @@ function rideDay(day: number): RouteDay {
         id: "node/3",
         name: "Hi-Life",
         brand: "Hi-Life",
+        address: "台中市北區測試路3號",
+        addressSource: "osm",
+        googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=24%2C120",
         lat: 24,
         lon: 120,
         distanceFromRouteM: 30,
@@ -127,6 +136,24 @@ function gpxFor(routes: RouteDay[]): GpxFile[] {
 describe("validateRouteOutput", () => {
   it("accepts a complete route set", () => {
     const routes = validRoutes();
+
+    expect(() => validateRouteOutput(routes, gpxFor(routes))).not.toThrow();
+  });
+
+  it("accepts reverse-geocoded convenience store addresses", () => {
+    const routes = validRoutes();
+    routes[1] = {
+      ...routes[1]!,
+      convenienceStores: [
+        {
+          ...routes[1]!.convenienceStores![0]!,
+          address: "臺中市北區雙十路一段",
+          addressSource: "reverse-geocode",
+        },
+        routes[1]!.convenienceStores![1]!,
+        routes[1]!.convenienceStores![2]!,
+      ],
+    };
 
     expect(() => validateRouteOutput(routes, gpxFor(routes))).not.toThrow();
   });
@@ -189,6 +216,9 @@ describe("validateRouteOutput", () => {
           id: "node/1",
           name: "7-ELEVEN",
           brand: "7-ELEVEN",
+          address: "台中市北區測試路1號",
+          addressSource: "osm",
+          googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=24%2C120",
           lat: 24,
           lon: 120,
           distanceFromRouteM: 30,
@@ -200,6 +230,9 @@ describe("validateRouteOutput", () => {
           id: "node/2",
           name: "FamilyMart",
           brand: "FamilyMart",
+          address: "台中市北區測試路2號",
+          addressSource: "osm",
+          googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=24%2C120",
           lat: 24,
           lon: 120,
           distanceFromRouteM: 40,
@@ -211,6 +244,9 @@ describe("validateRouteOutput", () => {
           id: "node/3",
           name: "Hi-Life",
           brand: "Hi-Life",
+          address: "台中市北區測試路3號",
+          addressSource: "osm",
+          googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=24%2C120",
           lat: 24,
           lon: 120,
           distanceFromRouteM: 40,
@@ -222,6 +258,9 @@ describe("validateRouteOutput", () => {
           id: "node/4",
           name: "OK Mart",
           brand: "OK Mart",
+          address: "台中市北區測試路4號",
+          addressSource: "osm",
+          googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=24%2C120",
           lat: 24,
           lon: 120,
           distanceFromRouteM: 40,
@@ -233,6 +272,9 @@ describe("validateRouteOutput", () => {
           id: "node/5",
           name: "7-ELEVEN",
           brand: "7-ELEVEN",
+          address: "台中市北區測試路5號",
+          addressSource: "osm",
+          googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=24%2C120",
           lat: 24,
           lon: 120,
           distanceFromRouteM: 40,
@@ -256,6 +298,9 @@ describe("validateRouteOutput", () => {
           id: "node/1",
           name: "7-ELEVEN",
           brand: "7-ELEVEN",
+          address: "台中市北區測試路1號",
+          addressSource: "osm",
+          googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=24%2C120",
           lat: 24,
           lon: 120,
           distanceFromRouteM: 30,
@@ -267,6 +312,9 @@ describe("validateRouteOutput", () => {
           id: "node/2",
           name: "FamilyMart",
           brand: "FamilyMart",
+          address: "台中市北區測試路2號",
+          addressSource: "osm",
+          googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=24%2C120",
           lat: 24,
           lon: 120,
           distanceFromRouteM: 40,
@@ -278,6 +326,9 @@ describe("validateRouteOutput", () => {
           id: "node/3",
           name: "Hi-Life",
           brand: "Hi-Life",
+          address: "台中市北區測試路3號",
+          addressSource: "osm",
+          googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=24%2C120",
           lat: 24,
           lon: 120,
           distanceFromRouteM: 40,
@@ -303,6 +354,9 @@ describe("validateRouteOutput", () => {
           id: "node/1",
           name: "7-ELEVEN",
           brand: "7-ELEVEN",
+          address: "台中市北區測試路1號",
+          addressSource: "osm",
+          googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=24%2C120",
           lat: 24,
           lon: 120,
           distanceFromRouteM: 30,
@@ -327,6 +381,9 @@ describe("validateRouteOutput", () => {
           id: "node/1",
           name: "蝦皮店到店",
           brand: null,
+          address: "台中市北區測試路1號",
+          addressSource: "osm",
+          googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=24%2C120",
           lat: 24,
           lon: 120,
           distanceFromRouteM: 30,
@@ -338,6 +395,9 @@ describe("validateRouteOutput", () => {
           id: "node/2",
           name: "7-ELEVEN",
           brand: "7-ELEVEN",
+          address: "台中市北區測試路2號",
+          addressSource: "osm",
+          googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=24%2C120",
           lat: 24,
           lon: 120,
           distanceFromRouteM: 30,
@@ -349,6 +409,9 @@ describe("validateRouteOutput", () => {
           id: "node/3",
           name: "FamilyMart",
           brand: "FamilyMart",
+          address: "台中市北區測試路3號",
+          addressSource: "osm",
+          googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=24%2C120",
           lat: 24,
           lon: 120,
           distanceFromRouteM: 30,
@@ -364,6 +427,26 @@ describe("validateRouteOutput", () => {
     );
   });
 
+  it("rejects convenience stores without display address and Google Maps URL", () => {
+    const routes = validRoutes();
+    routes[1] = {
+      ...routes[1]!,
+      convenienceStores: [
+        {
+          ...routes[1]!.convenienceStores![0]!,
+          address: "",
+          googleMapsUrl: "",
+        },
+        routes[1]!.convenienceStores![1]!,
+        routes[1]!.convenienceStores![2]!,
+      ],
+    };
+
+    expect(() => validateRouteOutput(routes, gpxFor(routes))).toThrow(
+      "Day 1 convenience store needs display address",
+    );
+  });
+
   it("rejects convenience stores whose target would be near the finish", () => {
     const routes = validRoutes();
     routes[1] = {
@@ -374,6 +457,9 @@ describe("validateRouteOutput", () => {
           id: "node/1",
           name: "7-ELEVEN",
           brand: "7-ELEVEN",
+          address: "台中市北區測試路1號",
+          addressSource: "osm",
+          googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=24%2C120",
           lat: 24,
           lon: 120,
           distanceFromRouteM: 30,
@@ -385,6 +471,9 @@ describe("validateRouteOutput", () => {
           id: "node/2",
           name: "FamilyMart",
           brand: "FamilyMart",
+          address: "台中市北區測試路2號",
+          addressSource: "osm",
+          googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=24%2C120",
           lat: 24,
           lon: 120,
           distanceFromRouteM: 40,

@@ -22,6 +22,8 @@ const OVERPASS_URLS = (
   process.env.OVERPASS_URLS ||
   "https://overpass-api.de/api/interpreter,https://overpass.kumi.systems/api/interpreter"
 ).split(",");
+const OSM_API_URL = process.env.OSM_API_URL || "https://api.openstreetmap.org/api/0.6";
+const NOMINATIM_URL = process.env.NOMINATIM_URL || "https://nominatim.openstreetmap.org";
 const FETCH_CONVENIENCE_STORES = process.env.FETCH_CONVENIENCE_STORES !== "0";
 const POI_RADIUS_M = Number(process.env.POI_RADIUS_M || "1200");
 const REST_INTERVAL_KM = Number(process.env.REST_INTERVAL_KM || "10");
@@ -31,9 +33,12 @@ const MEANINGFUL_ROUTE_SAVING_KM = Number(process.env.MEANINGFUL_ROUTE_SAVING_KM
 const COMPARABLE_DISTANCE_DELTA_KM = Number(process.env.COMPARABLE_DISTANCE_DELTA_KM || "2");
 const OVERPASS_DELAY_MS = Number(process.env.OVERPASS_DELAY_MS || "3500");
 const OVERPASS_TIMEOUT_MS = Number(process.env.OVERPASS_TIMEOUT_MS || "45000");
+const OSM_API_DELAY_MS = Number(process.env.OSM_API_DELAY_MS || "200");
+const NOMINATIM_DELAY_MS = Number(process.env.NOMINATIM_DELAY_MS || "1100");
 const EXCLUDED_STORE_NAME_PATTERNS = [/shopee/i, /蝦皮/i];
 const execFileAsync = promisify(execFile);
 let lastOverpassRequestAt = 0;
+let lastNominatimRequestAt = 0;
 
 interface CoordinatePoint {
   lat: number;
@@ -72,6 +77,15 @@ interface OverpassElement {
 
 interface OverpassResponse {
   elements?: OverpassElement[];
+}
+
+interface OsmApiResponse {
+  elements?: OverpassElement[];
+}
+
+interface NominatimReverseResponse {
+  display_name?: string;
+  address?: Record<string, string>;
 }
 
 interface StoreWithSegment extends ConvenienceStore {
@@ -208,6 +222,104 @@ function escapeXml(value: unknown): string {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&apos;");
+}
+
+function formatCoordinate(value: number): string {
+  return Number(value.toFixed(7)).toString();
+}
+
+function googleMapsUrl(lat: number, lon: number): string {
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${formatCoordinate(lat)},${formatCoordinate(lon)}`)}`;
+}
+
+function fallbackAddress(lat: number, lon: number): string {
+  return `地址暫無資料（座標 ${lat.toFixed(6)}, ${lon.toFixed(6)}）`;
+}
+
+function firstTag(tags: Record<string, string> | undefined, keys: string[]): string | null {
+  for (const key of keys) {
+    const value = tags?.[key]?.trim();
+    if (value) {
+      return value;
+    }
+  }
+  return null;
+}
+
+function formatAddress(
+  tags: Record<string, string> | undefined,
+  lat: number,
+  lon: number,
+): Pick<ConvenienceStore, "address" | "addressSource"> {
+  const fullAddress = firstTag(tags, ["addr:full", "address", "contact:address"]);
+  if (fullAddress) {
+    return { address: fullAddress, addressSource: "osm" };
+  }
+
+  const city = firstTag(tags, ["addr:city", "addr:county", "addr:province", "contact:city"]);
+  const district = firstTag(tags, ["addr:district", "addr:suburb", "addr:town", "contact:district"]);
+  const village = firstTag(tags, ["addr:village", "addr:quarter", "addr:hamlet"]);
+  const street = firstTag(tags, ["addr:street", "contact:street"]);
+  const lane = firstTag(tags, ["addr:lane"]);
+  const alley = firstTag(tags, ["addr:alley"]);
+  const houseNumber = firstTag(tags, ["addr:housenumber", "contact:housenumber"]);
+  const place = firstTag(tags, ["addr:place"]);
+  const composed = [city, district, village, street, lane, alley, houseNumber ?? place]
+    .filter((part): part is string => Boolean(part))
+    .join("");
+
+  return composed
+    ? { address: composed, addressSource: "osm" }
+    : { address: fallbackAddress(lat, lon), addressSource: "coordinate-fallback" };
+}
+
+function withStoreDisplayFields(store: ConvenienceStore): ConvenienceStore {
+  const fallback = !store.address?.trim();
+  return {
+    ...store,
+    address: fallback ? fallbackAddress(store.lat, store.lon) : store.address.trim(),
+    addressSource: store.addressSource ?? (fallback ? "coordinate-fallback" : "osm"),
+    googleMapsUrl: store.googleMapsUrl?.trim() || googleMapsUrl(store.lat, store.lon),
+  };
+}
+
+function hasStoreDisplayFields(store: ConvenienceStore): boolean {
+  return (
+    typeof store.address === "string" &&
+    store.address.trim().length > 0 &&
+    (
+      store.addressSource === "osm" ||
+      store.addressSource === "reverse-geocode"
+    ) &&
+    typeof store.googleMapsUrl === "string" &&
+    store.googleMapsUrl.startsWith("https://www.google.com/maps/search/?api=1&query=")
+  );
+}
+
+function uniqueParts(parts: Array<string | null | undefined>): string[] {
+  const seen = new Set<string>();
+  const result: string[] = [];
+  for (const part of parts) {
+    const value = part?.trim();
+    if (value && !seen.has(value)) {
+      seen.add(value);
+      result.push(value);
+    }
+  }
+  return result;
+}
+
+function formatNominatimAddress(payload: NominatimReverseResponse): string | null {
+  const address = payload.address;
+  const composed = uniqueParts([
+    address?.city ?? address?.county ?? address?.state,
+    address?.city_district ?? address?.suburb ?? address?.town ?? address?.village,
+    address?.neighbourhood,
+    address?.road ?? address?.pedestrian,
+    address?.house_number,
+  ]).join("");
+
+  return composed || payload.display_name?.trim() || null;
 }
 
 function geometryToGpx(day: RouteDay, geometry: LineStringGeometry): string {
@@ -490,6 +602,67 @@ async function queryOverpass(query: string): Promise<OverpassElement[]> {
   throw new Error(`All Overpass endpoints failed: ${errorMessage(lastError)}`);
 }
 
+async function fetchOsmApiElement(store: ConvenienceStore): Promise<OverpassElement | null> {
+  const [type, id] = store.id.split("/");
+  if (!type || !id) {
+    return null;
+  }
+
+  const endpoint = `${OSM_API_URL.replace(/\/$/, "")}/${type}/${id}.json`;
+  const response = await fetch(endpoint, {
+    headers: {
+      "User-Agent": "2026-iron-camel-routes/1.0",
+    },
+  });
+  if (!response.ok) {
+    throw new Error(`OSM API request failed: ${response.status} ${response.statusText}`);
+  }
+  const payload = (await response.json()) as OsmApiResponse;
+  return payload.elements?.[0] ?? null;
+}
+
+async function fetchOsmApiElements(stores: ConvenienceStore[]): Promise<OverpassElement[]> {
+  const elements: OverpassElement[] = [];
+  for (const store of stores) {
+    try {
+      const element = await fetchOsmApiElement(store);
+      if (element) {
+        elements.push(element);
+      }
+    } catch (error) {
+      console.warn(`Store ${store.id}: OSM API metadata lookup failed: ${errorMessage(error)}`);
+    }
+    await sleep(OSM_API_DELAY_MS);
+  }
+  return elements;
+}
+
+async function reverseGeocodeAddress(lat: number, lon: number): Promise<string | null> {
+  const elapsed = Date.now() - lastNominatimRequestAt;
+  if (elapsed < NOMINATIM_DELAY_MS) {
+    await sleep(NOMINATIM_DELAY_MS - elapsed);
+  }
+  lastNominatimRequestAt = Date.now();
+
+  const url = new URL("/reverse", NOMINATIM_URL.replace(/\/$/, ""));
+  url.searchParams.set("format", "jsonv2");
+  url.searchParams.set("lat", String(lat));
+  url.searchParams.set("lon", String(lon));
+  url.searchParams.set("zoom", "18");
+  url.searchParams.set("addressdetails", "1");
+  url.searchParams.set("accept-language", "zh-TW");
+
+  const response = await fetch(url, {
+    headers: {
+      "User-Agent": "2026-iron-camel-routes/1.0",
+    },
+  });
+  if (!response.ok) {
+    throw new Error(`Nominatim reverse geocode failed: ${response.status} ${response.statusText}`);
+  }
+  return formatNominatimAddress((await response.json()) as NominatimReverseResponse);
+}
+
 function chunkGeometryBounds(geometry: LineStringGeometry): [number, number, number, number][] {
   const coordinates = geometry.coordinates;
   const chunkCount = Math.min(8, Math.max(2, Math.ceil(coordinates.length / 220)));
@@ -710,10 +883,13 @@ function convenienceStoresNearRoute(elements: OverpassElement[], geometry: LineS
       continue;
     }
 
+    const address = formatAddress(element.tags, lat, lon);
     const store: ConvenienceStore = {
       id: `${element.type}/${element.id}`,
       name,
       brand,
+      ...address,
+      googleMapsUrl: googleMapsUrl(lat, lon),
       lat,
       lon,
       distanceFromRouteM: Math.round(distanceM),
@@ -749,6 +925,22 @@ function cachedConvenienceStores(
     return null;
   }
 
+  const cachedStores = targetMatchingCachedConvenienceStores(cachedDay, generatedDistanceKm);
+  if (!cachedStores) {
+    return null;
+  }
+
+  return cachedStores.every(hasStoreDisplayFields) ? cachedStores.map(withStoreDisplayFields) : null;
+}
+
+function targetMatchingCachedConvenienceStores(
+  cachedDay: RouteDay | undefined,
+  generatedDistanceKm: number,
+): ConvenienceStore[] | null {
+  if (!Array.isArray(cachedDay?.convenienceStores)) {
+    return null;
+  }
+
   const expectedTargets = restStopTargets(generatedDistanceKm);
   if (cachedDay.convenienceStores.length !== expectedTargets.length) {
     return null;
@@ -758,6 +950,44 @@ function cachedConvenienceStores(
     (store, index) => store.targetKm === expectedTargets[index],
   );
   return matchesTargets ? cachedDay.convenienceStores : null;
+}
+
+function fallbackCachedConvenienceStores(
+  cachedDay: RouteDay | undefined,
+  generatedDistanceKm: number,
+): ConvenienceStore[] | null {
+  return targetMatchingCachedConvenienceStores(cachedDay, generatedDistanceKm)?.map(withStoreDisplayFields) ?? null;
+}
+
+async function enrichCachedConvenienceStores(stores: ConvenienceStore[]): Promise<ConvenienceStore[]> {
+  const elements = await fetchOsmApiElements(stores);
+  const elementById = new Map(elements.map((element) => [`${element.type}/${element.id}`, element]));
+  const enrichedStores: ConvenienceStore[] = [];
+
+  for (const store of stores) {
+    const element = elementById.get(store.id);
+    const lat = element?.lat ?? element?.center?.lat ?? store.lat;
+    const lon = element?.lon ?? element?.center?.lon ?? store.lon;
+    let address = formatAddress(element?.tags, lat, lon);
+    if (address.addressSource === "coordinate-fallback") {
+      try {
+        const reverseAddress = await reverseGeocodeAddress(lat, lon);
+        if (reverseAddress) {
+          address = { address: reverseAddress, addressSource: "reverse-geocode" };
+        }
+      } catch (error) {
+        console.warn(`Store ${store.id}: reverse geocode failed: ${errorMessage(error)}`);
+      }
+    }
+
+    enrichedStores.push({
+      ...store,
+      ...address,
+      googleMapsUrl: googleMapsUrl(lat, lon),
+    });
+  }
+
+  return enrichedStores;
 }
 
 async function fetchConvenienceStores(
@@ -778,6 +1008,23 @@ async function fetchConvenienceStores(
     return cachedStores;
   }
 
+  const metadataOnlyCachedStores = targetMatchingCachedConvenienceStores(cachedDay, generatedDistanceKm);
+  if (
+    metadataOnlyCachedStores &&
+    cachedDay?.routeReview?.selectedCandidate === selectedCandidate &&
+    typeof cachedDay.generatedDistanceKm === "number" &&
+    Math.abs(cachedDay.generatedDistanceKm - generatedDistanceKm) <= 0.2
+  ) {
+    try {
+      const stores = await enrichCachedConvenienceStores(metadataOnlyCachedStores);
+      console.log(`Day ${day.day}: refreshed cached convenience store metadata`);
+      return stores;
+    } catch (error) {
+      console.warn(`Day ${day.day}: convenience store metadata refresh failed: ${errorMessage(error)}`);
+      return metadataOnlyCachedStores.map(withStoreDisplayFields);
+    }
+  }
+
   try {
     const elements = await fetchOverpassElements(geometry);
     const stores = convenienceStoresNearRoute(elements, geometry);
@@ -790,6 +1037,11 @@ async function fetchConvenienceStores(
     return stores;
   } catch (error) {
     console.warn(`Day ${day.day}: convenience store lookup failed: ${errorMessage(error)}`);
+    const fallbackCachedStores = fallbackCachedConvenienceStores(cachedDay, generatedDistanceKm);
+    if (fallbackCachedStores) {
+      console.warn(`Day ${day.day}: using cached convenience store rest stops with coordinate fallback`);
+      return fallbackCachedStores;
+    }
     return [];
   }
 }

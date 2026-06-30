@@ -205,6 +205,21 @@ function formatStoreSide(side: NonNullable<RouteDay["convenienceStores"]>[number
   return "對向側";
 }
 
+function storeMapLink(store: NonNullable<RouteDay["convenienceStores"]>[number]): string {
+  return `<a class="store-map-link" href="${escapeHtml(store.googleMapsUrl)}" target="_blank" rel="noreferrer">${escapeHtml(store.googleMapsUrl)}</a>`;
+}
+
+function storeDetailMarkup(store: NonNullable<RouteDay["convenienceStores"]>[number]): string {
+  return `
+    <div class="store-heading">
+      <b>${store.targetKm}km｜${escapeHtml(store.name)}</b>
+      <span class="store-distance">實際 ${store.routeProgressKm.toFixed(1)}km｜${Math.round(store.distanceFromRouteM)}m｜${formatStoreSide(store.sideOfRoute)}</span>
+    </div>
+    <div class="store-address">地址：${escapeHtml(store.address)}</div>
+    <div class="store-map">Google Maps：${storeMapLink(store)}</div>
+  `;
+}
+
 function renderStats(): void {
   const rideDays = state.routes.filter(isRideDay);
   const totalPdfDistance = rideDays.reduce((sum, day) => sum + day.distanceKm, 0);
@@ -261,10 +276,7 @@ function renderInfo(day: RouteDay | null): void {
   const restStops = day.convenienceStores ?? [];
   const storeItems = restStops
     .map(
-      (store) => `<li>
-          ${store.targetKm}km｜${escapeHtml(store.name)}
-          <span class="store-distance">實際 ${store.routeProgressKm.toFixed(1)}km｜${Math.round(store.distanceFromRouteM)}m｜${formatStoreSide(store.sideOfRoute)}</span>
-        </li>`,
+      (store) => `<li class="store-item">${storeDetailMarkup(store)}</li>`,
     )
     .join("");
   const storeBlock = restStops.length > 0
@@ -331,7 +343,7 @@ function drawConvenienceStores(day: RouteDay, positions: Leaflet.LatLngExpressio
     L.marker(position, { icon: storeIcon() })
       .addTo(requireLayer())
       .bindPopup(
-        `<b>${store.targetKm}km｜${escapeHtml(store.name)}</b><br>實際 ${store.routeProgressKm.toFixed(1)}km｜${Math.round(store.distanceFromRouteM)}m｜${formatStoreSide(store.sideOfRoute)}`,
+        `<div class="store-popup">${storeDetailMarkup(store)}</div>`,
       );
   }
 }

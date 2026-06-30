@@ -90,6 +90,21 @@ export function validateRouteOutput(routes: RouteDay[], gpxFiles: GpxFile[]): vo
         assert(typeof store.id === "string" && store.id.length > 0, `Day ${day.day} convenience store needs id`);
         assert(typeof store.name === "string" && store.name.length > 0, `Day ${day.day} convenience store needs name`);
         assert(!isExcludedRestStopName(store.name), `Day ${day.day} convenience store must be a rest-stop convenience store`);
+        assert(
+          typeof store.address === "string" && store.address.length > 0,
+          `Day ${day.day} convenience store needs display address`,
+        );
+        assert(
+          store.addressSource === "osm" ||
+            store.addressSource === "reverse-geocode" ||
+            store.addressSource === "coordinate-fallback",
+          `Day ${day.day} convenience store needs address source`,
+        );
+        assert(
+          typeof store.googleMapsUrl === "string" &&
+            store.googleMapsUrl.startsWith("https://www.google.com/maps/search/?api=1&query="),
+          `Day ${day.day} convenience store needs Google Maps URL`,
+        );
         assert(typeof store.lat === "number", `Day ${day.day} convenience store needs latitude`);
         assert(typeof store.lon === "number", `Day ${day.day} convenience store needs longitude`);
         assert(
