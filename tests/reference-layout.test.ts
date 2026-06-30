@@ -10,6 +10,7 @@ describe("reference-style route UI", () => {
     expect(html).toContain('id="prevBtn"');
     expect(html).toContain('id="nextBtn"');
     expect(html).toContain('id="allBtn"');
+    expect(html).toContain('id="poiToggleBtn"');
     expect(html).toContain('id="gpxLink"');
     expect(html).toContain('id="info"');
     expect(html).not.toContain('id="dayList"');
@@ -23,9 +24,11 @@ describe("reference-style route UI", () => {
     expect(app).toContain('prevButton: requiredElement("#prevBtn"');
     expect(app).toContain('nextButton: requiredElement("#nextBtn"');
     expect(app).toContain('allButton: requiredElement("#allBtn"');
+    expect(app).toContain('poiToggleButton: requiredElement("#poiToggleBtn"');
     expect(app).toContain('gpxLink: requiredElement("#gpxLink"');
     expect(app).toContain("drawDay(");
     expect(app).toContain("drawOverview(");
+    expect(app).toContain("drawConvenienceStores(");
     expect(app).toContain("L.marker(");
   });
 
@@ -39,5 +42,7 @@ describe("reference-style route UI", () => {
     expect(css).toContain(".stat");
     expect(css).toContain(".legend");
     expect(css).toContain(".pill");
+    expect(css).toContain(".store-list");
+    expect(css).toContain(".store-marker");
   });
 });

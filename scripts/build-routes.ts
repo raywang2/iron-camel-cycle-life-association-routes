@@ -2,7 +2,14 @@ import fs from "node:fs/promises";
 import { execFile } from "node:child_process";
 import path from "node:path";
 import { promisify } from "node:util";
-import type { LineStringGeometry, RouteDay, Waypoint } from "../types/routes.js";
+import type {
+  ConvenienceStore,
+  LineStringGeometry,
+  RouteCandidateReview,
+  RouteDay,
+  RouteReview,
+  Waypoint,
+} from "../types/routes.js";
 
 const ROOT = process.cwd();
 const SOURCE_PATH = path.join(ROOT, "data", "route-waypoints.json");
@@ -11,7 +18,17 @@ const GPX_DIR = path.join(ROOT, "gpx");
 const ROUTER_URL = process.env.ROUTER_URL || "https://router.project-osrm.org";
 const ROUTER_PROFILE = process.env.ROUTER_PROFILE || "driving";
 const ALLOW_ROUTE_FALLBACK = process.env.ALLOW_ROUTE_FALLBACK === "1";
+const OVERPASS_URLS = (
+  process.env.OVERPASS_URLS ||
+  "https://overpass-api.de/api/interpreter,https://overpass.kumi.systems/api/interpreter"
+).split(",");
+const FETCH_CONVENIENCE_STORES = process.env.FETCH_CONVENIENCE_STORES !== "0";
+const POI_RADIUS_M = Number(process.env.POI_RADIUS_M || "300");
+const MAX_STORES_PER_DAY = Number(process.env.MAX_STORES_PER_DAY || "60");
+const OVERPASS_DELAY_MS = Number(process.env.OVERPASS_DELAY_MS || "3500");
+const OVERPASS_TIMEOUT_MS = Number(process.env.OVERPASS_TIMEOUT_MS || "45000");
 const execFileAsync = promisify(execFile);
+let lastOverpassRequestAt = 0;
 
 interface CoordinatePoint {
   lat: number;
@@ -25,12 +42,49 @@ interface OsrmRouteResponse {
   }>;
 }
 
+interface RouteCandidateDefinition {
+  id: string;
+  label: string;
+  waypoints: Waypoint[];
+}
+
+interface BuiltRouteCandidate extends RouteCandidateReview {
+  waypoints: Waypoint[];
+  geometry: LineStringGeometry;
+}
+
+interface OverpassElement {
+  type: string;
+  id: number;
+  lat?: number;
+  lon?: number;
+  center?: {
+    lat: number;
+    lon: number;
+  };
+  tags?: Record<string, string>;
+}
+
+interface OverpassResponse {
+  elements?: OverpassElement[];
+}
+
+interface StoreWithSegment extends ConvenienceStore {
+  segmentIndex: number;
+}
+
 function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
 function dayId(day: number): string {
   return String(day).padStart(2, "0");
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
 }
 
 function haversineKm(a: CoordinatePoint, b: CoordinatePoint): number {
@@ -53,6 +107,61 @@ function fallbackGeometry(waypoints: Waypoint[]): LineStringGeometry {
   };
 }
 
+function sameWaypoint(a: Waypoint, b: Waypoint): boolean {
+  return a.name === b.name && a.lat === b.lat && a.lon === b.lon;
+}
+
+function uniqueCandidateWaypoints(waypoints: Waypoint[]): Waypoint[] {
+  const unique: Waypoint[] = [];
+  for (const waypoint of waypoints) {
+    const previous = unique.at(-1);
+    if (!previous || !sameWaypoint(previous, waypoint)) {
+      unique.push(waypoint);
+    }
+  }
+  return unique;
+}
+
+function routeCandidateDefinitions(day: RouteDay): RouteCandidateDefinition[] {
+  const waypoints = uniqueCandidateWaypoints(day.waypoints);
+  const first = waypoints[0];
+  const last = waypoints.at(-1);
+  if (!first || !last) {
+    return [];
+  }
+
+  const reduced = waypoints.filter(
+    (_waypoint, index) => index === 0 || index === waypoints.length - 1 || index % 2 === 0,
+  );
+  const definitions: RouteCandidateDefinition[] = [
+    {
+      id: "pdf-waypoints",
+      label: "PDF 路點",
+      waypoints,
+    },
+    {
+      id: "reduced-waypoints",
+      label: "簡化路點",
+      waypoints: uniqueCandidateWaypoints(reduced),
+    },
+    {
+      id: "direct-endpoints",
+      label: "起終點",
+      waypoints: [first, last],
+    },
+  ];
+
+  const seen = new Set<string>();
+  return definitions.filter((definition) => {
+    const key = definition.waypoints.map((waypoint) => `${waypoint.lat},${waypoint.lon}`).join("|");
+    if (seen.has(key) || definition.waypoints.length < 2) {
+      return false;
+    }
+    seen.add(key);
+    return true;
+  });
+}
+
 function geometryDistanceKm(geometry: LineStringGeometry): number {
   const { coordinates } = geometry;
   let total = 0;
@@ -69,6 +178,14 @@ function geometryDistanceKm(geometry: LineStringGeometry): number {
   }
 
   return Math.round(total * 10) / 10;
+}
+
+function calculateDistanceDeltaKm(generatedDistanceKm: number, pdfDistanceKm: number | null): number | null {
+  if (typeof pdfDistanceKm !== "number") {
+    return null;
+  }
+
+  return Math.round((generatedDistanceKm - pdfDistanceKm) * 10) / 10;
 }
 
 function escapeXml(value: unknown): string {
@@ -134,6 +251,324 @@ async function routeWithOsrm(waypoints: Waypoint[]): Promise<LineStringGeometry>
   return payload.routes[0].geometry;
 }
 
+async function buildRouteCandidates(day: RouteDay): Promise<BuiltRouteCandidate[]> {
+  const candidates: BuiltRouteCandidate[] = [];
+  for (const definition of routeCandidateDefinitions(day)) {
+    const geometry = await routeWithOsrm(definition.waypoints);
+    const generatedDistanceKm = geometryDistanceKm(geometry);
+    candidates.push({
+      id: definition.id,
+      label: definition.label,
+      waypoints: definition.waypoints,
+      waypointNames: definition.waypoints.map((waypoint) => waypoint.name),
+      generatedDistanceKm,
+      distanceDeltaKm: calculateDistanceDeltaKm(generatedDistanceKm, day.distanceKm),
+      selected: false,
+      geometry,
+    });
+  }
+
+  return candidates;
+}
+
+function selectRouteCandidate(day: RouteDay, candidates: BuiltRouteCandidate[]): BuiltRouteCandidate {
+  if (candidates.length === 0) {
+    throw new Error(`Day ${day.day} did not produce any route candidates`);
+  }
+
+  const pdfCandidate = candidates.find((candidate) => candidate.id === "pdf-waypoints") ?? candidates[0];
+  if (!pdfCandidate) {
+    throw new Error(`Day ${day.day} did not produce a PDF waypoint route`);
+  }
+
+  if (typeof day.distanceKm !== "number") {
+    return pdfCandidate;
+  }
+
+  const minimumReasonableDistance = day.distanceKm * 0.75;
+  const preferredMinimumDistance = day.distanceKm * 0.85;
+  const reasonableCandidates = candidates.filter(
+    (candidate) => candidate.generatedDistanceKm >= minimumReasonableDistance,
+  );
+  const pool = reasonableCandidates.length > 0 ? reasonableCandidates : candidates;
+  const preferredPool = pool.filter((candidate) => candidate.generatedDistanceKm >= preferredMinimumDistance);
+  const closestToPdf = (preferredPool.length > 0 ? preferredPool : pool)
+    .reduce((best, candidate) =>
+      Math.abs((candidate.distanceDeltaKm ?? 0)) < Math.abs((best.distanceDeltaKm ?? 0)) ? candidate : best,
+    );
+  const improvementKm = Math.round((pdfCandidate.generatedDistanceKm - closestToPdf.generatedDistanceKm) * 10) / 10;
+
+  if (closestToPdf.id !== pdfCandidate.id && improvementKm >= 5) {
+    return closestToPdf;
+  }
+
+  const pdfDelta = pdfCandidate.distanceDeltaKm ?? 0;
+  if (Math.abs(pdfDelta) <= 15) {
+    return pdfCandidate;
+  }
+
+  return pool.reduce((best, candidate) =>
+    candidate.generatedDistanceKm < best.generatedDistanceKm ? candidate : best,
+  );
+}
+
+function createRouteReview(day: RouteDay, selected: BuiltRouteCandidate, candidates: BuiltRouteCandidate[]): RouteReview {
+  let reviewNote: string | null = null;
+  const pdfCandidate = candidates.find((candidate) => candidate.id === "pdf-waypoints");
+
+  if (pdfCandidate && selected.id !== pdfCandidate.id) {
+    const savedKm = Math.round((pdfCandidate.generatedDistanceKm - selected.generatedDistanceKm) * 10) / 10;
+    reviewNote = `已改用${selected.label}路線，比原 PDF 路點路線少 ${savedKm} km，避免中繼點造成繞路。`;
+  } else if (typeof day.distanceKm === "number" && selected.generatedDistanceKm - day.distanceKm > 20) {
+    const delta = Math.round((selected.generatedDistanceKm - day.distanceKm) * 10) / 10;
+    reviewNote = `道路網仍比 PDF 多 ${delta} km，建議人工確認 PDF 是否含接駁、未騎乘段或更精確路點。`;
+  }
+
+  return {
+    selectedCandidate: selected.id,
+    reviewNote,
+    candidates: candidates.map((candidate) => ({
+      id: candidate.id,
+      label: candidate.label,
+      waypointNames: candidate.waypointNames,
+      generatedDistanceKm: candidate.generatedDistanceKm,
+      distanceDeltaKm: candidate.distanceDeltaKm,
+      selected: candidate.id === selected.id,
+    })),
+  };
+}
+
+function geometryBounds(geometry: LineStringGeometry): [number, number, number, number] {
+  return coordinateBounds(geometry.coordinates);
+}
+
+function coordinateBounds(coordinates: [number, number][]): [number, number, number, number] {
+  const lats = coordinates.map(([, lat]) => lat);
+  const lons = coordinates.map(([lon]) => lon);
+  const south = Math.min(...lats) - 0.015;
+  const west = Math.min(...lons) - 0.015;
+  const north = Math.max(...lats) + 0.015;
+  const east = Math.max(...lons) + 0.015;
+  return [south, west, north, east];
+}
+
+function convenienceStoreQuery(bounds: [number, number, number, number]): string {
+  const [south, west, north, east] = bounds;
+  return `
+[out:json][timeout:35];
+(
+  node["shop"="convenience"](${south},${west},${north},${east});
+);
+out body;
+`;
+}
+
+async function queryOverpass(query: string): Promise<OverpassElement[]> {
+  const body = new URLSearchParams({ data: query });
+  let lastError: unknown = null;
+
+  for (const url of OVERPASS_URLS.map((value) => value.trim()).filter(Boolean)) {
+    const elapsed = Date.now() - lastOverpassRequestAt;
+    if (elapsed < OVERPASS_DELAY_MS) {
+      await sleep(OVERPASS_DELAY_MS - elapsed);
+    }
+    lastOverpassRequestAt = Date.now();
+
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), OVERPASS_TIMEOUT_MS);
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "content-type": "application/x-www-form-urlencoded" },
+        body,
+        signal: controller.signal,
+      });
+      clearTimeout(timeout);
+      if (!response.ok) {
+        throw new Error(`Overpass request failed: ${response.status} ${response.statusText}`);
+      }
+      const payload = (await response.json()) as OverpassResponse;
+      return payload.elements ?? [];
+    } catch (error) {
+      lastError = error;
+      try {
+        const { stdout } = await execFileAsync(
+          "curl",
+          ["--max-time", String(Math.ceil(OVERPASS_TIMEOUT_MS / 1000)), "-fsSL", "--data-urlencode", `data=${query}`, url],
+          {
+            maxBuffer: 20 * 1024 * 1024,
+          },
+        );
+        const payload = JSON.parse(stdout) as OverpassResponse;
+        return payload.elements ?? [];
+      } catch (curlError) {
+        lastError = curlError;
+        console.warn(`Overpass query failed at ${url}: ${errorMessage(curlError)}`);
+      }
+    }
+  }
+
+  throw new Error(`All Overpass endpoints failed: ${errorMessage(lastError)}`);
+}
+
+function chunkGeometryBounds(geometry: LineStringGeometry): [number, number, number, number][] {
+  const coordinates = geometry.coordinates;
+  const chunkCount = Math.min(8, Math.max(2, Math.ceil(coordinates.length / 220)));
+  const chunkSize = Math.ceil(coordinates.length / chunkCount);
+  const chunks: [number, number, number, number][] = [];
+
+  for (let start = 0; start < coordinates.length; start += chunkSize) {
+    const chunk = coordinates.slice(start, start + chunkSize);
+    if (chunk.length > 1) {
+      chunks.push(coordinateBounds(chunk));
+    }
+  }
+
+  return chunks;
+}
+
+async function fetchOverpassElements(geometry: LineStringGeometry): Promise<OverpassElement[]> {
+  try {
+    return await queryOverpass(convenienceStoreQuery(geometryBounds(geometry)));
+  } catch (error) {
+    console.warn(`Full-route Overpass query failed, retrying in chunks: ${errorMessage(error)}`);
+  }
+
+  const elements = new Map<string, OverpassElement>();
+  for (const bounds of chunkGeometryBounds(geometry)) {
+    try {
+      const chunkElements = await queryOverpass(convenienceStoreQuery(bounds));
+      for (const element of chunkElements) {
+        elements.set(`${element.type}/${element.id}`, element);
+      }
+    } catch (error) {
+      console.warn(`Chunked Overpass query failed: ${errorMessage(error)}`);
+    }
+  }
+
+  return [...elements.values()];
+}
+
+function normalizeStoreBrand(tags: Record<string, string> | undefined): string | null {
+  const value = `${tags?.brand ?? ""} ${tags?.name ?? ""}`.toLowerCase();
+  if (value.includes("7-eleven") || value.includes("7 eleven") || value.includes("統一超商")) {
+    return "7-ELEVEN";
+  }
+  if (value.includes("familymart") || value.includes("全家")) {
+    return "FamilyMart";
+  }
+  if (value.includes("hi-life") || value.includes("hilife") || value.includes("萊爾富")) {
+    return "Hi-Life";
+  }
+  if (value.includes("ok mart") || value.includes("ok便利") || value.includes("ok超商")) {
+    return "OK Mart";
+  }
+  return tags?.brand ?? null;
+}
+
+function storeName(tags: Record<string, string> | undefined, brand: string | null): string {
+  return tags?.name || brand || "便利商店";
+}
+
+function pointToSegmentDistanceM(
+  point: CoordinatePoint,
+  segmentStart: CoordinatePoint,
+  segmentEnd: CoordinatePoint,
+): number {
+  const meanLat = ((point.lat + segmentStart.lat + segmentEnd.lat) / 3) * (Math.PI / 180);
+  const metersPerLat = 111_320;
+  const metersPerLon = Math.cos(meanLat) * 111_320;
+  const px = point.lon * metersPerLon;
+  const py = point.lat * metersPerLat;
+  const ax = segmentStart.lon * metersPerLon;
+  const ay = segmentStart.lat * metersPerLat;
+  const bx = segmentEnd.lon * metersPerLon;
+  const by = segmentEnd.lat * metersPerLat;
+  const dx = bx - ax;
+  const dy = by - ay;
+  const lengthSquared = dx * dx + dy * dy;
+  const t = lengthSquared === 0 ? 0 : Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / lengthSquared));
+  const closestX = ax + t * dx;
+  const closestY = ay + t * dy;
+  return Math.hypot(px - closestX, py - closestY);
+}
+
+function nearestRouteDistance(
+  store: CoordinatePoint,
+  geometry: LineStringGeometry,
+): { distanceM: number; segmentIndex: number } {
+  let bestDistance = Number.POSITIVE_INFINITY;
+  let bestSegmentIndex = 0;
+
+  for (let index = 1; index < geometry.coordinates.length; index += 1) {
+    const previous = geometry.coordinates[index - 1];
+    const current = geometry.coordinates[index];
+    if (!previous || !current) {
+      continue;
+    }
+    const distanceM = pointToSegmentDistanceM(
+      store,
+      { lat: previous[1], lon: previous[0] },
+      { lat: current[1], lon: current[0] },
+    );
+    if (distanceM < bestDistance) {
+      bestDistance = distanceM;
+      bestSegmentIndex = index;
+    }
+  }
+
+  return { distanceM: bestDistance, segmentIndex: bestSegmentIndex };
+}
+
+function convenienceStoresNearRoute(elements: OverpassElement[], geometry: LineStringGeometry): ConvenienceStore[] {
+  const stores: StoreWithSegment[] = [];
+
+  for (const element of elements) {
+    const lat = element.lat ?? element.center?.lat;
+    const lon = element.lon ?? element.center?.lon;
+    if (typeof lat !== "number" || typeof lon !== "number") {
+      continue;
+    }
+
+    const { distanceM, segmentIndex } = nearestRouteDistance({ lat, lon }, geometry);
+    if (distanceM > POI_RADIUS_M) {
+      continue;
+    }
+
+    const brand = normalizeStoreBrand(element.tags);
+    stores.push({
+      id: `${element.type}/${element.id}`,
+      name: storeName(element.tags, brand),
+      brand,
+      lat,
+      lon,
+      distanceFromRouteM: Math.round(distanceM),
+      segmentIndex,
+    });
+  }
+
+  return stores
+    .sort((a, b) => a.segmentIndex - b.segmentIndex || a.distanceFromRouteM - b.distanceFromRouteM)
+    .slice(0, MAX_STORES_PER_DAY)
+    .map(({ segmentIndex: _segmentIndex, ...store }) => store);
+}
+
+async function fetchConvenienceStores(day: RouteDay, geometry: LineStringGeometry): Promise<ConvenienceStore[]> {
+  if (!FETCH_CONVENIENCE_STORES) {
+    return [];
+  }
+
+  try {
+    const elements = await fetchOverpassElements(geometry);
+    const stores = convenienceStoresNearRoute(elements, geometry);
+    console.log(`Day ${day.day}: found ${stores.length} convenience stores within ${POI_RADIUS_M}m`);
+    return stores;
+  } catch (error) {
+    console.warn(`Day ${day.day}: convenience store lookup failed: ${errorMessage(error)}`);
+    return [];
+  }
+}
+
 async function build() {
   const source = JSON.parse(await fs.readFile(SOURCE_PATH, "utf8")) as RouteDay[];
   await fs.mkdir(GPX_DIR, { recursive: true });
@@ -161,8 +596,17 @@ async function build() {
 
     let geometry;
     let routingStatus = "routed";
+    let routeReview: RouteReview | undefined;
+    let convenienceStores: ConvenienceStore[] = [];
+    let selectedWaypoints = day.waypoints;
     try {
-      geometry = await routeWithOsrm(day.waypoints);
+      const candidates = await buildRouteCandidates(day);
+      const selectedCandidate = selectRouteCandidate(day, candidates);
+      selectedCandidate.selected = true;
+      geometry = selectedCandidate.geometry;
+      selectedWaypoints = selectedCandidate.waypoints;
+      routeReview = createRouteReview(day, selectedCandidate, candidates);
+      convenienceStores = await fetchConvenienceStores(day, geometry);
     } catch (error) {
       if (!ALLOW_ROUTE_FALLBACK) {
         throw new Error(`Day ${day.day} routing failed: ${errorMessage(error)}`);
@@ -170,13 +614,25 @@ async function build() {
       warnings.push(`Day ${day.day}: routing failed, using waypoint fallback: ${errorMessage(error)}`);
       geometry = fallbackGeometry(day.waypoints);
       routingStatus = "fallback";
+      routeReview = {
+        selectedCandidate: "fallback-waypoints",
+        reviewNote: `路由服務失敗，暫以直線路點輸出：${errorMessage(error)}`,
+        candidates: [
+          {
+            id: "fallback-waypoints",
+            label: "直線路點",
+            waypointNames: day.waypoints.map((waypoint) => waypoint.name),
+            generatedDistanceKm: geometryDistanceKm(geometry),
+            distanceDeltaKm: null,
+            selected: true,
+          },
+        ],
+      };
+      convenienceStores = [];
     }
 
     const generatedDistanceKm = geometryDistanceKm(geometry);
-    const distanceDeltaKm =
-      typeof day.distanceKm === "number"
-        ? Math.round((generatedDistanceKm - day.distanceKm) * 10) / 10
-        : null;
+    const distanceDeltaKm = calculateDistanceDeltaKm(generatedDistanceKm, day.distanceKm);
     const distanceWarning =
       typeof distanceDeltaKm === "number" && Math.abs(distanceDeltaKm) > 25
         ? `產生路線與 PDF 距離相差 ${distanceDeltaKm} km`
@@ -191,9 +647,12 @@ async function build() {
 
     output.push({
       ...day,
+      waypoints: selectedWaypoints,
       generatedDistanceKm,
       distanceDeltaKm,
       distanceWarning,
+      routeReview,
+      convenienceStores,
       routingStatus,
       geojson: geometry,
       gpxPath,

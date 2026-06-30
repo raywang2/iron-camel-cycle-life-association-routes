@@ -49,6 +49,29 @@ export function validateRouteOutput(routes: RouteDay[], gpxFiles: GpxFile[]): vo
         `Day ${day.day} needs a numeric distance delta`,
       );
       assert(day.routingStatus === "routed", `Day ${day.day} must be routed`);
+      assert(day.routeReview && typeof day.routeReview === "object", `Day ${day.day} needs route review output`);
+      assert(
+        typeof day.routeReview.selectedCandidate === "string" && day.routeReview.selectedCandidate.length > 0,
+        `Day ${day.day} needs selected route candidate`,
+      );
+      assert(Array.isArray(day.routeReview.candidates), `Day ${day.day} route review candidates must be an array`);
+      assert(day.routeReview.candidates.length > 0, `Day ${day.day} needs at least one route candidate`);
+      assert(
+        day.routeReview.candidates.some((candidate) => candidate.selected),
+        `Day ${day.day} needs a selected route candidate`,
+      );
+      assert(Array.isArray(day.convenienceStores), `Day ${day.day} needs convenience store output`);
+      assert(day.convenienceStores.length > 0, `Day ${day.day} needs at least one convenience store`);
+      for (const store of day.convenienceStores) {
+        assert(typeof store.id === "string" && store.id.length > 0, `Day ${day.day} convenience store needs id`);
+        assert(typeof store.name === "string" && store.name.length > 0, `Day ${day.day} convenience store needs name`);
+        assert(typeof store.lat === "number", `Day ${day.day} convenience store needs latitude`);
+        assert(typeof store.lon === "number", `Day ${day.day} convenience store needs longitude`);
+        assert(
+          typeof store.distanceFromRouteM === "number" && store.distanceFromRouteM >= 0,
+          `Day ${day.day} convenience store needs route distance`,
+        );
+      }
       assert(day.gpxPath === expectedGpxPath, `Day ${day.day} must use ${expectedGpxPath}`);
       assert(!seenGpxPaths.has(day.gpxPath), `Duplicate GPX path for day ${day.day}`);
       seenGpxPaths.add(day.gpxPath);

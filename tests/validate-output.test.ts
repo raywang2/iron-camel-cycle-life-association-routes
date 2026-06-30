@@ -29,6 +29,30 @@ function rideDay(day: number): RouteDay {
     distanceDeltaKm: 1,
     distanceWarning: null,
     routingStatus: "routed",
+    routeReview: {
+      selectedCandidate: "pdf-waypoints",
+      reviewNote: null,
+      candidates: [
+        {
+          id: "pdf-waypoints",
+          label: "PDF 路點",
+          waypointNames: ["A", "B"],
+          generatedDistanceKm: 11,
+          distanceDeltaKm: 1,
+          selected: true,
+        },
+      ],
+    },
+    convenienceStores: [
+      {
+        id: "node/1",
+        name: "7-ELEVEN",
+        brand: "7-ELEVEN",
+        lat: 24,
+        lon: 120,
+        distanceFromRouteM: 30,
+      },
+    ],
     geojson: geometry(20),
     gpxPath: `gpx/day-${String(day).padStart(2, "0")}.gpx`,
   };
@@ -110,5 +134,30 @@ describe("validateRouteOutput", () => {
     const gpxFiles = [...gpxFor(routes), { path: "gpx/day-06.gpx", content: "<gpx></gpx>" }];
 
     expect(() => validateRouteOutput(routes, gpxFiles)).toThrow("GPX files must exactly match riding days");
+  });
+
+  it("rejects ride days without route review output", () => {
+    const routes = validRoutes();
+    const route = { ...routes[1]! };
+    delete route.routeReview;
+    routes[1] = route;
+
+    expect(() => validateRouteOutput(routes, gpxFor(routes))).toThrow("Day 1 needs route review output");
+  });
+
+  it("rejects ride days without convenience store output", () => {
+    const routes = validRoutes();
+    const route = { ...routes[1]! };
+    delete route.convenienceStores;
+    routes[1] = route;
+
+    expect(() => validateRouteOutput(routes, gpxFor(routes))).toThrow("Day 1 needs convenience store output");
+  });
+
+  it("rejects ride days without nearby convenience stores", () => {
+    const routes = validRoutes();
+    routes[1] = { ...routes[1]!, convenienceStores: [] };
+
+    expect(() => validateRouteOutput(routes, gpxFor(routes))).toThrow("Day 1 needs at least one convenience store");
   });
 });

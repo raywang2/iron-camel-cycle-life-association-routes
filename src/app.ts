@@ -23,6 +23,7 @@ interface AppState {
   map: Leaflet.Map | null;
   layer: Leaflet.LayerGroup | null;
   currentIndex: number;
+  showConvenienceStores: boolean;
 }
 
 function requiredElement<T extends Element>(selector: string, constructor: new () => T): T {
@@ -38,6 +39,7 @@ const state: AppState = {
   map: null,
   layer: null,
   currentIndex: 0,
+  showConvenienceStores: true,
 };
 
 const elements = {
@@ -47,6 +49,7 @@ const elements = {
   prevButton: requiredElement("#prevBtn", HTMLButtonElement),
   nextButton: requiredElement("#nextBtn", HTMLButtonElement),
   allButton: requiredElement("#allBtn", HTMLButtonElement),
+  poiToggleButton: requiredElement("#poiToggleBtn", HTMLButtonElement),
   gpxLink: requiredElement("#gpxLink", HTMLAnchorElement),
   info: requiredElement("#info", HTMLElement),
 };
@@ -110,6 +113,15 @@ function pointIcon(color: string): Leaflet.DivIcon {
     html: `<span style="background:${color}"></span>`,
     iconSize: [18, 18],
     iconAnchor: [9, 9],
+  });
+}
+
+function storeIcon(): Leaflet.DivIcon {
+  return L.divIcon({
+    className: "store-marker",
+    html: "<span></span>",
+    iconSize: [16, 16],
+    iconAnchor: [8, 8],
   });
 }
 
@@ -202,6 +214,20 @@ function renderInfo(day: RouteDay | null): void {
   const distanceLine = isRideDay(day)
     ? `PDF ${day.distanceKm.toFixed(1)} km<br>道路網 ${(day.generatedDistanceKm ?? 0).toFixed(1)} km`
     : formatDistance(day);
+  const reviewNote = day.routeReview?.reviewNote ? `<p class="note">${escapeHtml(day.routeReview.reviewNote)}</p>` : "";
+  const stores = day.convenienceStores ?? [];
+  const storeItems = stores
+    .slice(0, 20)
+    .map(
+      (store) =>
+        `<li>${escapeHtml(store.name)}<span class="store-distance">${Math.round(store.distanceFromRouteM)}m</span></li>`,
+    )
+    .join("");
+  const storeOverflow = stores.length > 20 ? `<p class="note">另有 ${stores.length - 20} 間便利商店沿線可見。</p>` : "";
+  const storeBlock =
+    stores.length > 0
+      ? `<p class="note">沿線便利商店：</p><ul class="store-list">${storeItems}</ul>${storeOverflow}`
+      : `<p class="note">此日路線 300m 內尚未找到便利商店資料。</p>`;
 
   elements.info.innerHTML = `
     <div class="top">
@@ -213,6 +239,8 @@ function renderInfo(day: RouteDay | null): void {
     </div>
     <ul>${routeParts.map((part) => `<li>${escapeHtml(part)}</li>`).join("")}</ul>
     ${waypoints ? `<p class="note">路點：</p><div>${waypoints}</div>` : ""}
+    ${reviewNote}
+    ${storeBlock}
     <p class="note">${escapeHtml(day.distanceWarning || day.description)}</p>
   `;
 }
@@ -232,6 +260,8 @@ function updateNavigation(): void {
   elements.daySelect.value = String(state.currentIndex);
   elements.prevButton.disabled = state.currentIndex <= 0;
   elements.nextButton.disabled = state.currentIndex >= state.routes.length - 1;
+  elements.poiToggleButton.textContent = state.showConvenienceStores ? "隱藏便利商店" : "顯示便利商店";
+  elements.poiToggleButton.setAttribute("aria-pressed", String(state.showConvenienceStores));
 }
 
 function drawMarkers(day: RouteDay, positions: Leaflet.LatLngExpression[]): void {
@@ -243,6 +273,22 @@ function drawMarkers(day: RouteDay, positions: Leaflet.LatLngExpression[]): void
       .addTo(requireLayer())
       .bindPopup(`<b>${escapeHtml(waypoint.name)}</b><br>${dayCode(day)}｜${escapeHtml(day.title)}`);
   });
+}
+
+function drawConvenienceStores(day: RouteDay, positions: Leaflet.LatLngExpression[]): void {
+  if (!state.showConvenienceStores) {
+    return;
+  }
+
+  for (const store of day.convenienceStores ?? []) {
+    const position: Leaflet.LatLngExpression = [store.lat, store.lon];
+    positions.push(position);
+    L.marker(position, { icon: storeIcon() })
+      .addTo(requireLayer())
+      .bindPopup(
+        `<b>${escapeHtml(store.name)}</b><br>${Math.round(store.distanceFromRouteM)}m from route`,
+      );
+  }
 }
 
 function drawDay(index: number): void {
@@ -267,6 +313,7 @@ function drawDay(index: number): void {
   }
 
   drawMarkers(day, bounds);
+  drawConvenienceStores(day, bounds);
   fitPositions(bounds);
 }
 
@@ -274,6 +321,7 @@ function drawOverview(): void {
   clearMap();
   renderInfo(null);
   updateGpxLink(null);
+  updateNavigation();
 
   const bounds: Leaflet.LatLngExpression[] = [];
   state.routes.forEach((day, index) => {
@@ -312,6 +360,10 @@ async function main(): Promise<void> {
     elements.prevButton.addEventListener("click", () => drawDay(state.currentIndex - 1));
     elements.nextButton.addEventListener("click", () => drawDay(state.currentIndex + 1));
     elements.allButton.addEventListener("click", drawOverview);
+    elements.poiToggleButton.addEventListener("click", () => {
+      state.showConvenienceStores = !state.showConvenienceStores;
+      drawDay(state.currentIndex);
+    });
 
     const firstRideIndex = state.routes.findIndex(isRideDay);
     drawDay(firstRideIndex >= 0 ? firstRideIndex : 0);

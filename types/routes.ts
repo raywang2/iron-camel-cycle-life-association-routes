@@ -11,6 +11,31 @@ export interface LineStringGeometry {
   coordinates: [number, number][];
 }
 
+export interface RouteCandidateReview {
+  id: string;
+  label: string;
+  waypointNames: string[];
+  generatedDistanceKm: number;
+  distanceDeltaKm: number | null;
+  selected: boolean;
+  error?: string;
+}
+
+export interface RouteReview {
+  selectedCandidate: string;
+  reviewNote: string | null;
+  candidates: RouteCandidateReview[];
+}
+
+export interface ConvenienceStore {
+  id: string;
+  name: string;
+  brand: string | null;
+  lat: number;
+  lon: number;
+  distanceFromRouteM: number;
+}
+
 export interface RouteDay {
   day: number;
   date: string;
@@ -25,6 +50,8 @@ export interface RouteDay {
   generatedDistanceKm?: number | null;
   distanceDeltaKm?: number | null;
   distanceWarning?: string | null;
+  routeReview?: RouteReview;
+  convenienceStores?: ConvenienceStore[];
   routingStatus?: "routed" | "fallback" | null;
   geojson?: LineStringGeometry | null;
   gpxPath?: string | null;
