@@ -8,7 +8,9 @@
     "start": "國立臺灣體育運動大學",
     "end": "國立臺灣體育運動大學",
     "distanceKm": null,
-    "description": "報到！行前安全講習 車友相見大會師",
+    "lunchStop": null,
+    "lunchDistanceKm": null,
+    "description": "報到！行前安全講習(物資發放)",
     "waypoints": []
   },
   {
@@ -20,6 +22,8 @@
     "start": "台中",
     "end": "苗栗",
     "distanceKm": 53.4,
+    "lunchStop": "三義",
+    "lunchDistanceKm": 34.9,
     "description": "臺中→崇德路→豐原→豐原大道→豐科路→后里→后科路→台13→三義→銅鑼→山線鐵路自行車道→苗28→貓貍山公園→公園路→苗栗",
     "waypoints": [
       { "name": "國立臺灣體育運動大學", "lat": 24.1498, "lon": 120.6867 },
@@ -40,6 +44,8 @@
     "start": "苗栗",
     "end": "新竹",
     "distanceKm": 62.1,
+    "lunchStop": "南寮",
+    "lunchDistanceKm": 50.8,
     "description": "苗栗→台13→竹南→苗栗濱海自行車道→南寮→南寮-頭前溪自行車道→新竹",
     "waypoints": [
       { "name": "苗栗車站", "lat": 24.5700, "lon": 120.8227 },
@@ -58,7 +64,9 @@
     "start": "新竹",
     "end": "新店",
     "distanceKm": 94.6,
-    "description": "新竹→台1→竹北→縣118→新埔→台3→龍潭→台3乙→石門水庫→台4→大溪→A4 大鶯綠野景觀自行車道→鶯歌→大漢溪左岸自行車道→新莊→新月橋→板橋→大漢溪左岸自行車道→華江橋自行車便道→萬華→新店溪右岸自行車道→景美→景美溪河濱自行車道→寶僑→新店",
+    "lunchStop": "大溪",
+    "lunchDistanceKm": 47.7,
+    "description": "新竹→台1→竹北→縣118→新埔→台3→龍潭→台3乙→石門水庫→台4→大溪→A4大鶯綠野景觀自行車道→鶯歌→大漢溪左岸自行車道→新莊→新月橋→板橋→大漢溪左岸自行車道→華江橋自行車便道→萬華→新店溪右岸自行車道→景美→景美溪河濱自行車道→寶僑→新店",
     "waypoints": [
       { "name": "新竹車站", "lat": 24.8016, "lon": 120.9717 },
       { "name": "竹北車站", "lat": 24.8390, "lon": 121.0091 },
@@ -83,6 +91,8 @@
     "start": "新店",
     "end": "羅東",
     "distanceKm": 51.7,
+    "lunchStop": "坪林",
+    "lunchDistanceKm": 29.4,
     "description": "新店→台9→坪林→頭城→礁溪→台9→宜蘭→羅東",
     "waypoints": [
       { "name": "新店捷運站", "lat": 24.9675, "lon": 121.5417 },
@@ -102,6 +112,8 @@
     "start": "新城",
     "end": "花蓮",
     "distanceKm": 33.7,
+    "lunchStop": "太魯閣、新城",
+    "lunchDistanceKm": 11.3,
     "description": "羅東==== 新城車站→台8→太魯閣遊客中心→台8→新城→台9→縣道193→七星潭→台9→花蓮",
     "waypoints": [
       { "name": "新城車站", "lat": 24.1270, "lon": 121.6404 },
@@ -120,6 +132,8 @@
     "start": "花蓮",
     "end": "花蓮",
     "distanceKm": null,
+    "lunchStop": "休息一日",
+    "lunchDistanceKm": null,
     "description": "休息一天 自由行",
     "waypoints": []
   },
@@ -132,6 +146,8 @@
     "start": "花蓮",
     "end": "玉里",
     "distanceKm": 83.3,
+    "lunchStop": "光復",
+    "lunchDistanceKm": 42.8,
     "description": "花蓮市→台9→吉安→壽豐→鳳林→萬榮→光復→瑞穗→台9→玉里",
     "waypoints": [
       { "name": "花蓮車站", "lat": 23.9927, "lon": 121.6015 },
@@ -152,6 +168,8 @@
     "start": "玉里",
     "end": "台東",
     "distanceKm": 81.5,
+    "lunchStop": "關山",
+    "lunchDistanceKm": 42.9,
     "description": "玉里→台9→富里→池上→關山→鹿野→卑南→台9→台東",
     "waypoints": [
       { "name": "玉里車站", "lat": 23.3320, "lon": 121.3157 },
@@ -172,12 +190,15 @@
     "start": "台東",
     "end": "恆春",
     "distanceKm": 121,
-    "description": "台東→台11→知本→美和→台9→太麻里→大武→南迴公路→壽卡→縣199→東源→牡丹→車城→統埔→山腳路→保力→台26→恆春",
+    "lunchStop": "6點出發，不休息(達仁7-11南迴前最後補給)\n壽卡前最後補給點\n（不集結休息）",
+    "lunchDistanceKm": 63.3,
+    "description": "台東→台11→知本→美和→台9→太麻里→大武→達仁→南迴公路→壽卡→縣199→東源→牡丹→車城→統埔→山腳路→保力→台26→恆春",
     "waypoints": [
       { "name": "台東車站", "lat": 22.7939, "lon": 121.1233 },
       { "name": "知本車站", "lat": 22.7067, "lon": 121.0591 },
       { "name": "太麻里車站", "lat": 22.6104, "lon": 121.0059 },
       { "name": "大武車站", "lat": 22.3652, "lon": 120.9028 },
+      { "name": "達仁", "lat": 22.2930, "lon": 120.8840 },
       { "name": "壽卡", "lat": 22.2537, "lon": 120.8177 },
       { "name": "東源", "lat": 22.1990, "lon": 120.8494 },
       { "name": "牡丹", "lat": 22.1268, "lon": 120.8586 },
@@ -194,6 +215,8 @@
     "start": "恆春",
     "end": "恆春",
     "distanceKm": null,
+    "lunchStop": "休息一日",
+    "lunchDistanceKm": null,
     "description": "休息一天 自由行",
     "waypoints": []
   },
@@ -206,6 +229,8 @@
     "start": "恆春",
     "end": "高雄左營",
     "distanceKm": 103,
+    "lunchStop": "潮州國小",
+    "lunchDistanceKm": 76.6,
     "description": "恆春→台26→楓港→台1→枋寮→台17→東港→林園→小港→前鎮→台17→高雄左營",
     "waypoints": [
       { "name": "恆春轉運站", "lat": 22.0041, "lon": 120.7443 },
@@ -227,6 +252,8 @@
     "start": "高雄左營",
     "end": "嘉義",
     "distanceKm": 121.6,
+    "lunchStop": "將軍驛站",
+    "lunchDistanceKm": 72.1,
     "description": "高雄左營→台17→楠梓→梓官→永安→茄萣→台南市南區→台南中西區→安南→將軍→南18→苓子寮→南19→學甲→台19→鹽水→縣172→南80→菁寮→南84→後壁→台1→水上→嘉義",
     "waypoints": [
       { "name": "左營車站", "lat": 22.6874, "lon": 120.3097 },
@@ -254,6 +281,8 @@
     "start": "嘉義",
     "end": "埔里",
     "distanceKm": 111.4,
+    "lunchStop": "竹山",
+    "lunchDistanceKm": 68.5,
     "description": "嘉義→台1→民雄→斗南→台1丁→斗六→台3→林內→南投竹山→社寮→台3丙→集集→台16→水里→台21→日月潭→魚池→埔里",
     "waypoints": [
       { "name": "嘉義車站", "lat": 23.4794, "lon": 120.4417 },
@@ -278,6 +307,8 @@
     "start": "埔里",
     "end": "台中",
     "distanceKm": 59.4,
+    "lunchStop": null,
+    "lunchDistanceKm": null,
     "description": "埔里→台14→國姓→草屯→台3→霧峰→大里→台中市",
     "waypoints": [
       { "name": "埔里轉運站", "lat": 23.9664, "lon": 120.9692 },

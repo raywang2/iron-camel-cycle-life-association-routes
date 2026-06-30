@@ -59,6 +59,8 @@ interface Translation {
   actual: string;
   store: string;
   address: string;
+  lunchStop: string;
+  lunchDistance: string;
   routePoints: string;
   allRoutesBadge: string;
   allRoutesTitle: string;
@@ -113,6 +115,8 @@ const translations: Record<Language, Translation> = {
     actual: "實際",
     store: "店名",
     address: "地址",
+    lunchStop: "中午休息點",
+    lunchDistance: "午休前里程",
     routePoints: "路點：",
     allRoutesBadge: "全部｜2026/7/4-7/18",
     allRoutesTitle: "完整環島路線",
@@ -165,6 +169,8 @@ const translations: Record<Language, Translation> = {
     actual: "Actual",
     store: "Store",
     address: "Address",
+    lunchStop: "Lunch stop",
+    lunchDistance: "Distance before lunch",
     routePoints: "Waypoints:",
     allRoutesBadge: "All｜2026/7/4-7/18",
     allRoutesTitle: "Full Taiwan Route",
@@ -217,6 +223,8 @@ const translations: Record<Language, Translation> = {
     actual: "実際",
     store: "店舗名",
     address: "住所",
+    lunchStop: "昼食休憩地点",
+    lunchDistance: "昼食前の距離",
     routePoints: "経由地：",
     allRoutesBadge: "全体｜2026/7/4-7/18",
     allRoutesTitle: "台湾一周フルルート",
@@ -574,6 +582,13 @@ function renderInfo(day: RouteDay | null): void {
     ? `${escapeHtml(t("pdfLabel"))} ${day.distanceKm.toFixed(1)} km<br>${escapeHtml(t("networkLabel"))} ${(day.generatedDistanceKm ?? 0).toFixed(1)} km`
     : formatDistance(day);
   const reviewNote = day.routeReview?.reviewNote ? `<p class="note">${escapeHtml(day.routeReview.reviewNote)}</p>` : "";
+  const lunchParts = [
+    day.lunchStop ? `${t("lunchStop")}：${day.lunchStop}` : null,
+    typeof day.lunchDistanceKm === "number" ? `${t("lunchDistance")}：${day.lunchDistanceKm.toFixed(1)} km` : null,
+  ].filter((part): part is string => Boolean(part));
+  const lunchBlock = lunchParts.length > 0
+    ? `<p class="note">${lunchParts.map(escapeHtml).join("<br>")}</p>`
+    : "";
   const restStops = day.convenienceStores ?? [];
   const storeItems = restStops
     .map(
@@ -596,6 +611,7 @@ function renderInfo(day: RouteDay | null): void {
       <div class="km">${distanceLine}</div>
     </div>
     <ul>${routeParts.map((part) => `<li>${escapeHtml(part)}</li>`).join("")}</ul>
+    ${lunchBlock}
     ${waypoints ? `<p class="note">${escapeHtml(t("routePoints"))}</p><div>${waypoints}</div>` : ""}
     ${reviewNote}
     ${storeBlock}
