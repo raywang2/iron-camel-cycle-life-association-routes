@@ -1,0 +1,34 @@
+tests/reference-layout.test.ts
+  s_1ae7bf14fd87ce::t_ce87b51bf3ba0e 58,60,62
+gpx/day-09.gpx
+  s_1ae7bf14fd87ce::t_caec8816d336cc 5
+gpx/day-03.gpx
+  s_1ae7bf14fd87ce::t_caec8816d336cc 5
+src/app.ts
+  s_1ae7bf14fd87ce::t_2fc19da7cd78bf 62-63,118-119,172-173,226-227
+  s_1ae7bf14fd87ce::t_1448c172f510a7 585-591,614
+data/route-waypoints.json
+  s_1ae7bf14fd87ce::t_7b92886487a02b 11-13,25-26,47-48,67-69,94-95,115-116,135-136,149-150,171-172,193-195,201,218-219,232-233,255-256,284-285,310-311
+data/routes.json
+  s_1ae7bf14fd87ce::t_caec8816d336cc 11-13,31-32,4771-4772,8248-8250,16680-16681,19926-19927,22181-22182,22201-22202,27229-27230,33113-33115,33133,33143,33150-33151,33160-33162,33165-33166,42757-42758,42777-42778,50572-50573,59570-59571,69992-69993
+tests/route-source.test.ts
+  s_1ae7bf14fd87ce::t_ce87b51bf3ba0e 1-28
+types/routes.ts
+  s_1ae7bf14fd87ce::t_ce87b51bf3ba0e 56-57
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "35e92c1286fe3f860f06824e21e6134cc220386f",
+  "prompts": {},
+  "sessions": {
+    "s_1ae7bf14fd87ce": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f1399-9cdd-7090-bf1a-2b71d472eb20",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Ray Wang <Ray.Wang@westpharma.com>"
+    }
+  }
+}
