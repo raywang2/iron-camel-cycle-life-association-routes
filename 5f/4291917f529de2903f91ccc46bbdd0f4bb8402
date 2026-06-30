@@ -1,0 +1,31 @@
+types/routes.ts
+  s_1ae7bf14fd87ce::t_0e6d9235c87869 58
+src/app.ts
+  s_1ae7bf14fd87ce::t_0e6d9235c87869 64,121,176,231,592
+scripts/build-routes.ts
+  s_1ae7bf14fd87ce::t_0e6d9235c87869 5,17,1079,1081-1093
+tests/reference-layout.test.ts
+  s_1ae7bf14fd87ce::t_0e6d9235c87869 59,62,65
+scripts/route-schedule.ts
+  s_1ae7bf14fd87ce::t_0e6d9235c87869 1-204
+tests/route-source.test.ts
+  s_1ae7bf14fd87ce::t_f0c3caa8169401 3,10-13,15-35,49,52
+data/routes.json
+  s_1ae7bf14fd87ce::t_ab80899f924730 15,72,4793,8291,16699,19961,22191,22248,27277,33137,42771,42833,50659,59643,70031
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "5f4291917f529de2903f91ccc46bbdd0f4bb8402",
+  "prompts": {},
+  "sessions": {
+    "s_1ae7bf14fd87ce": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f1399-9cdd-7090-bf1a-2b71d472eb20",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Ray Wang <Ray.Wang@westpharma.com>"
+    }
+  }
+}
