@@ -56,10 +56,13 @@ describe("reference-style route UI", () => {
     expect(app).toContain("GPXをダウンロード");
     expect(app).toContain("店名");
     expect(app).toContain("中午休息點");
+    expect(app).toContain("終點住宿點");
     expect(app).toContain("Store");
     expect(app).toContain("Lunch stop");
+    expect(app).toContain("Overnight stop");
     expect(app).toContain("店舗名");
     expect(app).toContain("昼食休憩地点");
+    expect(app).toContain("宿泊地");
   });
 
   it("uses distinct map markers for route start and finish", () => {

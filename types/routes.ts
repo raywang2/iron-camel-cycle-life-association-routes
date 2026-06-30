@@ -55,6 +55,7 @@ export interface RouteDay {
   distanceKm: number | null;
   lunchStop?: string | null;
   lunchDistanceKm?: number | null;
+  endAccommodation?: string | null;
   description: string;
   waypoints: Waypoint[];
   generatedDistanceKm?: number | null;

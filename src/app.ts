@@ -61,6 +61,7 @@ interface Translation {
   address: string;
   lunchStop: string;
   lunchDistance: string;
+  endAccommodation: string;
   routePoints: string;
   allRoutesBadge: string;
   allRoutesTitle: string;
@@ -117,6 +118,7 @@ const translations: Record<Language, Translation> = {
     address: "地址",
     lunchStop: "中午休息點",
     lunchDistance: "午休前里程",
+    endAccommodation: "終點住宿點",
     routePoints: "路點：",
     allRoutesBadge: "全部｜2026/7/4-7/18",
     allRoutesTitle: "完整環島路線",
@@ -171,6 +173,7 @@ const translations: Record<Language, Translation> = {
     address: "Address",
     lunchStop: "Lunch stop",
     lunchDistance: "Distance before lunch",
+    endAccommodation: "Overnight stop",
     routePoints: "Waypoints:",
     allRoutesBadge: "All｜2026/7/4-7/18",
     allRoutesTitle: "Full Taiwan Route",
@@ -225,6 +228,7 @@ const translations: Record<Language, Translation> = {
     address: "住所",
     lunchStop: "昼食休憩地点",
     lunchDistance: "昼食前の距離",
+    endAccommodation: "宿泊地",
     routePoints: "経由地：",
     allRoutesBadge: "全体｜2026/7/4-7/18",
     allRoutesTitle: "台湾一周フルルート",
@@ -585,6 +589,7 @@ function renderInfo(day: RouteDay | null): void {
   const lunchParts = [
     day.lunchStop ? `${t("lunchStop")}：${day.lunchStop}` : null,
     typeof day.lunchDistanceKm === "number" ? `${t("lunchDistance")}：${day.lunchDistanceKm.toFixed(1)} km` : null,
+    day.endAccommodation ? `${t("endAccommodation")}：${day.endAccommodation}` : null,
   ].filter((part): part is string => Boolean(part));
   const lunchBlock = lunchParts.length > 0
     ? `<p class="note">${lunchParts.map(escapeHtml).join("<br>")}</p>`

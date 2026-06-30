@@ -2,6 +2,7 @@ import fs from "node:fs/promises";
 import { execFile } from "node:child_process";
 import path from "node:path";
 import { promisify } from "node:util";
+import { mergeRouteSchedule, parseRouteScheduleCsv } from "./route-schedule.js";
 import type {
   ConvenienceStore,
   LineStringGeometry,
@@ -13,6 +14,7 @@ import type {
 
 const ROOT = process.cwd();
 const SOURCE_PATH = path.join(ROOT, "data", "route-waypoints.json");
+const SCHEDULE_PATH = path.join(ROOT, "routes.csv");
 const ROUTES_PATH = path.join(ROOT, "data", "routes.json");
 const GPX_DIR = path.join(ROOT, "gpx");
 const ROUTER_URL = process.env.ROUTER_URL || "https://router.project-osrm.org";
@@ -1074,8 +1076,21 @@ async function readExistingRoutes(): Promise<Map<number, RouteDay>> {
   }
 }
 
-async function build() {
+async function readSourceRoutes(): Promise<RouteDay[]> {
   const source = JSON.parse(await fs.readFile(SOURCE_PATH, "utf8")) as RouteDay[];
+  try {
+    const scheduleCsv = await fs.readFile(SCHEDULE_PATH, "utf8");
+    return mergeRouteSchedule(source, parseRouteScheduleCsv(scheduleCsv));
+  } catch (error) {
+    if (error && typeof error === "object" && "code" in error && error.code === "ENOENT") {
+      return source;
+    }
+    throw error;
+  }
+}
+
+async function build() {
+  const source = await readSourceRoutes();
   const existingRoutes = await readExistingRoutes();
   await fs.mkdir(GPX_DIR, { recursive: true });
 
