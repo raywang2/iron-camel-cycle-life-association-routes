@@ -1,0 +1,54 @@
+gpx/day-14.gpx
+  s_1ae7bf14fd87ce::t_f473adf8a866a0 4-5,8
+gpx/day-08.gpx
+  s_1ae7bf14fd87ce::t_f473adf8a866a0 4-5,8
+gpx/day-01.gpx
+  s_1ae7bf14fd87ce::t_f473adf8a866a0 4-5,8
+routes.csv
+  s_1ae7bf14fd87ce::t_3324573e6017ef 3-7,9-11
+data/routes.json
+  s_1ae7bf14fd87ce::t_f473adf8a866a0 28,35,4797,4804,8235,8242,16616,16623,19871,19878,22572,22579,27373,27380,33422,33429,43096,43103,51084,51091,60139,60146,70558,70565
+gpx/day-03.gpx
+  s_1ae7bf14fd87ce::t_f473adf8a866a0 4-5,8
+gpx/day-05.gpx
+  s_1ae7bf14fd87ce::t_f473adf8a866a0 4-5,8
+gpx/day-09.gpx
+  s_1ae7bf14fd87ce::t_f473adf8a866a0 4-5,8
+tests/route-source.test.ts
+  s_1ae7bf14fd87ce::t_105b84aaa21672 44-52
+data/route-waypoints.json
+  s_1ae7bf14fd87ce::t_045efc4c1f0baa 22,29,45,52,66,73,94,101,116,123,152,159,175,182,198,205,239,246,263,270,293,300,320,327
+gpx/day-12.gpx
+  s_1ae7bf14fd87ce::t_f473adf8a866a0 4-5,8
+gpx/day-07.gpx
+  s_1ae7bf14fd87ce::t_f473adf8a866a0 4-5,8
+gpx/day-11.gpx
+  s_1ae7bf14fd87ce::t_f473adf8a866a0 4-5,8
+gpx/day-13.gpx
+  s_1ae7bf14fd87ce::t_f473adf8a866a0 4-5,8
+gpx/day-04.gpx
+  s_1ae7bf14fd87ce::t_f473adf8a866a0 4-5,8
+gpx/day-02.gpx
+  s_1ae7bf14fd87ce::t_f473adf8a866a0 4-5,8
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "ea1a62999bc5a22577a5a196bdfd8b0f1cd872c5",
+  "prompts": {},
+  "humans": {
+    "h_c3a960f1d8b0a0": {
+      "author": "Ray Wang <sncorges@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_1ae7bf14fd87ce": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f1399-9cdd-7090-bf1a-2b71d472eb20",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Ray Wang <sncorges@gmail.com>"
+    }
+  }
+}
