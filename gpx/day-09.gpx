@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gpx version="1.1" creator="2026-routes" xmlns="http://www.topografix.com/GPX/1/1">
   <metadata>
-    <name>台東到恆春</name>
-    <desc>台東→台11→知本→美和→台9→太麻里→大武→達仁→南迴公路→壽卡→縣199→東源→牡丹→車城→統埔→山腳路→保力→台26→恆春</desc>
+    <name>台東到恆春國小</name>
+    <desc>台東→台11→知本→美和→台9→太麻里→大武→達仁→南迴公路→壽卡→縣199→東源→牡丹→車城→統埔→山腳路→保力→台26→恆春國小</desc>
   </metadata>
   <trk>
-    <name>Day 9 台東到恆春</name>
+    <name>Day 9 台東到恆春國小</name>
     <trkseg>
       <trkpt lat="22.793869" lon="121.123570"></trkpt>
       <trkpt lat="22.793852" lon="121.123568"></trkpt>

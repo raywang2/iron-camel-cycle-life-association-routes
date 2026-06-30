@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gpx version="1.1" creator="2026-routes" xmlns="http://www.topografix.com/GPX/1/1">
   <metadata>
-    <name>花蓮到玉里</name>
-    <desc>花蓮市→台9→吉安→壽豐→鳳林→萬榮→光復→瑞穗→台9→玉里</desc>
+    <name>花蓮到玉里高中</name>
+    <desc>花蓮市→台9→吉安→壽豐→鳳林→萬榮→光復→瑞穗→台9→玉里高中</desc>
   </metadata>
   <trk>
-    <name>Day 7 花蓮到玉里</name>
+    <name>Day 7 花蓮到玉里高中</name>
     <trkseg>
       <trkpt lat="23.992589" lon="121.601765"></trkpt>
       <trkpt lat="23.992141" lon="121.601540"></trkpt>

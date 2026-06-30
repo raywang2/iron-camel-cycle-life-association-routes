@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gpx version="1.1" creator="2026-routes" xmlns="http://www.topografix.com/GPX/1/1">
   <metadata>
-    <name>埔里到台中</name>
-    <desc>埔里→台14→國姓→草屯→台3→霧峰→大里→台中市</desc>
+    <name>埔里到國立臺灣體育運動大學</name>
+    <desc>埔里→台14→國姓→草屯→台3→霧峰→大里→國立臺灣體育運動大學</desc>
   </metadata>
   <trk>
-    <name>Day 14 埔里到台中</name>
+    <name>Day 14 埔里到國立臺灣體育運動大學</name>
     <trkseg>
       <trkpt lat="23.966346" lon="120.969138"></trkpt>
       <trkpt lat="23.966565" lon="120.968910"></trkpt>

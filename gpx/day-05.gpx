@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gpx version="1.1" creator="2026-routes" xmlns="http://www.topografix.com/GPX/1/1">
   <metadata>
-    <name>新城到花蓮</name>
-    <desc>羅東==== 新城車站→台8→太魯閣遊客中心→台8→新城→台9→縣道193→七星潭→台9→花蓮</desc>
+    <name>新城到中原國小</name>
+    <desc>羅東==== 新城車站→台8→太魯閣遊客中心→台8→新城→台9→縣道193→七星潭→台9→中原國小</desc>
   </metadata>
   <trk>
-    <name>Day 5 新城到花蓮</name>
+    <name>Day 5 新城到中原國小</name>
     <trkseg>
       <trkpt lat="24.126759" lon="121.640531"></trkpt>
       <trkpt lat="24.126757" lon="121.640557"></trkpt>

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gpx version="1.1" creator="2026-routes" xmlns="http://www.topografix.com/GPX/1/1">
   <metadata>
-    <name>新店到羅東</name>
-    <desc>新店→台9→坪林→頭城→礁溪→台9→宜蘭→羅東</desc>
+    <name>新店到羅東國中</name>
+    <desc>新店→台9→坪林→頭城→礁溪→台9→宜蘭→羅東國中</desc>
   </metadata>
   <trk>
-    <name>Day 4 新店到羅東</name>
+    <name>Day 4 新店到羅東國中</name>
     <trkseg>
       <trkpt lat="24.967555" lon="121.541507"></trkpt>
       <trkpt lat="24.967700" lon="121.541557"></trkpt>

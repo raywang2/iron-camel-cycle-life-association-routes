@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gpx version="1.1" creator="2026-routes" xmlns="http://www.topografix.com/GPX/1/1">
   <metadata>
-    <name>台中到苗栗</name>
-    <desc>臺中→崇德路→豐原→豐原大道→豐科路→后里→后科路→台13→三義→銅鑼→山線鐵路自行車道→苗28→貓貍山公園→公園路→苗栗</desc>
+    <name>台中到苗栗高中</name>
+    <desc>臺中→崇德路→豐原→豐原大道→豐科路→后里→后科路→台13→三義→銅鑼→山線鐵路自行車道→苗28→貓貍山公園→公園路→苗栗高中</desc>
   </metadata>
   <trk>
-    <name>Day 1 台中到苗栗</name>
+    <name>Day 1 台中到苗栗高中</name>
     <trkseg>
       <trkpt lat="24.149272" lon="120.686188"></trkpt>
       <trkpt lat="24.149268" lon="120.686158"></trkpt>

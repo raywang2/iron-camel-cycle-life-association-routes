@@ -41,6 +41,15 @@ describe("route waypoint source", () => {
     }
   });
 
+  it("uses accommodation endpoints in ride-day title and route text", () => {
+    const routes = sourceRoutes().filter((route) => route.type === "ride");
+
+    for (const route of routes) {
+      expect(route.title.endsWith(route.endAccommodation ?? "")).toBe(true);
+      expect(route.description.split("→").at(-1)?.trim()).toBe(route.endAccommodation);
+    }
+  });
+
   it("parses route metadata from the current routes.csv", () => {
     const schedule = parseRouteScheduleCsv(routesCsv());
     const day0 = schedule.find((route) => route.day === 0)!;
