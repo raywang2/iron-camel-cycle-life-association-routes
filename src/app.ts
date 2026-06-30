@@ -1,17 +1,28 @@
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import type * as Leaflet from "leaflet";
-import type { RouteDay } from "../types/routes.js";
-const colors = ["#1f7a5b", "#b84a32", "#315da8", "#a56b00", "#6b4ba8", "#277084"];
+import type { RouteDay, Waypoint } from "../types/routes.js";
 
-type LayerKey = "overviewLayer" | "activeLayer";
+const colors = [
+  "#38bdf8",
+  "#f97316",
+  "#22c55e",
+  "#a78bfa",
+  "#f43f5e",
+  "#06b6d4",
+  "#eab308",
+  "#10b981",
+  "#fb7185",
+  "#60a5fa",
+  "#84cc16",
+  "#f59e0b",
+];
 
 interface AppState {
   routes: RouteDay[];
   map: Leaflet.Map | null;
-  overviewLayer: Leaflet.FeatureGroup | null;
-  activeLayer: Leaflet.GeoJSON | null;
-  activeDay: RouteDay | null;
+  layer: Leaflet.LayerGroup | null;
+  currentIndex: number;
 }
 
 function requiredElement<T extends Element>(selector: string, constructor: new () => T): T {
@@ -25,22 +36,19 @@ function requiredElement<T extends Element>(selector: string, constructor: new (
 const state: AppState = {
   routes: [],
   map: null,
-  overviewLayer: null,
-  activeLayer: null,
-  activeDay: null,
+  layer: null,
+  currentIndex: 0,
 };
 
 const elements = {
   summary: requiredElement("#summary", HTMLParagraphElement),
-  dayList: requiredElement("#dayList", HTMLDivElement),
-  overviewButton: requiredElement("#overviewButton", HTMLButtonElement),
-  detailMeta: requiredElement("#detailMeta", HTMLParagraphElement),
-  detailTitle: requiredElement("#detailTitle", HTMLHeadingElement),
-  detailDistance: requiredElement("#detailDistance", HTMLParagraphElement),
-  detailEndpoints: requiredElement("#detailEndpoints", HTMLParagraphElement),
-  detailDescription: requiredElement("#detailDescription", HTMLParagraphElement),
-  downloadLink: requiredElement("#downloadLink", HTMLAnchorElement),
-  warningText: requiredElement("#warningText", HTMLParagraphElement),
+  routeStats: requiredElement("#routeStats", HTMLDivElement),
+  daySelect: requiredElement("#daySelect", HTMLSelectElement),
+  prevButton: requiredElement("#prevBtn", HTMLButtonElement),
+  nextButton: requiredElement("#nextBtn", HTMLButtonElement),
+  allButton: requiredElement("#allBtn", HTMLButtonElement),
+  gpxLink: requiredElement("#gpxLink", HTMLAnchorElement),
+  info: requiredElement("#info", HTMLElement),
 };
 
 function requireMap(): Leaflet.Map {
@@ -51,22 +59,58 @@ function requireMap(): Leaflet.Map {
   return state.map;
 }
 
-function getRideColorIndex(day: RouteDay): number {
-  const rideDays = state.routes.filter(isRideDay);
-  const index = rideDays.findIndex((route) => route.day === day.day);
-  return index >= 0 ? index : 0;
+function requireLayer(): Leaflet.LayerGroup {
+  if (!state.layer) {
+    throw new Error("Route layer is not initialized");
+  }
+
+  return state.layer;
 }
 
 function isRideDay(day: RouteDay): day is RouteDay & { distanceKm: number } {
   return day.type === "ride" && typeof day.distanceKm === "number";
 }
 
-function routeStyle(index: number, selected = false): Record<string, string | number> {
+function escapeHtml(value: string): string {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+function dayCode(day: RouteDay): string {
+  return day.day === 0 ? "D0" : `D${day.day}`;
+}
+
+function routeStyle(index: number, selected = false): Leaflet.PathOptions {
   return {
-    color: colors[index % colors.length] ?? "#1f7a5b",
-    weight: selected ? 7 : 4,
-    opacity: selected ? 0.98 : 0.7,
+    color: selected ? "#38bdf8" : colors[index % colors.length],
+    weight: selected ? 6 : 4,
+    opacity: selected ? 0.92 : 0.82,
   };
+}
+
+function routeCoordinates(day: RouteDay): Leaflet.LatLngExpression[] {
+  if (!day.geojson) {
+    return [];
+  }
+
+  return day.geojson.coordinates.map(([lon, lat]) => [lat, lon]);
+}
+
+function waypointPosition(waypoint: Waypoint): Leaflet.LatLngExpression {
+  return [waypoint.lat, waypoint.lon];
+}
+
+function pointIcon(color: string): Leaflet.DivIcon {
+  return L.divIcon({
+    className: "route-marker",
+    html: `<span style="background:${color}"></span>`,
+    iconSize: [18, 18],
+    iconAnchor: [9, 9],
+  });
 }
 
 function initMap(): void {
@@ -79,121 +123,172 @@ function initMap(): void {
     maxZoom: 19,
     attribution: "&copy; OpenStreetMap contributors",
   }).addTo(state.map);
+
+  state.layer = L.layerGroup().addTo(state.map);
 }
 
-function clearLayer(layerName: LayerKey): void {
-  if (state[layerName]) {
-    requireMap().removeLayer(state[layerName]);
-    state[layerName] = null;
+function clearMap(): void {
+  requireLayer().clearLayers();
+}
+
+function fitPositions(positions: Leaflet.LatLngExpression[]): void {
+  if (positions.length > 1) {
+    requireMap().fitBounds(L.latLngBounds(positions), { padding: [30, 30] });
+  } else if (positions.length === 1) {
+    const [position] = positions;
+    if (position) {
+      requireMap().setView(position, 12);
+    }
   }
 }
 
-function clearActiveButton(): void {
-  document.querySelectorAll(".day-button").forEach((button) => {
-    button.classList.remove("is-active");
+function formatDistance(day: RouteDay): string {
+  if (!isRideDay(day)) {
+    return day.type === "lecture" ? "行前講習" : "休息日";
+  }
+
+  return `${day.distanceKm.toFixed(1)} km`;
+}
+
+function renderStats(): void {
+  const rideDays = state.routes.filter(isRideDay);
+  const totalPdfDistance = rideDays.reduce((sum, day) => sum + day.distanceKm, 0);
+  const totalGeneratedDistance = rideDays.reduce((sum, day) => sum + (day.generatedDistanceKm ?? 0), 0);
+
+  elements.summary.textContent =
+    "依 PDF 路線點位整理，每日可查看道路網線段與下載 GPX，方便匯入 Garmin。";
+  elements.routeStats.innerHTML = `
+    <div class="stat"><b>${rideDays.length}</b><span>騎乘日</span></div>
+    <div class="stat"><b>${totalPdfDistance.toFixed(1)}</b><span>PDF km</span></div>
+    <div class="stat"><b>${totalGeneratedDistance.toFixed(1)}</b><span>道路網 km</span></div>
+  `;
+}
+
+function renderDayOptions(): void {
+  elements.daySelect.innerHTML = "";
+
+  state.routes.forEach((day, index) => {
+    const option = document.createElement("option");
+    option.value = String(index);
+    option.textContent = `${dayCode(day)}｜${day.title}｜${formatDistance(day)}`;
+    elements.daySelect.append(option);
   });
 }
 
-function renderDetail(day: RouteDay | null): void {
-  state.activeDay = day;
-
+function renderInfo(day: RouteDay | null): void {
   if (!day) {
     const rideDays = state.routes.filter(isRideDay);
-    const totalDistance = rideDays.reduce((sum, route) => sum + route.distanceKm, 0);
+    const totalPdfDistance = rideDays.reduce((sum, route) => sum + route.distanceKm, 0);
+    const totalGeneratedDistance = rideDays.reduce((sum, route) => sum + (route.generatedDistanceKm ?? 0), 0);
 
-    elements.detailMeta.textContent = "全程總覽";
-    elements.detailTitle.textContent = "2026 鐵駱駝單車環島";
-    elements.detailDistance.textContent = `共 ${state.routes.length} 天，${rideDays.length} 個騎乘日，總距離 ${totalDistance.toFixed(1)} km`;
-    elements.detailEndpoints.textContent = "起終點依每日路線為準";
-    elements.detailDescription.textContent = "點選左側任一天查看該日路線與 GPX。";
-    elements.downloadLink.hidden = true;
-    elements.warningText.textContent = "";
+    elements.info.innerHTML = `
+      <div class="top">
+        <div>
+          <span class="badge">全部｜2026/7/4-7/18</span>
+          <h2>完整環島路線</h2>
+        </div>
+        <div class="km">PDF ${totalPdfDistance.toFixed(1)} km<br>道路網 ${totalGeneratedDistance.toFixed(1)} km</div>
+      </div>
+      <p class="note">彩色線條為各日可騎乘路線。選擇任一天可查看單日高亮路線與下載 GPX。</p>
+    `;
     return;
   }
 
-  elements.detailMeta.textContent = `${day.date}（週${day.weekday}）`;
-  elements.detailTitle.textContent = `${day.day === 0 ? "D0" : `D${day.day}`} ${day.title}`;
-  elements.detailDistance.textContent =
-    day.type === "ride"
-      ? `騎乘距離 ${day.distanceKm} km，產生路線 ${day.generatedDistanceKm} km`
-      : day.type === "rest"
-        ? "休息日"
-        : "行前講習";
-  elements.detailEndpoints.textContent = `起點：${day.start}｜終點：${day.end}`;
-  elements.detailDescription.textContent = day.description;
-  elements.warningText.textContent = day.distanceWarning || "";
+  const routeParts = day.description
+    .split("→")
+    .map((part) => part.trim())
+    .filter(Boolean);
+  const waypoints = day.waypoints.map((point) => `<span class="pill">${escapeHtml(point.name)}</span>`).join("");
+  const distanceLine = isRideDay(day)
+    ? `PDF ${day.distanceKm.toFixed(1)} km<br>道路網 ${(day.generatedDistanceKm ?? 0).toFixed(1)} km`
+    : formatDistance(day);
 
-  if (day.type === "ride" && day.gpxPath) {
-    elements.downloadLink.href = day.gpxPath;
-    elements.downloadLink.download = `iron-camel-day-${String(day.day).padStart(2, "0")}.gpx`;
-    elements.downloadLink.textContent = "下載本日 GPX";
-    elements.downloadLink.hidden = false;
-  } else {
-    elements.downloadLink.hidden = true;
+  elements.info.innerHTML = `
+    <div class="top">
+      <div>
+        <span class="badge">${dayCode(day)}｜${escapeHtml(day.date)}（週${escapeHtml(day.weekday)}）</span>
+        <h2>${escapeHtml(day.title)}</h2>
+      </div>
+      <div class="km">${distanceLine}</div>
+    </div>
+    <ul>${routeParts.map((part) => `<li>${escapeHtml(part)}</li>`).join("")}</ul>
+    ${waypoints ? `<p class="note">路點：</p><div>${waypoints}</div>` : ""}
+    <p class="note">${escapeHtml(day.distanceWarning || day.description)}</p>
+  `;
+}
+
+function updateGpxLink(day: RouteDay | null): void {
+  if (day?.type === "ride" && day.gpxPath) {
+    elements.gpxLink.href = day.gpxPath;
+    elements.gpxLink.download = `iron-camel-day-${String(day.day).padStart(2, "0")}.gpx`;
+    elements.gpxLink.hidden = false;
+    return;
   }
+
+  elements.gpxLink.hidden = true;
 }
 
-function showOverview(): void {
-  clearLayer("activeLayer");
-  clearActiveButton();
-
-  clearLayer("overviewLayer");
-  const layers = state.routes
-    .filter((day): day is RouteDay & { geojson: NonNullable<RouteDay["geojson"]> } => Boolean(day.geojson))
-    .map((day) => L.geoJSON(day.geojson, { style: routeStyle(getRideColorIndex(day)) }));
-
-  state.overviewLayer = L.featureGroup(layers).addTo(requireMap());
-  requireMap().fitBounds(state.overviewLayer.getBounds(), { padding: [24, 24] });
-  renderDetail(null);
+function updateNavigation(): void {
+  elements.daySelect.value = String(state.currentIndex);
+  elements.prevButton.disabled = state.currentIndex <= 0;
+  elements.nextButton.disabled = state.currentIndex >= state.routes.length - 1;
 }
 
-function selectDay(dayNumber: number): void {
-  const day = state.routes.find((route) => route.day === dayNumber);
+function drawMarkers(day: RouteDay, positions: Leaflet.LatLngExpression[]): void {
+  day.waypoints.forEach((waypoint, index) => {
+    const isEndpoint = index === 0 || index === day.waypoints.length - 1;
+    const position = waypointPosition(waypoint);
+    positions.push(position);
+    L.marker(position, { icon: pointIcon(isEndpoint ? "#fb923c" : "#38bdf8") })
+      .addTo(requireLayer())
+      .bindPopup(`<b>${escapeHtml(waypoint.name)}</b><br>${dayCode(day)}｜${escapeHtml(day.title)}`);
+  });
+}
+
+function drawDay(index: number): void {
+  state.currentIndex = Math.max(0, Math.min(index, state.routes.length - 1));
+  const day = state.routes[state.currentIndex];
   if (!day) {
     return;
   }
 
-  state.activeDay = day;
-  document.querySelectorAll(".day-button").forEach((button) => {
-    const dayButton = button as HTMLButtonElement;
-    dayButton.classList.toggle("is-active", Number(dayButton.dataset.day) === dayNumber);
-  });
+  clearMap();
+  updateNavigation();
+  renderInfo(day);
+  updateGpxLink(day);
 
-  clearLayer("activeLayer");
-  clearLayer("overviewLayer");
-
-  if (day.geojson) {
-    state.activeLayer = L.geoJSON(day.geojson, { style: routeStyle(getRideColorIndex(day), true) }).addTo(requireMap());
-    requireMap().fitBounds(state.activeLayer.getBounds(), { padding: [32, 32] });
+  const bounds: Leaflet.LatLngExpression[] = [];
+  const coordinates = routeCoordinates(day);
+  if (coordinates.length > 1) {
+    L.polyline(coordinates, routeStyle(state.currentIndex, true))
+      .addTo(requireLayer())
+      .bindPopup(`${dayCode(day)}｜${escapeHtml(day.title)}｜${formatDistance(day)}`);
+    bounds.push(...coordinates);
   }
 
-  renderDetail(day);
+  drawMarkers(day, bounds);
+  fitPositions(bounds);
 }
 
-function renderDayList(): void {
-  elements.dayList.innerHTML = "";
+function drawOverview(): void {
+  clearMap();
+  renderInfo(null);
+  updateGpxLink(null);
 
-  for (const day of state.routes) {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "day-button";
-    button.dataset.day = String(day.day);
+  const bounds: Leaflet.LatLngExpression[] = [];
+  state.routes.forEach((day, index) => {
+    const coordinates = routeCoordinates(day);
+    if (coordinates.length <= 1) {
+      return;
+    }
 
-    const label =
-      day.type === "ride"
-        ? `${day.distanceKm} km`
-        : day.type === "rest"
-          ? "休息日"
-          : "行前講習";
-    const gpxLabel = day.type === "ride" ? "可下載 GPX" : "無 GPX";
+    L.polyline(coordinates, routeStyle(index))
+      .addTo(requireLayer())
+      .bindPopup(`${dayCode(day)}｜${escapeHtml(day.title)}｜${formatDistance(day)}`);
+    bounds.push(...coordinates);
+  });
 
-    button.innerHTML = `
-      <span class="day-title">${day.day === 0 ? "D0" : `D${day.day}`} ${day.title}</span>
-      <span class="day-meta">${day.date}（週${day.weekday}）· ${label} · ${gpxLabel}</span>
-    `;
-    button.addEventListener("click", () => selectDay(day.day));
-    elements.dayList.append(button);
-  }
+  fitPositions(bounds);
 }
 
 async function loadRoutes(): Promise<void> {
@@ -210,21 +305,28 @@ async function main(): Promise<void> {
 
   try {
     await loadRoutes();
+    renderStats();
+    renderDayOptions();
 
-    const rideDays = state.routes.filter(isRideDay);
-    const totalDistance = rideDays.reduce((sum, day) => sum + day.distanceKm, 0);
+    elements.daySelect.addEventListener("change", () => drawDay(Number(elements.daySelect.value)));
+    elements.prevButton.addEventListener("click", () => drawDay(state.currentIndex - 1));
+    elements.nextButton.addEventListener("click", () => drawDay(state.currentIndex + 1));
+    elements.allButton.addEventListener("click", drawOverview);
 
-    elements.summary.textContent = `共 ${state.routes.length} 天，${rideDays.length} 個騎乘日，總距離 ${totalDistance.toFixed(1)} km。`;
-    renderDayList();
-    elements.overviewButton.addEventListener("click", showOverview);
-    showOverview();
+    const firstRideIndex = state.routes.findIndex(isRideDay);
+    drawDay(firstRideIndex >= 0 ? firstRideIndex : 0);
   } catch (error) {
     elements.summary.textContent = "路線資料載入失敗。";
-    elements.detailMeta.textContent = "載入失敗";
-    elements.detailTitle.textContent = "無法載入路線資料";
-    elements.detailDescription.textContent = error instanceof Error ? error.message : String(error);
-    elements.detailEndpoints.textContent = "";
-    elements.downloadLink.hidden = true;
+    elements.info.innerHTML = `
+      <div class="top">
+        <div>
+          <span class="badge">載入失敗</span>
+          <h2>無法載入路線資料</h2>
+        </div>
+      </div>
+      <p class="note">${escapeHtml(error instanceof Error ? error.message : String(error))}</p>
+    `;
+    updateGpxLink(null);
   }
 }
 

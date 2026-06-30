@@ -3,34 +3,42 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>2026 鐵駱駝環島路線</title>
+    <title>2026 鐵駱駝環島路線｜道路網 GPX</title>
     <link rel="stylesheet" href="src/styles.css">
   </head>
   <body>
-    <main class="app-shell">
+    <main class="app">
       <aside class="sidebar">
         <div class="brand">
           <p class="eyebrow">2026 鐵駱駝</p>
-          <h1>單車環島路線</h1>
-          <p id="summary" class="summary">載入路線資料中...</p>
+          <h1>環島路線地圖</h1>
+          <p id="summary" class="sub">載入路線資料中...</p>
         </div>
-        <button id="overviewButton" class="overview-button" type="button">查看全程</button>
-        <div id="dayList" class="day-list" aria-label="每日路線"></div>
+
+        <div id="routeStats" class="stats" aria-label="路線統計"></div>
+
+        <label class="control-label" for="daySelect">每日路線</label>
+        <select id="daySelect" aria-label="選擇每日路線"></select>
+
+        <div class="grid2">
+          <button id="prevBtn" type="button">上一天</button>
+          <button id="nextBtn" type="button">下一天</button>
+        </div>
+        <button id="allBtn" class="primary" type="button">顯示全路線</button>
+        <a id="gpxLink" class="dl" href="#" download hidden>下載本日 GPX</a>
+
+        <div class="legend" aria-label="地圖圖例">
+          <span><i class="dot blue"></i>單日路線</span>
+          <span><i class="dot gray"></i>非騎乘日</span>
+          <span><i class="dot orange"></i>起終點</span>
+        </div>
+
+        <section id="info" class="card" aria-live="polite"></section>
       </aside>
 
-      <section class="map-area" aria-label="路線地圖">
+      <section class="map-stage" aria-label="路線地圖">
         <div id="map"></div>
       </section>
-
-      <aside class="detail-panel" aria-live="polite">
-        <p id="detailMeta" class="detail-meta"></p>
-        <h2 id="detailTitle">選擇一天查看路線</h2>
-        <p id="detailDistance" class="distance"></p>
-        <p id="detailEndpoints" class="route-endpoints"></p>
-        <p id="detailDescription" class="route-description"></p>
-        <a id="downloadLink" class="download-link" href="#" download hidden>下載 GPX</a>
-        <p id="warningText" class="warning-text"></p>
-      </aside>
     </main>
 
     <script type="module" src="/src/app.ts"></script>
