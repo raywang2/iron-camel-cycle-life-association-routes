@@ -12,6 +12,24 @@ export interface GpxFile {
   content: string;
 }
 
+const REST_INTERVAL_KM = 20;
+const REST_WINDOW_KM = 12;
+const FINISH_EXCLUSION_KM = 15;
+const EXCLUDED_STORE_NAME_PATTERNS = [/shopee/i, /蝦皮/i];
+
+function restStopTargets(generatedDistanceKm: number): number[] {
+  const finishExclusionKm = Math.min(FINISH_EXCLUSION_KM, generatedDistanceKm * 0.25);
+  const targets = [];
+  for (let target = REST_INTERVAL_KM; target <= generatedDistanceKm - finishExclusionKm; target += REST_INTERVAL_KM) {
+    targets.push(target);
+  }
+  return targets;
+}
+
+function isExcludedRestStopName(name: string): boolean {
+  return EXCLUDED_STORE_NAME_PATTERNS.some((pattern) => pattern.test(name));
+}
+
 export function validateRouteOutput(routes: RouteDay[], gpxFiles: GpxFile[]): void {
   const actualGpxPaths: Set<string> = new Set(gpxFiles.map((file) => file.path));
   const gpxContentByPath = new Map(gpxFiles.map((file) => [file.path, file.content]));
@@ -61,10 +79,17 @@ export function validateRouteOutput(routes: RouteDay[], gpxFiles: GpxFile[]): vo
         `Day ${day.day} needs a selected route candidate`,
       );
       assert(Array.isArray(day.convenienceStores), `Day ${day.day} needs convenience store output`);
-      assert(day.convenienceStores.length === 1, `Day ${day.day} needs exactly one convenience store rest stop`);
-      for (const store of day.convenienceStores) {
+      const expectedRestTargets = restStopTargets(day.generatedDistanceKm);
+      assert(
+        day.convenienceStores.length === expectedRestTargets.length,
+        `Day ${day.day} needs ${expectedRestTargets.length} convenience store rest stops`,
+      );
+      for (let storeIndex = 0; storeIndex < day.convenienceStores.length; storeIndex += 1) {
+        const store = day.convenienceStores[storeIndex]!;
+        const expectedTargetKm = expectedRestTargets[storeIndex]!;
         assert(typeof store.id === "string" && store.id.length > 0, `Day ${day.day} convenience store needs id`);
         assert(typeof store.name === "string" && store.name.length > 0, `Day ${day.day} convenience store needs name`);
+        assert(!isExcludedRestStopName(store.name), `Day ${day.day} convenience store must be a rest-stop convenience store`);
         assert(typeof store.lat === "number", `Day ${day.day} convenience store needs latitude`);
         assert(typeof store.lon === "number", `Day ${day.day} convenience store needs longitude`);
         assert(
@@ -76,11 +101,16 @@ export function validateRouteOutput(routes: RouteDay[], gpxFiles: GpxFile[]): vo
           `Day ${day.day} convenience store needs route progress`,
         );
         assert(
-          store.routeProgressKm >= 10 && store.routeProgressKm <= 32,
-          `Day ${day.day} convenience store should be around 20km from start`,
+          store.targetKm === expectedTargetKm,
+          `Day ${day.day} convenience store target should be ${expectedTargetKm}km`,
         );
         assert(
-          typeof day.generatedDistanceKm !== "number" || store.routeProgressKm <= day.generatedDistanceKm - 5,
+          Math.abs(store.routeProgressKm - expectedTargetKm) <= REST_WINDOW_KM,
+          `Day ${day.day} convenience store should be around ${expectedTargetKm}km from start`,
+        );
+        const finishExclusionKm = Math.min(FINISH_EXCLUSION_KM, day.generatedDistanceKm * 0.25);
+        assert(
+          store.routeProgressKm <= day.generatedDistanceKm - finishExclusionKm,
           `Day ${day.day} convenience store should not be near the finish`,
         );
         assert(

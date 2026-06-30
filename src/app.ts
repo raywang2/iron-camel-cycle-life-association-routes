@@ -225,16 +225,21 @@ function renderInfo(day: RouteDay | null): void {
     ? `PDF ${day.distanceKm.toFixed(1)} km<br>道路網 ${(day.generatedDistanceKm ?? 0).toFixed(1)} km`
     : formatDistance(day);
   const reviewNote = day.routeReview?.reviewNote ? `<p class="note">${escapeHtml(day.routeReview.reviewNote)}</p>` : "";
-  const restStop = day.convenienceStores?.[0];
-  const storeBlock = restStop
-    ? `<p class="note">20km 左右休息點：</p>
+  const restStops = day.convenienceStores ?? [];
+  const storeItems = restStops
+    .map(
+      (store) => `<li>
+          ${store.targetKm}km｜${escapeHtml(store.name)}
+          <span class="store-distance">實際 ${store.routeProgressKm.toFixed(1)}km｜${Math.round(store.distanceFromRouteM)}m｜${formatStoreSide(store.sideOfRoute)}</span>
+        </li>`,
+    )
+    .join("");
+  const storeBlock = restStops.length > 0
+    ? `<p class="note">每 20km 左右休息點：</p>
       <ul class="store-list">
-        <li>
-          ${escapeHtml(restStop.name)}
-          <span class="store-distance">${restStop.routeProgressKm.toFixed(1)}km｜${Math.round(restStop.distanceFromRouteM)}m｜${formatStoreSide(restStop.sideOfRoute)}</span>
-        </li>
+        ${storeItems}
       </ul>`
-    : `<p class="note">此日尚未找到符合 20km 左右、非終點附近的便利商店休息點。</p>`;
+    : `<p class="note">此日尚未找到符合每 20km、非終點附近的便利商店休息點。</p>`;
 
   elements.info.innerHTML = `
     <div class="top">
@@ -293,7 +298,7 @@ function drawConvenienceStores(day: RouteDay, positions: Leaflet.LatLngExpressio
     L.marker(position, { icon: storeIcon() })
       .addTo(requireLayer())
       .bindPopup(
-        `<b>${escapeHtml(store.name)}</b><br>${store.routeProgressKm.toFixed(1)}km｜${Math.round(store.distanceFromRouteM)}m｜${formatStoreSide(store.sideOfRoute)}`,
+        `<b>${store.targetKm}km｜${escapeHtml(store.name)}</b><br>實際 ${store.routeProgressKm.toFixed(1)}km｜${Math.round(store.distanceFromRouteM)}m｜${formatStoreSide(store.sideOfRoute)}`,
       );
   }
 }

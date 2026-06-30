@@ -24,11 +24,12 @@ const OVERPASS_URLS = (
 ).split(",");
 const FETCH_CONVENIENCE_STORES = process.env.FETCH_CONVENIENCE_STORES !== "0";
 const POI_RADIUS_M = Number(process.env.POI_RADIUS_M || "600");
-const REST_TARGET_KM = Number(process.env.REST_TARGET_KM || "20");
-const REST_WINDOW_KM = Number(process.env.REST_WINDOW_KM || "8");
-const FINISH_EXCLUSION_KM = Number(process.env.FINISH_EXCLUSION_KM || "5");
+const REST_INTERVAL_KM = Number(process.env.REST_INTERVAL_KM || "20");
+const REST_WINDOW_KM = Number(process.env.REST_WINDOW_KM || "12");
+const FINISH_EXCLUSION_KM = Number(process.env.FINISH_EXCLUSION_KM || "15");
 const OVERPASS_DELAY_MS = Number(process.env.OVERPASS_DELAY_MS || "3500");
 const OVERPASS_TIMEOUT_MS = Number(process.env.OVERPASS_TIMEOUT_MS || "45000");
+const EXCLUDED_STORE_NAME_PATTERNS = [/shopee/i, /蝦皮/i];
 const execFileAsync = promisify(execFile);
 let lastOverpassRequestAt = 0;
 
@@ -479,6 +480,13 @@ function storeName(tags: Record<string, string> | undefined, brand: string | nul
   return tags?.name || brand || "便利商店";
 }
 
+function isExcludedRestStop(tags: Record<string, string> | undefined, displayName: string): boolean {
+  const searchableText = [displayName, tags?.name, tags?.brand, tags?.operator]
+    .filter((value): value is string => typeof value === "string")
+    .join(" ");
+  return EXCLUDED_STORE_NAME_PATTERNS.some((pattern) => pattern.test(searchableText));
+}
+
 function pointToSegmentDistanceM(
   point: CoordinatePoint,
   segmentStart: CoordinatePoint,
@@ -550,26 +558,47 @@ function nearestRouteDistance(
   };
 }
 
-function storeScore(store: ConvenienceStore): number {
-  const progressPenalty = Math.abs(store.routeProgressKm - REST_TARGET_KM) * 100;
+function restStopTargets(generatedDistanceKm: number): number[] {
+  const finishExclusionKm = Math.min(FINISH_EXCLUSION_KM, generatedDistanceKm * 0.25);
+  const targets = [];
+  for (let target = REST_INTERVAL_KM; target <= generatedDistanceKm - finishExclusionKm; target += REST_INTERVAL_KM) {
+    targets.push(target);
+  }
+  return targets;
+}
+
+function storeScore(store: ConvenienceStore, targetKm: number): number {
+  const progressPenalty = Math.abs(store.routeProgressKm - targetKm) * 100;
   const distancePenalty = store.distanceFromRouteM;
   const sidePenalty = store.sideOfRoute === "right" || store.sideOfRoute === "on-route" ? 0 : 300;
   return progressPenalty + distancePenalty + sidePenalty;
 }
 
-function selectRestStop(stores: StoreWithSegment[], generatedDistanceKm: number): ConvenienceStore[] {
-  const notNearFinish = stores.filter((store) => store.routeProgressKm <= generatedDistanceKm - FINISH_EXCLUSION_KM);
-  const around20km = notNearFinish.filter(
-    (store) => Math.abs(store.routeProgressKm - REST_TARGET_KM) <= REST_WINDOW_KM,
-  );
-  const pool = around20km.length > 0 ? around20km : notNearFinish;
-  const selected = pool.sort((a, b) => a.score - b.score)[0];
-  if (!selected) {
-    return [];
+function selectRestStops(stores: StoreWithSegment[], generatedDistanceKm: number): ConvenienceStore[] {
+  const finishExclusionKm = Math.min(FINISH_EXCLUSION_KM, generatedDistanceKm * 0.25);
+  const notNearFinish = stores.filter((store) => store.routeProgressKm <= generatedDistanceKm - finishExclusionKm);
+  const selectedStops: ConvenienceStore[] = [];
+  const usedStoreIds = new Set<string>();
+
+  for (const targetKm of restStopTargets(generatedDistanceKm)) {
+    const availableStores = notNearFinish.filter((store) => !usedStoreIds.has(store.id));
+    const aroundTarget = availableStores.filter(
+      (store) => Math.abs(store.routeProgressKm - targetKm) <= REST_WINDOW_KM,
+    );
+    const selected = aroundTarget.sort((a, b) => storeScore(a, targetKm) - storeScore(b, targetKm))[0];
+    if (!selected) {
+      continue;
+    }
+
+    usedStoreIds.add(selected.id);
+    const { segmentIndex: _segmentIndex, score: _score, ...store } = selected;
+    selectedStops.push({
+      ...store,
+      targetKm,
+    });
   }
 
-  const { segmentIndex: _segmentIndex, score: _score, ...store } = selected;
-  return [store];
+  return selectedStops;
 }
 
 function convenienceStoresNearRoute(elements: OverpassElement[], geometry: LineStringGeometry): ConvenienceStore[] {
@@ -589,26 +618,32 @@ function convenienceStoresNearRoute(elements: OverpassElement[], geometry: LineS
     }
 
     const brand = normalizeStoreBrand(element.tags);
+    const name = storeName(element.tags, brand);
+    if (isExcludedRestStop(element.tags, name)) {
+      continue;
+    }
+
     const store: ConvenienceStore = {
       id: `${element.type}/${element.id}`,
-      name: storeName(element.tags, brand),
+      name,
       brand,
       lat,
       lon,
       distanceFromRouteM: Math.round(distanceM),
+      targetKm: 0,
       routeProgressKm,
       sideOfRoute,
     };
     stores.push({
       ...store,
       segmentIndex,
-      score: storeScore(store),
+      score: 0,
     });
   }
 
   const candidates = stores
     .sort((a, b) => a.segmentIndex - b.segmentIndex || a.distanceFromRouteM - b.distanceFromRouteM);
-  return selectRestStop(candidates, generatedDistanceKm);
+  return selectRestStops(candidates, generatedDistanceKm);
 }
 
 async function fetchConvenienceStores(day: RouteDay, geometry: LineStringGeometry): Promise<ConvenienceStore[]> {
@@ -620,7 +655,7 @@ async function fetchConvenienceStores(day: RouteDay, geometry: LineStringGeometr
     const elements = await fetchOverpassElements(geometry);
     const stores = convenienceStoresNearRoute(elements, geometry);
     console.log(
-      `Day ${day.day}: selected ${stores[0]?.name ?? "no"} convenience store around ${REST_TARGET_KM}km`,
+      `Day ${day.day}: selected ${stores.length} convenience store rest stops every ${REST_INTERVAL_KM}km`,
     );
     return stores;
   } catch (error) {

@@ -51,6 +51,7 @@ function rideDay(day: number): RouteDay {
         lat: 24,
         lon: 120,
         distanceFromRouteM: 30,
+        targetKm: 20,
         routeProgressKm: 20,
         sideOfRoute: "right",
       },
@@ -156,10 +157,11 @@ describe("validateRouteOutput", () => {
     expect(() => validateRouteOutput(routes, gpxFor(routes))).toThrow("Day 1 needs convenience store output");
   });
 
-  it("rejects ride days without exactly one rest-stop convenience store", () => {
+  it("accepts long ride days with rest stops every 20km before the finish", () => {
     const routes = validRoutes();
     routes[1] = {
       ...routes[1]!,
+      generatedDistanceKm: 65,
       convenienceStores: [
         {
           id: "node/1",
@@ -168,6 +170,7 @@ describe("validateRouteOutput", () => {
           lat: 24,
           lon: 120,
           distanceFromRouteM: 30,
+          targetKm: 20,
           routeProgressKm: 20,
           sideOfRoute: "right",
         },
@@ -178,18 +181,64 @@ describe("validateRouteOutput", () => {
           lat: 24,
           lon: 120,
           distanceFromRouteM: 40,
+          targetKm: 40,
+          routeProgressKm: 41,
+          sideOfRoute: "right",
+        },
+      ],
+    };
+
+    expect(() => validateRouteOutput(routes, gpxFor(routes))).not.toThrow();
+  });
+
+  it("rejects ride days without the expected 20km rest-stop count", () => {
+    const routes = validRoutes();
+    routes[1] = {
+      ...routes[1]!,
+      generatedDistanceKm: 65,
+      convenienceStores: [
+        {
+          id: "node/1",
+          name: "7-ELEVEN",
+          brand: "7-ELEVEN",
+          lat: 24,
+          lon: 120,
+          distanceFromRouteM: 30,
+          targetKm: 20,
+          routeProgressKm: 20,
+          sideOfRoute: "right",
+        },
+        {
+          id: "node/2",
+          name: "FamilyMart",
+          brand: "FamilyMart",
+          lat: 24,
+          lon: 120,
+          distanceFromRouteM: 40,
+          targetKm: 40,
           routeProgressKm: 21,
+          sideOfRoute: "right",
+        },
+        {
+          id: "node/3",
+          name: "Hi-Life",
+          brand: "Hi-Life",
+          lat: 24,
+          lon: 120,
+          distanceFromRouteM: 40,
+          targetKm: 60,
+          routeProgressKm: 58,
           sideOfRoute: "right",
         },
       ],
     };
 
     expect(() => validateRouteOutput(routes, gpxFor(routes))).toThrow(
-      "Day 1 needs exactly one convenience store rest stop",
+      "Day 1 needs 2 convenience store rest stops",
     );
   });
 
-  it("rejects convenience stores outside the 20km rest window", () => {
+  it("rejects convenience stores outside their 20km rest window", () => {
     const routes = validRoutes();
     routes[1] = {
       ...routes[1]!,
@@ -201,6 +250,7 @@ describe("validateRouteOutput", () => {
           lat: 24,
           lon: 120,
           distanceFromRouteM: 30,
+          targetKm: 20,
           routeProgressKm: 35,
           sideOfRoute: "right",
         },
@@ -212,11 +262,35 @@ describe("validateRouteOutput", () => {
     );
   });
 
-  it("rejects convenience stores near the finish", () => {
+  it("rejects pickup-only shops misclassified as convenience stores", () => {
     const routes = validRoutes();
     routes[1] = {
       ...routes[1]!,
-      generatedDistanceKm: 24,
+      convenienceStores: [
+        {
+          id: "node/1",
+          name: "蝦皮店到店",
+          brand: null,
+          lat: 24,
+          lon: 120,
+          distanceFromRouteM: 30,
+          targetKm: 20,
+          routeProgressKm: 20,
+          sideOfRoute: "right",
+        },
+      ],
+    };
+
+    expect(() => validateRouteOutput(routes, gpxFor(routes))).toThrow(
+      "Day 1 convenience store must be a rest-stop convenience store",
+    );
+  });
+
+  it("rejects convenience stores whose target would be near the finish", () => {
+    const routes = validRoutes();
+    routes[1] = {
+      ...routes[1]!,
+      generatedDistanceKm: 42,
       convenienceStores: [
         {
           id: "node/1",
@@ -225,14 +299,26 @@ describe("validateRouteOutput", () => {
           lat: 24,
           lon: 120,
           distanceFromRouteM: 30,
-          routeProgressKm: 21,
+          targetKm: 20,
+          routeProgressKm: 20,
+          sideOfRoute: "right",
+        },
+        {
+          id: "node/2",
+          name: "FamilyMart",
+          brand: "FamilyMart",
+          lat: 24,
+          lon: 120,
+          distanceFromRouteM: 40,
+          targetKm: 40,
+          routeProgressKm: 40,
           sideOfRoute: "right",
         },
       ],
     };
 
     expect(() => validateRouteOutput(routes, gpxFor(routes))).toThrow(
-      "Day 1 convenience store should not be near the finish",
+      "Day 1 needs 1 convenience store rest stops",
     );
   });
 });

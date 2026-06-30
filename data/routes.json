@@ -121,7 +121,19 @@
         "lat": 24.3089181,
         "lon": 120.7246058,
         "distanceFromRouteM": 11,
+        "targetKm": 20,
         "routeProgressKm": 19.7,
+        "sideOfRoute": "right"
+      },
+      {
+        "id": "node/3303577752",
+        "name": "便利商店",
+        "brand": null,
+        "lat": 24.4251874,
+        "lon": 120.7748219,
+        "distanceFromRouteM": 26,
+        "targetKm": 40,
+        "routeProgressKm": 36.4,
         "sideOfRoute": "right"
       }
     ],
@@ -4792,7 +4804,19 @@
         "lat": 24.684268,
         "lon": 120.8688433,
         "distanceFromRouteM": 15,
+        "targetKm": 20,
         "routeProgressKm": 17.7,
+        "sideOfRoute": "right"
+      },
+      {
+        "id": "node/3303522353",
+        "name": "OK超商",
+        "brand": "OK Mart",
+        "lat": 24.6892432,
+        "lon": 120.8589532,
+        "distanceFromRouteM": 320,
+        "targetKm": 40,
+        "routeProgressKm": 44.7,
         "sideOfRoute": "right"
       }
     ],
@@ -9984,8 +10008,31 @@
         "lat": 24.8122777,
         "lon": 121.1309124,
         "distanceFromRouteM": 7,
+        "targetKm": 20,
         "routeProgressKm": 19.3,
         "sideOfRoute": "left"
+      },
+      {
+        "id": "node/9671363014",
+        "name": "7-Eleven",
+        "brand": "7-ELEVEN",
+        "lat": 24.8354059,
+        "lon": 121.246211,
+        "distanceFromRouteM": 20,
+        "targetKm": 40,
+        "routeProgressKm": 40.5,
+        "sideOfRoute": "right"
+      },
+      {
+        "id": "node/4175052362",
+        "name": "全家便利商店",
+        "brand": "FamilyMart",
+        "lat": 24.9377309,
+        "lon": 121.3612779,
+        "distanceFromRouteM": 91,
+        "targetKm": 60,
+        "routeProgressKm": 60.6,
+        "sideOfRoute": "right"
       }
     ],
     "routingStatus": "routed",
@@ -18278,8 +18325,20 @@
         "lat": 24.9916519,
         "lon": 121.6556888,
         "distanceFromRouteM": 88,
+        "targetKm": 20,
         "routeProgressKm": 16.1,
         "sideOfRoute": "left"
+      },
+      {
+        "id": "node/10165763575",
+        "name": "全家便利商店",
+        "brand": "FamilyMart",
+        "lat": 24.8377023,
+        "lon": 121.788497,
+        "distanceFromRouteM": 136,
+        "targetKm": 40,
+        "routeProgressKm": 39.2,
+        "sideOfRoute": "right"
       }
     ],
     "routingStatus": "routed",
@@ -21475,14 +21534,15 @@
     },
     "convenienceStores": [
       {
-        "id": "node/6844940952",
-        "name": "全家便利商店",
-        "brand": "FamilyMart",
-        "lat": 24.0266123,
-        "lon": 121.6304915,
-        "distanceFromRouteM": 10,
-        "routeProgressKm": 24.2,
-        "sideOfRoute": "left"
+        "id": "node/6807160560",
+        "name": "7-Eleven",
+        "brand": "7-ELEVEN",
+        "lat": 24.0906442,
+        "lon": 121.6126603,
+        "distanceFromRouteM": 467,
+        "targetKm": 20,
+        "routeProgressKm": 16.5,
+        "sideOfRoute": "right"
       }
     ],
     "routingStatus": "routed",
@@ -23743,8 +23803,31 @@
         "lat": 23.8491703,
         "lon": 121.495488,
         "distanceFromRouteM": 13,
+        "targetKm": 20,
         "routeProgressKm": 21.6,
         "sideOfRoute": "right"
+      },
+      {
+        "id": "node/6802108133",
+        "name": "7-Eleven",
+        "brand": "7-ELEVEN",
+        "lat": 23.7139516,
+        "lon": 121.4222449,
+        "distanceFromRouteM": 27,
+        "targetKm": 40,
+        "routeProgressKm": 39.1,
+        "sideOfRoute": "right"
+      },
+      {
+        "id": "node/2536738917",
+        "name": "7-Eleven",
+        "brand": "7-ELEVEN",
+        "lat": 23.517009,
+        "lon": 121.3768916,
+        "distanceFromRouteM": 40,
+        "targetKm": 60,
+        "routeProgressKm": 63.5,
+        "sideOfRoute": "left"
       }
     ],
     "routingStatus": "routed",
@@ -28667,7 +28750,30 @@
         "lat": 23.179259,
         "lon": 121.2488512,
         "distanceFromRouteM": 8,
+        "targetKm": 20,
         "routeProgressKm": 22.2,
+        "sideOfRoute": "left"
+      },
+      {
+        "id": "node/4121246031",
+        "name": "達興便利超商",
+        "brand": null,
+        "lat": 23.0471355,
+        "lon": 121.1636497,
+        "distanceFromRouteM": 16,
+        "targetKm": 40,
+        "routeProgressKm": 41,
+        "sideOfRoute": "right"
+      },
+      {
+        "id": "node/5631842723",
+        "name": "7-Eleven",
+        "brand": "7-ELEVEN",
+        "lat": 22.9106776,
+        "lon": 121.1362273,
+        "distanceFromRouteM": 6,
+        "targetKm": 60,
+        "routeProgressKm": 57.8,
         "sideOfRoute": "left"
       }
     ],
@@ -34425,7 +34531,52 @@
         "lat": 22.674551,
         "lon": 121.0397501,
         "distanceFromRouteM": 14,
+        "targetKm": 20,
         "routeProgressKm": 21.6,
+        "sideOfRoute": "right"
+      },
+      {
+        "id": "node/7790417936",
+        "name": "全家便利商店",
+        "brand": "FamilyMart",
+        "lat": 22.579176,
+        "lon": 120.9925878,
+        "distanceFromRouteM": 37,
+        "targetKm": 40,
+        "routeProgressKm": 33.7,
+        "sideOfRoute": "left"
+      },
+      {
+        "id": "node/10242015019",
+        "name": "7-Eleven",
+        "brand": "7-ELEVEN",
+        "lat": 22.3378439,
+        "lon": 120.8947082,
+        "distanceFromRouteM": 84,
+        "targetKm": 60,
+        "routeProgressKm": 63.8,
+        "sideOfRoute": "left"
+      },
+      {
+        "id": "node/9396746931",
+        "name": "7-Eleven",
+        "brand": "7-ELEVEN",
+        "lat": 22.2212093,
+        "lon": 120.7948619,
+        "distanceFromRouteM": 17,
+        "targetKm": 80,
+        "routeProgressKm": 82.6,
+        "sideOfRoute": "right"
+      },
+      {
+        "id": "node/11273481309",
+        "name": "7-Eleven",
+        "brand": "7-ELEVEN",
+        "lat": 22.1951184,
+        "lon": 120.6915046,
+        "distanceFromRouteM": 57,
+        "targetKm": 100,
+        "routeProgressKm": 95.9,
         "sideOfRoute": "right"
       }
     ],
@@ -43962,7 +44113,41 @@
         "lat": 22.198803,
         "lon": 120.6894936,
         "distanceFromRouteM": 19,
+        "targetKm": 20,
         "routeProgressKm": 24.2,
+        "sideOfRoute": "right"
+      },
+      {
+        "id": "node/5440436984",
+        "name": "萊爾富",
+        "brand": "Hi-Life",
+        "lat": 22.3301581,
+        "lon": 120.6203517,
+        "distanceFromRouteM": 8,
+        "targetKm": 40,
+        "routeProgressKm": 41.1,
+        "sideOfRoute": "right"
+      },
+      {
+        "id": "node/4895249117",
+        "name": "7-Eleven",
+        "brand": "7-ELEVEN",
+        "lat": 22.4373932,
+        "lon": 120.5126435,
+        "distanceFromRouteM": 10,
+        "targetKm": 60,
+        "routeProgressKm": 59.2,
+        "sideOfRoute": "right"
+      },
+      {
+        "id": "node/4893452902",
+        "name": "7-Eleven",
+        "brand": "7-ELEVEN",
+        "lat": 22.5011189,
+        "lon": 120.3981024,
+        "distanceFromRouteM": 16,
+        "targetKm": 80,
+        "routeProgressKm": 75.4,
         "sideOfRoute": "right"
       }
     ],
@@ -51660,7 +51845,52 @@
         "lat": 22.8081509,
         "lon": 120.2433941,
         "distanceFromRouteM": 10,
+        "targetKm": 20,
         "routeProgressKm": 22.2,
+        "sideOfRoute": "right"
+      },
+      {
+        "id": "node/4349618897",
+        "name": "7-Eleven",
+        "brand": "7-ELEVEN",
+        "lat": 22.9065113,
+        "lon": 120.18357,
+        "distanceFromRouteM": 20,
+        "targetKm": 40,
+        "routeProgressKm": 41.2,
+        "sideOfRoute": "right"
+      },
+      {
+        "id": "node/8118207076",
+        "name": "7-Eleven",
+        "brand": "7-ELEVEN",
+        "lat": 23.0536722,
+        "lon": 120.1783597,
+        "distanceFromRouteM": 7,
+        "targetKm": 60,
+        "routeProgressKm": 59.4,
+        "sideOfRoute": "right"
+      },
+      {
+        "id": "node/2029860573",
+        "name": "便利商店",
+        "brand": null,
+        "lat": 23.1801004,
+        "lon": 120.1546679,
+        "distanceFromRouteM": 208,
+        "targetKm": 80,
+        "routeProgressKm": 78.6,
+        "sideOfRoute": "right"
+      },
+      {
+        "id": "node/3198261961",
+        "name": "7-Eleven",
+        "brand": "7-ELEVEN",
+        "lat": 23.3199227,
+        "lon": 120.2678155,
+        "distanceFromRouteM": 10,
+        "targetKm": 100,
+        "routeProgressKm": 99.8,
         "sideOfRoute": "right"
       }
     ],
@@ -60470,7 +60700,52 @@
         "lat": 23.6703499,
         "lon": 120.476021,
         "distanceFromRouteM": 11,
+        "targetKm": 20,
         "routeProgressKm": 29.1,
+        "sideOfRoute": "right"
+      },
+      {
+        "id": "node/10915454874",
+        "name": "全家便利商店",
+        "brand": "FamilyMart",
+        "lat": 23.7169794,
+        "lon": 120.5511799,
+        "distanceFromRouteM": 19,
+        "targetKm": 40,
+        "routeProgressKm": 40.5,
+        "sideOfRoute": "right"
+      },
+      {
+        "id": "node/1638690339",
+        "name": "萊爾富",
+        "brand": "Hi-Life",
+        "lat": 23.7539102,
+        "lon": 120.677547,
+        "distanceFromRouteM": 73,
+        "targetKm": 60,
+        "routeProgressKm": 57.7,
+        "sideOfRoute": "right"
+      },
+      {
+        "id": "node/3679771397",
+        "name": "7-Eleven",
+        "brand": "7-ELEVEN",
+        "lat": 23.8109052,
+        "lon": 120.8556124,
+        "distanceFromRouteM": 12,
+        "targetKm": 80,
+        "routeProgressKm": 84.2,
+        "sideOfRoute": "right"
+      },
+      {
+        "id": "node/9247406460",
+        "name": "7-Eleven",
+        "brand": "7-ELEVEN",
+        "lat": 23.8664095,
+        "lon": 120.9111545,
+        "distanceFromRouteM": 24,
+        "targetKm": 100,
+        "routeProgressKm": 100.7,
         "sideOfRoute": "right"
       }
     ],
@@ -70698,8 +70973,20 @@
         "lat": 23.9833827,
         "lon": 120.7921385,
         "distanceFromRouteM": 410,
+        "targetKm": 20,
         "routeProgressKm": 23.8,
         "sideOfRoute": "left"
+      },
+      {
+        "id": "node/4389548727",
+        "name": "7-Eleven",
+        "brand": "7-ELEVEN",
+        "lat": 23.9911799,
+        "lon": 120.6683446,
+        "distanceFromRouteM": 30,
+        "targetKm": 40,
+        "routeProgressKm": 40.9,
+        "sideOfRoute": "right"
       }
     ],
     "routingStatus": "routed",

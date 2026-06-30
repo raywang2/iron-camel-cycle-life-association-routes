@@ -34,6 +34,7 @@ export interface ConvenienceStore {
   lat: number;
   lon: number;
   distanceFromRouteM: number;
+  targetKm: number;
   routeProgressKm: number;
   sideOfRoute: "right" | "left" | "on-route";
 }
