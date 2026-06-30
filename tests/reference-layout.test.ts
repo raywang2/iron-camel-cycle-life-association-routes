@@ -32,6 +32,20 @@ describe("reference-style route UI", () => {
     expect(app).toContain("L.marker(");
   });
 
+  it("uses distinct map markers for route start and finish", () => {
+    const html = fs.readFileSync("index.html", "utf8");
+    const app = fs.readFileSync("src/app.ts", "utf8");
+    const css = fs.readFileSync("src/styles.css", "utf8");
+
+    expect(html).toContain("起點");
+    expect(html).toContain("終點");
+    expect(app).toContain("markerTypeForWaypoint(");
+    expect(app).toContain('className: `route-marker ${type}`');
+    expect(css).toContain(".route-marker.start span");
+    expect(css).toContain(".route-marker.finish span");
+    expect(css).toContain(".route-marker.mid span");
+  });
+
   it("uses the reference dark split layout styles", () => {
     const css = fs.readFileSync("src/styles.css", "utf8");
 

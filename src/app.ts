@@ -26,6 +26,8 @@ interface AppState {
   showConvenienceStores: boolean;
 }
 
+type WaypointMarkerType = "start" | "finish" | "mid";
+
 function requiredElement<T extends Element>(selector: string, constructor: new () => T): T {
   const element = document.querySelector(selector);
   if (!(element instanceof constructor)) {
@@ -107,12 +109,43 @@ function waypointPosition(waypoint: Waypoint): Leaflet.LatLngExpression {
   return [waypoint.lat, waypoint.lon];
 }
 
-function pointIcon(color: string): Leaflet.DivIcon {
+function markerTypeForWaypoint(index: number, total: number): WaypointMarkerType {
+  if (index === 0) {
+    return "start";
+  }
+  if (index === total - 1) {
+    return "finish";
+  }
+  return "mid";
+}
+
+function markerLabel(type: WaypointMarkerType): string {
+  if (type === "start") {
+    return "起點";
+  }
+  if (type === "finish") {
+    return "終點";
+  }
+  return "路點";
+}
+
+function markerGlyph(type: WaypointMarkerType): string {
+  if (type === "start") {
+    return "起";
+  }
+  if (type === "finish") {
+    return "✓";
+  }
+  return "";
+}
+
+function pointIcon(type: WaypointMarkerType): Leaflet.DivIcon {
+  const isMidPoint = type === "mid";
   return L.divIcon({
-    className: "route-marker",
-    html: `<span style="background:${color}"></span>`,
-    iconSize: [18, 18],
-    iconAnchor: [9, 9],
+    className: `route-marker ${type}`,
+    html: `<span>${isMidPoint ? "" : `<b>${markerGlyph(type)}</b>`}</span>`,
+    iconSize: isMidPoint ? [18, 18] : [32, 32],
+    iconAnchor: isMidPoint ? [9, 9] : [16, 16],
   });
 }
 
@@ -278,12 +311,12 @@ function updateNavigation(): void {
 
 function drawMarkers(day: RouteDay, positions: Leaflet.LatLngExpression[]): void {
   day.waypoints.forEach((waypoint, index) => {
-    const isEndpoint = index === 0 || index === day.waypoints.length - 1;
+    const type = markerTypeForWaypoint(index, day.waypoints.length);
     const position = waypointPosition(waypoint);
     positions.push(position);
-    L.marker(position, { icon: pointIcon(isEndpoint ? "#fb923c" : "#38bdf8") })
+    L.marker(position, { icon: pointIcon(type) })
       .addTo(requireLayer())
-      .bindPopup(`<b>${escapeHtml(waypoint.name)}</b><br>${dayCode(day)}｜${escapeHtml(day.title)}`);
+      .bindPopup(`<b>${markerLabel(type)}｜${escapeHtml(waypoint.name)}</b><br>${dayCode(day)}｜${escapeHtml(day.title)}`);
   });
 }
 
