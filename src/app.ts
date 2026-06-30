@@ -18,12 +18,227 @@ const colors = [
   "#f59e0b",
 ];
 
+type Language = "zh" | "en" | "ja";
+
+interface Translation {
+  htmlLang: string;
+  documentTitle: string;
+  brandEyebrow: string;
+  appTitle: string;
+  loading: string;
+  summary: string;
+  routeStatsLabel: string;
+  rideDays: string;
+  pdfKm: string;
+  networkKm: string;
+  languageLabel: string;
+  languageSwitchLabel: string;
+  daySelectLabel: string;
+  daySelectAria: string;
+  previousDay: string;
+  nextDay: string;
+  showAllRoutes: string;
+  hideRestStops: string;
+  showRestStops: string;
+  downloadGpx: string;
+  legendLabel: string;
+  legendRide: string;
+  legendNonRide: string;
+  legendStart: string;
+  legendFinish: string;
+  legendRest: string;
+  mapLabel: string;
+  lecture: string;
+  restDay: string;
+  startMarker: string;
+  finishMarker: string;
+  waypointMarker: string;
+  rightSide: string;
+  onRoute: string;
+  oppositeSide: string;
+  actual: string;
+  store: string;
+  address: string;
+  routePoints: string;
+  allRoutesBadge: string;
+  allRoutesTitle: string;
+  overviewNote: string;
+  restStopsTitle: string;
+  noRestStops: string;
+  loadFailedSummary: string;
+  loadFailedBadge: string;
+  loadFailedTitle: string;
+  weekdayPrefix: string;
+  pdfLabel: string;
+  networkLabel: string;
+}
+
+const translations: Record<Language, Translation> = {
+  zh: {
+    htmlLang: "zh-Hant",
+    documentTitle: "2026 鐵駱駝環島路線｜道路網 GPX",
+    brandEyebrow: "2026 鐵駱駝",
+    appTitle: "環島路線地圖",
+    loading: "載入路線資料中...",
+    summary: "依 PDF 路線點位整理，每日可查看道路網線段與下載 GPX，方便匯入 Garmin。",
+    routeStatsLabel: "路線統計",
+    rideDays: "騎乘日",
+    pdfKm: "PDF km",
+    networkKm: "道路網 km",
+    languageLabel: "語言",
+    languageSwitchLabel: "語言切換",
+    daySelectLabel: "每日路線",
+    daySelectAria: "選擇每日路線",
+    previousDay: "上一天",
+    nextDay: "下一天",
+    showAllRoutes: "顯示全路線",
+    hideRestStops: "隱藏休息點",
+    showRestStops: "顯示休息點",
+    downloadGpx: "下載本日 GPX",
+    legendLabel: "地圖圖例",
+    legendRide: "單日路線",
+    legendNonRide: "非騎乘日",
+    legendStart: "起點",
+    legendFinish: "終點",
+    legendRest: "10km 休息點",
+    mapLabel: "路線地圖",
+    lecture: "行前講習",
+    restDay: "休息日",
+    startMarker: "起點",
+    finishMarker: "終點",
+    waypointMarker: "路點",
+    rightSide: "順向側",
+    onRoute: "路線旁",
+    oppositeSide: "對向側",
+    actual: "實際",
+    store: "店名",
+    address: "地址",
+    routePoints: "路點：",
+    allRoutesBadge: "全部｜2026/7/4-7/18",
+    allRoutesTitle: "完整環島路線",
+    overviewNote: "彩色線條為各日可騎乘路線。選擇任一天可查看單日高亮路線與下載 GPX。",
+    restStopsTitle: "每 10km 左右休息點：",
+    noRestStops: "此日尚未找到符合每 10km、非終點附近的便利商店休息點。",
+    loadFailedSummary: "路線資料載入失敗。",
+    loadFailedBadge: "載入失敗",
+    loadFailedTitle: "無法載入路線資料",
+    weekdayPrefix: "週",
+    pdfLabel: "PDF",
+    networkLabel: "道路網",
+  },
+  en: {
+    htmlLang: "en",
+    documentTitle: "2026 Iron Camel Taiwan Route｜Network GPX",
+    brandEyebrow: "2026 Iron Camel",
+    appTitle: "Taiwan Route Map",
+    loading: "Loading route data...",
+    summary: "Built from the PDF waypoints. Review daily routed segments and download GPX files for Garmin.",
+    routeStatsLabel: "Route statistics",
+    rideDays: "Ride days",
+    pdfKm: "PDF km",
+    networkKm: "Network km",
+    languageLabel: "Language",
+    languageSwitchLabel: "Language switcher",
+    daySelectLabel: "Daily route",
+    daySelectAria: "Choose a daily route",
+    previousDay: "Previous",
+    nextDay: "Next",
+    showAllRoutes: "Show all routes",
+    hideRestStops: "Hide rest stops",
+    showRestStops: "Show rest stops",
+    downloadGpx: "Download GPX",
+    legendLabel: "Map legend",
+    legendRide: "Daily route",
+    legendNonRide: "Non-riding day",
+    legendStart: "Start",
+    legendFinish: "Finish",
+    legendRest: "10 km rest stop",
+    mapLabel: "Route map",
+    lecture: "Safety briefing",
+    restDay: "Rest day",
+    startMarker: "Start",
+    finishMarker: "Finish",
+    waypointMarker: "Waypoint",
+    rightSide: "same side",
+    onRoute: "on route",
+    oppositeSide: "opposite side",
+    actual: "Actual",
+    store: "Store",
+    address: "Address",
+    routePoints: "Waypoints:",
+    allRoutesBadge: "All｜2026/7/4-7/18",
+    allRoutesTitle: "Full Taiwan Route",
+    overviewNote: "Colored lines show each riding day. Select a day to highlight one route and download its GPX.",
+    restStopsTitle: "Rest stops around every 10 km:",
+    noRestStops: "No convenience-store rest stops were found for this day around every 10 km and away from the finish.",
+    loadFailedSummary: "Route data failed to load.",
+    loadFailedBadge: "Load failed",
+    loadFailedTitle: "Unable to load route data",
+    weekdayPrefix: "",
+    pdfLabel: "PDF",
+    networkLabel: "Network",
+  },
+  ja: {
+    htmlLang: "ja",
+    documentTitle: "2026 アイアンキャメル台湾一周ルート｜道路網 GPX",
+    brandEyebrow: "2026 アイアンキャメル",
+    appTitle: "台湾一周ルートマップ",
+    loading: "ルートデータを読み込み中...",
+    summary: "PDFの経由地をもとに整理しています。毎日の道路網ルートを確認し、Garmin用GPXをダウンロードできます。",
+    routeStatsLabel: "ルート統計",
+    rideDays: "走行日",
+    pdfKm: "PDF km",
+    networkKm: "道路網 km",
+    languageLabel: "言語",
+    languageSwitchLabel: "言語切替",
+    daySelectLabel: "毎日のルート",
+    daySelectAria: "毎日のルートを選択",
+    previousDay: "前日",
+    nextDay: "翌日",
+    showAllRoutes: "全ルートを表示",
+    hideRestStops: "休憩地点を非表示",
+    showRestStops: "休憩地点を表示",
+    downloadGpx: "GPXをダウンロード",
+    legendLabel: "地図凡例",
+    legendRide: "日別ルート",
+    legendNonRide: "走行なし",
+    legendStart: "出発地",
+    legendFinish: "到着地",
+    legendRest: "10km 休憩地点",
+    mapLabel: "ルート地図",
+    lecture: "安全講習",
+    restDay: "休息日",
+    startMarker: "出発地",
+    finishMarker: "到着地",
+    waypointMarker: "経由地",
+    rightSide: "順方向側",
+    onRoute: "ルート沿い",
+    oppositeSide: "反対側",
+    actual: "実際",
+    store: "店舗名",
+    address: "住所",
+    routePoints: "経由地：",
+    allRoutesBadge: "全体｜2026/7/4-7/18",
+    allRoutesTitle: "台湾一周フルルート",
+    overviewNote: "色付きの線は各走行日のルートです。日付を選ぶと単日のルートを強調表示し、GPXをダウンロードできます。",
+    restStopsTitle: "約10kmごとの休憩地点：",
+    noRestStops: "この日は約10kmごと、かつ終点付近を除いた条件に合うコンビニ休憩地点が見つかっていません。",
+    loadFailedSummary: "ルートデータの読み込みに失敗しました。",
+    loadFailedBadge: "読み込み失敗",
+    loadFailedTitle: "ルートデータを読み込めません",
+    weekdayPrefix: "",
+    pdfLabel: "PDF",
+    networkLabel: "道路網",
+  },
+};
+
 interface AppState {
   routes: RouteDay[];
   map: Leaflet.Map | null;
   layer: Leaflet.LayerGroup | null;
   currentIndex: number;
   showConvenienceStores: boolean;
+  language: Language;
 }
 
 type WaypointMarkerType = "start" | "finish" | "mid";
@@ -42,19 +257,105 @@ const state: AppState = {
   layer: null,
   currentIndex: 0,
   showConvenienceStores: true,
+  language: "zh",
 };
 
 const elements = {
+  brandEyebrow: requiredElement("#brandEyebrow", HTMLParagraphElement),
+  appTitle: requiredElement("#appTitle", HTMLHeadingElement),
   summary: requiredElement("#summary", HTMLParagraphElement),
   routeStats: requiredElement("#routeStats", HTMLDivElement),
+  languageLabel: requiredElement("#languageLabel", HTMLSpanElement),
+  languageSwitch: requiredElement("#languageSwitch", HTMLDivElement),
+  daySelectLabel: requiredElement("#daySelectLabel", HTMLLabelElement),
   daySelect: requiredElement("#daySelect", HTMLSelectElement),
   prevButton: requiredElement("#prevBtn", HTMLButtonElement),
   nextButton: requiredElement("#nextBtn", HTMLButtonElement),
   allButton: requiredElement("#allBtn", HTMLButtonElement),
   poiToggleButton: requiredElement("#poiToggleBtn", HTMLButtonElement),
   gpxLink: requiredElement("#gpxLink", HTMLAnchorElement),
+  legend: requiredElement(".legend", HTMLDivElement),
+  legendRide: requiredElement("#legendRide", HTMLSpanElement),
+  legendNonRide: requiredElement("#legendNonRide", HTMLSpanElement),
+  legendStart: requiredElement("#legendStart", HTMLSpanElement),
+  legendFinish: requiredElement("#legendFinish", HTMLSpanElement),
+  legendRest: requiredElement("#legendRest", HTMLSpanElement),
+  mapStage: requiredElement(".map-stage", HTMLElement),
   info: requiredElement("#info", HTMLElement),
 };
+
+function t(key: keyof Translation): string {
+  return translations[state.language][key];
+}
+
+function isLanguage(value: string | null): value is Language {
+  return value === "zh" || value === "en" || value === "ja";
+}
+
+function initialLanguage(): Language {
+  const langParam = new URL(window.location.href).searchParams.get("lang");
+  if (isLanguage(langParam)) {
+    return langParam;
+  }
+
+  const savedLanguage = window.localStorage.getItem("route-language");
+  if (isLanguage(savedLanguage)) {
+    return savedLanguage;
+  }
+
+  const browserLanguage = navigator.language.toLowerCase();
+  if (browserLanguage.startsWith("ja")) {
+    return "ja";
+  }
+  if (browserLanguage.startsWith("en")) {
+    return "en";
+  }
+  return "zh";
+}
+
+function updateStaticText(): void {
+  const copy = translations[state.language];
+  document.documentElement.lang = copy.htmlLang;
+  document.title = copy.documentTitle;
+  elements.brandEyebrow.textContent = copy.brandEyebrow;
+  elements.appTitle.textContent = copy.appTitle;
+  elements.routeStats.setAttribute("aria-label", copy.routeStatsLabel);
+  elements.languageLabel.textContent = copy.languageLabel;
+  elements.languageSwitch.setAttribute("aria-label", copy.languageSwitchLabel);
+  elements.daySelectLabel.textContent = copy.daySelectLabel;
+  elements.daySelect.setAttribute("aria-label", copy.daySelectAria);
+  elements.prevButton.textContent = copy.previousDay;
+  elements.nextButton.textContent = copy.nextDay;
+  elements.allButton.textContent = copy.showAllRoutes;
+  elements.gpxLink.textContent = copy.downloadGpx;
+  elements.legend.setAttribute("aria-label", copy.legendLabel);
+  elements.legendRide.textContent = copy.legendRide;
+  elements.legendNonRide.textContent = copy.legendNonRide;
+  elements.legendStart.textContent = copy.legendStart;
+  elements.legendFinish.textContent = copy.legendFinish;
+  elements.legendRest.textContent = copy.legendRest;
+  elements.mapStage.setAttribute("aria-label", copy.mapLabel);
+
+  for (const button of elements.languageSwitch.querySelectorAll<HTMLButtonElement>("[data-lang]")) {
+    button.setAttribute("aria-pressed", String(button.dataset.lang === state.language));
+  }
+}
+
+function setLanguage(language: Language): void {
+  state.language = language;
+  window.localStorage.setItem("route-language", language);
+  updateStaticText();
+  updateNavigation();
+
+  if (state.routes.length === 0) {
+    elements.summary.textContent = t("loading");
+    return;
+  }
+
+  renderStats();
+  renderDayOptions();
+  drawDay(state.currentIndex);
+}
 
 function requireMap(): Leaflet.Map {
   if (!state.map) {
@@ -121,12 +422,12 @@ function markerTypeForWaypoint(index: number, total: number): WaypointMarkerType
 
 function markerLabel(type: WaypointMarkerType): string {
   if (type === "start") {
-    return "起點";
+    return t("startMarker");
   }
   if (type === "finish") {
-    return "終點";
+    return t("finishMarker");
   }
-  return "路點";
+  return t("waypointMarker");
 }
 
 function markerGlyph(type: WaypointMarkerType): string {
@@ -189,7 +490,7 @@ function fitPositions(positions: Leaflet.LatLngExpression[]): void {
 
 function formatDistance(day: RouteDay): string {
   if (!isRideDay(day)) {
-    return day.type === "lecture" ? "行前講習" : "休息日";
+    return day.type === "lecture" ? t("lecture") : t("restDay");
   }
 
   return `${day.distanceKm.toFixed(1)} km`;
@@ -197,12 +498,12 @@ function formatDistance(day: RouteDay): string {
 
 function formatStoreSide(side: NonNullable<RouteDay["convenienceStores"]>[number]["sideOfRoute"]): string {
   if (side === "right") {
-    return "順向側";
+    return t("rightSide");
   }
   if (side === "on-route") {
-    return "路線旁";
+    return t("onRoute");
   }
-  return "對向側";
+  return t("oppositeSide");
 }
 
 function storeMapLink(store: NonNullable<RouteDay["convenienceStores"]>[number]): string {
@@ -213,10 +514,10 @@ function storeDetailMarkup(store: NonNullable<RouteDay["convenienceStores"]>[num
   return `
     <div class="store-heading">
       <b class="store-name">${store.targetKm}km｜${escapeHtml(store.displayName)}</b>
-      <span class="store-distance">實際 ${store.routeProgressKm.toFixed(1)}km｜${Math.round(store.distanceFromRouteM)}m｜${formatStoreSide(store.sideOfRoute)}</span>
+      <span class="store-distance">${escapeHtml(t("actual"))} ${store.routeProgressKm.toFixed(1)}km｜${Math.round(store.distanceFromRouteM)}m｜${formatStoreSide(store.sideOfRoute)}</span>
     </div>
-    <div class="store-name-row">店名：${escapeHtml(store.displayName)}</div>
-    <div class="store-address">地址：${escapeHtml(store.address)}</div>
+    <div class="store-name-row">${escapeHtml(t("store"))}：${escapeHtml(store.displayName)}</div>
+    <div class="store-address">${escapeHtml(t("address"))}：${escapeHtml(store.address)}</div>
     <div class="store-map">Google Maps：${storeMapLink(store)}</div>
   `;
 }
@@ -226,12 +527,11 @@ function renderStats(): void {
   const totalPdfDistance = rideDays.reduce((sum, day) => sum + day.distanceKm, 0);
   const totalGeneratedDistance = rideDays.reduce((sum, day) => sum + (day.generatedDistanceKm ?? 0), 0);
 
-  elements.summary.textContent =
-    "依 PDF 路線點位整理，每日可查看道路網線段與下載 GPX，方便匯入 Garmin。";
+  elements.summary.textContent = t("summary");
   elements.routeStats.innerHTML = `
-    <div class="stat"><b>${rideDays.length}</b><span>騎乘日</span></div>
-    <div class="stat"><b>${totalPdfDistance.toFixed(1)}</b><span>PDF km</span></div>
-    <div class="stat"><b>${totalGeneratedDistance.toFixed(1)}</b><span>道路網 km</span></div>
+    <div class="stat"><b>${rideDays.length}</b><span>${escapeHtml(t("rideDays"))}</span></div>
+    <div class="stat"><b>${totalPdfDistance.toFixed(1)}</b><span>${escapeHtml(t("pdfKm"))}</span></div>
+    <div class="stat"><b>${totalGeneratedDistance.toFixed(1)}</b><span>${escapeHtml(t("networkKm"))}</span></div>
   `;
 }
 
@@ -255,12 +555,12 @@ function renderInfo(day: RouteDay | null): void {
     elements.info.innerHTML = `
       <div class="top">
         <div>
-          <span class="badge">全部｜2026/7/4-7/18</span>
-          <h2>完整環島路線</h2>
+          <span class="badge">${escapeHtml(t("allRoutesBadge"))}</span>
+          <h2>${escapeHtml(t("allRoutesTitle"))}</h2>
         </div>
-        <div class="km">PDF ${totalPdfDistance.toFixed(1)} km<br>道路網 ${totalGeneratedDistance.toFixed(1)} km</div>
+        <div class="km">${escapeHtml(t("pdfLabel"))} ${totalPdfDistance.toFixed(1)} km<br>${escapeHtml(t("networkLabel"))} ${totalGeneratedDistance.toFixed(1)} km</div>
       </div>
-      <p class="note">彩色線條為各日可騎乘路線。選擇任一天可查看單日高亮路線與下載 GPX。</p>
+      <p class="note">${escapeHtml(t("overviewNote"))}</p>
     `;
     return;
   }
@@ -271,7 +571,7 @@ function renderInfo(day: RouteDay | null): void {
     .filter(Boolean);
   const waypoints = day.waypoints.map((point) => `<span class="pill">${escapeHtml(point.name)}</span>`).join("");
   const distanceLine = isRideDay(day)
-    ? `PDF ${day.distanceKm.toFixed(1)} km<br>道路網 ${(day.generatedDistanceKm ?? 0).toFixed(1)} km`
+    ? `${escapeHtml(t("pdfLabel"))} ${day.distanceKm.toFixed(1)} km<br>${escapeHtml(t("networkLabel"))} ${(day.generatedDistanceKm ?? 0).toFixed(1)} km`
     : formatDistance(day);
   const reviewNote = day.routeReview?.reviewNote ? `<p class="note">${escapeHtml(day.routeReview.reviewNote)}</p>` : "";
   const restStops = day.convenienceStores ?? [];
@@ -281,22 +581,22 @@ function renderInfo(day: RouteDay | null): void {
     )
     .join("");
   const storeBlock = restStops.length > 0
-    ? `<p class="note">每 10km 左右休息點：</p>
+    ? `<p class="note">${escapeHtml(t("restStopsTitle"))}</p>
       <ul class="store-list">
         ${storeItems}
       </ul>`
-    : `<p class="note">此日尚未找到符合每 10km、非終點附近的便利商店休息點。</p>`;
+    : `<p class="note">${escapeHtml(t("noRestStops"))}</p>`;
 
   elements.info.innerHTML = `
     <div class="top">
       <div>
-        <span class="badge">${dayCode(day)}｜${escapeHtml(day.date)}（週${escapeHtml(day.weekday)}）</span>
+        <span class="badge">${dayCode(day)}｜${escapeHtml(day.date)}（${escapeHtml(t("weekdayPrefix"))}${escapeHtml(day.weekday)}）</span>
         <h2>${escapeHtml(day.title)}</h2>
       </div>
       <div class="km">${distanceLine}</div>
     </div>
     <ul>${routeParts.map((part) => `<li>${escapeHtml(part)}</li>`).join("")}</ul>
-    ${waypoints ? `<p class="note">路點：</p><div>${waypoints}</div>` : ""}
+    ${waypoints ? `<p class="note">${escapeHtml(t("routePoints"))}</p><div>${waypoints}</div>` : ""}
     ${reviewNote}
     ${storeBlock}
     <p class="note">${escapeHtml(day.distanceWarning || day.description)}</p>
@@ -318,7 +618,7 @@ function updateNavigation(): void {
   elements.daySelect.value = String(state.currentIndex);
   elements.prevButton.disabled = state.currentIndex <= 0;
   elements.nextButton.disabled = state.currentIndex >= state.routes.length - 1;
-  elements.poiToggleButton.textContent = state.showConvenienceStores ? "隱藏休息點" : "顯示休息點";
+  elements.poiToggleButton.textContent = state.showConvenienceStores ? t("hideRestStops") : t("showRestStops");
   elements.poiToggleButton.setAttribute("aria-pressed", String(state.showConvenienceStores));
 }
 
@@ -422,12 +722,20 @@ function initialRouteIndex(): number {
 
 async function main(): Promise<void> {
   initMap();
+  setLanguage(initialLanguage());
 
   try {
     await loadRoutes();
     renderStats();
     renderDayOptions();
 
+    elements.languageSwitch.addEventListener("click", (event) => {
+      const button = event.target instanceof HTMLElement ? event.target.closest<HTMLButtonElement>("[data-lang]") : null;
+      const nextLanguage = button?.dataset.lang ?? null;
+      if (isLanguage(nextLanguage)) {
+        setLanguage(nextLanguage);
+      }
+    });
     elements.daySelect.addEventListener("change", () => drawDay(Number(elements.daySelect.value)));
     elements.prevButton.addEventListener("click", () => drawDay(state.currentIndex - 1));
     elements.nextButton.addEventListener("click", () => drawDay(state.currentIndex + 1));
@@ -439,12 +747,12 @@ async function main(): Promise<void> {
 
     drawDay(initialRouteIndex());
   } catch (error) {
-    elements.summary.textContent = "路線資料載入失敗。";
+    elements.summary.textContent = t("loadFailedSummary");
     elements.info.innerHTML = `
       <div class="top">
         <div>
-          <span class="badge">載入失敗</span>
-          <h2>無法載入路線資料</h2>
+          <span class="badge">${escapeHtml(t("loadFailedBadge"))}</span>
+          <h2>${escapeHtml(t("loadFailedTitle"))}</h2>
         </div>
       </div>
       <p class="note">${escapeHtml(error instanceof Error ? error.message : String(error))}</p>

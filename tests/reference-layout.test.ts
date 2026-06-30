@@ -12,6 +12,10 @@ describe("reference-style route UI", () => {
     expect(html).toContain('id="allBtn"');
     expect(html).toContain('id="poiToggleBtn"');
     expect(html).toContain('id="gpxLink"');
+    expect(html).toContain('id="languageSwitch"');
+    expect(html).toContain('data-lang="zh"');
+    expect(html).toContain('data-lang="en"');
+    expect(html).toContain('data-lang="ja"');
     expect(html).toContain('id="info"');
     expect(html).not.toContain('id="dayList"');
     expect(html).not.toContain('class="detail-panel"');
@@ -29,12 +33,30 @@ describe("reference-style route UI", () => {
     expect(app).toContain("drawDay(");
     expect(app).toContain("drawOverview(");
     expect(app).toContain("drawConvenienceStores(");
+    expect(app).toContain("translations");
+    expect(app).toContain("setLanguage(");
+    expect(app).toContain('searchParams.get("lang")');
+    expect(app).toContain("localStorage");
     expect(app).toContain("store.displayName");
     expect(app).toContain("store.address");
     expect(app).toContain("store.googleMapsUrl");
     expect(app).toContain("L.marker(");
     expect(app).toContain("initialRouteIndex(");
     expect(app).toContain('searchParams.get("day")');
+  });
+
+  it("translates static route UI labels across Chinese, English, and Japanese", () => {
+    const app = fs.readFileSync("src/app.ts", "utf8");
+
+    expect(app).toContain("每日路線");
+    expect(app).toContain("Daily route");
+    expect(app).toContain("毎日のルート");
+    expect(app).toContain("下載本日 GPX");
+    expect(app).toContain("Download GPX");
+    expect(app).toContain("GPXをダウンロード");
+    expect(app).toContain("店名");
+    expect(app).toContain("Store");
+    expect(app).toContain("店舗名");
   });
 
   it("uses distinct map markers for route start and finish", () => {
