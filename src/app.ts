@@ -268,11 +268,11 @@ function renderInfo(day: RouteDay | null): void {
     )
     .join("");
   const storeBlock = restStops.length > 0
-    ? `<p class="note">每 20km 左右休息點：</p>
+    ? `<p class="note">每 10km 左右休息點：</p>
       <ul class="store-list">
         ${storeItems}
       </ul>`
-    : `<p class="note">此日尚未找到符合每 20km、非終點附近的便利商店休息點。</p>`;
+    : `<p class="note">此日尚未找到符合每 10km、非終點附近的便利商店休息點。</p>`;
 
   elements.info.innerHTML = `
     <div class="top">

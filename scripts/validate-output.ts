@@ -12,8 +12,8 @@ export interface GpxFile {
   content: string;
 }
 
-const REST_INTERVAL_KM = 20;
-const REST_WINDOW_KM = 12;
+const REST_INTERVAL_KM = 10;
+const REST_WINDOW_KM = 6;
 const FINISH_EXCLUSION_KM = 15;
 const EXCLUDED_STORE_NAME_PATTERNS = [/shopee/i, /蝦皮/i];
 

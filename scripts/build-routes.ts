@@ -23,9 +23,9 @@ const OVERPASS_URLS = (
   "https://overpass-api.de/api/interpreter,https://overpass.kumi.systems/api/interpreter"
 ).split(",");
 const FETCH_CONVENIENCE_STORES = process.env.FETCH_CONVENIENCE_STORES !== "0";
-const POI_RADIUS_M = Number(process.env.POI_RADIUS_M || "600");
-const REST_INTERVAL_KM = Number(process.env.REST_INTERVAL_KM || "20");
-const REST_WINDOW_KM = Number(process.env.REST_WINDOW_KM || "12");
+const POI_RADIUS_M = Number(process.env.POI_RADIUS_M || "1200");
+const REST_INTERVAL_KM = Number(process.env.REST_INTERVAL_KM || "10");
+const REST_WINDOW_KM = Number(process.env.REST_WINDOW_KM || "6");
 const FINISH_EXCLUSION_KM = Number(process.env.FINISH_EXCLUSION_KM || "15");
 const MEANINGFUL_ROUTE_SAVING_KM = Number(process.env.MEANINGFUL_ROUTE_SAVING_KM || "8");
 const COMPARABLE_DISTANCE_DELTA_KM = Number(process.env.COMPARABLE_DISTANCE_DELTA_KM || "2");
@@ -77,6 +77,7 @@ interface OverpassResponse {
 interface StoreWithSegment extends ConvenienceStore {
   segmentIndex: number;
   score: number;
+  sourcePriority: number;
 }
 
 interface SegmentProjection {
@@ -384,8 +385,60 @@ function convenienceStoreQuery(bounds: [number, number, number, number]): string
 [out:json][timeout:35];
 (
   node["shop"="convenience"](${south},${west},${north},${east});
+  way["shop"="convenience"](${south},${west},${north},${east});
+  node["amenity"="fuel"](${south},${west},${north},${east});
+  way["amenity"="fuel"](${south},${west},${north},${east});
 );
-out body;
+out center tags;
+`;
+}
+
+function routePointAtKm(geometry: LineStringGeometry, targetKm: number): CoordinatePoint {
+  let cumulativeKm = 0;
+
+  for (let index = 1; index < geometry.coordinates.length; index += 1) {
+    const previous = geometry.coordinates[index - 1];
+    const current = geometry.coordinates[index];
+    if (!previous || !current) {
+      continue;
+    }
+
+    const start = { lat: previous[1], lon: previous[0] };
+    const end = { lat: current[1], lon: current[0] };
+    const segmentKm = haversineKm(start, end);
+    if (cumulativeKm + segmentKm >= targetKm) {
+      const t = segmentKm === 0 ? 0 : (targetKm - cumulativeKm) / segmentKm;
+      return {
+        lat: start.lat + (end.lat - start.lat) * t,
+        lon: start.lon + (end.lon - start.lon) * t,
+      };
+    }
+
+    cumulativeKm += segmentKm;
+  }
+
+  const [lon, lat] = geometry.coordinates.at(-1) ?? geometry.coordinates[0] ?? [0, 0];
+  return { lat, lon };
+}
+
+function targetedConvenienceStoreQuery(geometry: LineStringGeometry): string {
+  const aroundRadiusM = Math.ceil(REST_WINDOW_KM * 1000 + POI_RADIUS_M);
+  const clauses = restStopTargets(geometryDistanceKm(geometry))
+    .map((targetKm) => {
+      const point = routePointAtKm(geometry, targetKm);
+      return `  node["shop"="convenience"](around:${aroundRadiusM},${point.lat},${point.lon});
+  way["shop"="convenience"](around:${aroundRadiusM},${point.lat},${point.lon});
+  node["amenity"="fuel"](around:${aroundRadiusM},${point.lat},${point.lon});
+  way["amenity"="fuel"](around:${aroundRadiusM},${point.lat},${point.lon});`;
+    })
+    .join("\n");
+
+  return `
+[out:json][timeout:35];
+(
+${clauses}
+);
+out center tags;
 `;
 }
 
@@ -454,6 +507,12 @@ function chunkGeometryBounds(geometry: LineStringGeometry): [number, number, num
 }
 
 async function fetchOverpassElements(geometry: LineStringGeometry): Promise<OverpassElement[]> {
+  try {
+    return await queryOverpass(targetedConvenienceStoreQuery(geometry));
+  } catch (error) {
+    console.warn(`Targeted Overpass query failed, retrying by route bounds: ${errorMessage(error)}`);
+  }
+
   try {
     return await queryOverpass(convenienceStoreQuery(geometryBounds(geometry)));
   } catch (error) {
@@ -605,13 +664,15 @@ function selectRestStops(stores: StoreWithSegment[], generatedDistanceKm: number
     const aroundTarget = availableStores.filter(
       (store) => Math.abs(store.routeProgressKm - targetKm) <= REST_WINDOW_KM,
     );
-    const selected = aroundTarget.sort((a, b) => storeScore(a, targetKm) - storeScore(b, targetKm))[0];
+    const selected = aroundTarget.sort(
+      (a, b) => a.sourcePriority - b.sourcePriority || storeScore(a, targetKm) - storeScore(b, targetKm),
+    )[0];
     if (!selected) {
       continue;
     }
 
     usedStoreIds.add(selected.id);
-    const { segmentIndex: _segmentIndex, score: _score, ...store } = selected;
+    const { segmentIndex: _segmentIndex, score: _score, sourcePriority: _sourcePriority, ...store } = selected;
     selectedStops.push({
       ...store,
       targetKm,
@@ -637,6 +698,12 @@ function convenienceStoresNearRoute(elements: OverpassElement[], geometry: LineS
       continue;
     }
 
+    const isConvenienceStore = element.tags?.shop === "convenience";
+    const isFuelStation = element.tags?.amenity === "fuel";
+    if (!isConvenienceStore && !isFuelStation) {
+      continue;
+    }
+
     const brand = normalizeStoreBrand(element.tags);
     const name = storeName(element.tags, brand);
     if (isExcludedRestStop(element.tags, name)) {
@@ -658,6 +725,7 @@ function convenienceStoresNearRoute(elements: OverpassElement[], geometry: LineS
       ...store,
       segmentIndex,
       score: 0,
+      sourcePriority: isConvenienceStore ? 0 : 10_000,
     });
   }
 
