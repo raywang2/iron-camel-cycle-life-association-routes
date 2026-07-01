@@ -1,0 +1,36 @@
+src/styles.css
+  s_1ae7bf14fd87ce::t_9a0a8c1a09651e 317-318,322-324,328,335-336,438-447,458-466
+  s_1ae7bf14fd87ce::t_e9258af4b94e2d 319-321,325-327,329-334
+  s_1ae7bf14fd87ce::t_001ace92c45d00 467,469-478
+  s_1ae7bf14fd87ce::t_1e893b61e7e95d 468
+index.html
+  s_1ae7bf14fd87ce::t_0a1fe1bc36d945 38
+tests/reference-layout.test.ts
+  s_1ae7bf14fd87ce::t_4531e8afda4b04 97-108,121-122
+  s_1ae7bf14fd87ce::t_e4a340fb6a3416 83-96
+  s_1ae7bf14fd87ce::t_8127627e70dce4 14,109-120
+src/app.ts
+  s_1ae7bf14fd87ce::t_86125a85e55c4f 273,295,510-524,573,671,690,910-911,916,919-938
+  s_1ae7bf14fd87ce::t_782d2292e19fe6 422,546-554,567,736-786
+  s_1ae7bf14fd87ce::t_f058775983d817 4,272,294,491-509,525-526,572,668-670,672-673,689,793,796,808,813,909,912-915,917-918,939-940
+  s_1ae7bf14fd87ce::t_4bc0c3c20b109f 43-47,105-109,165-169,225-229,271,293,314,369,416-421
+  s_1ae7bf14fd87ce::t_2bf787fe5eb1ca 908
+  s_1ae7bf14fd87ce::t_4434f14cdddba9 423
+  s_1ae7bf14fd87ce::t_2d0c5460ceb4c0 787
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.5",
+  "base_commit_sha": "ccab735726cbd000f423d25aa84e5ee8370cda7d",
+  "prompts": {},
+  "sessions": {
+    "s_1ae7bf14fd87ce": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f1399-9cdd-7090-bf1a-2b71d472eb20",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Ray Wang <sncorges@gmail.com>"
+    }
+  }
+}
