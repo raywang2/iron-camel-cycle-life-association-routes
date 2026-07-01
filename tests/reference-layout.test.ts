@@ -11,6 +11,7 @@ describe("reference-style route UI", () => {
     expect(html).toContain('id="nextBtn"');
     expect(html).toContain('id="allBtn"');
     expect(html).toContain('id="poiToggleBtn"');
+    expect(html).toContain('id="locationBtn"');
     expect(html).toContain('id="gpxLink"');
     expect(html).toContain('id="languageSwitch"');
     expect(html).toContain('data-lang="zh"');
@@ -77,6 +78,46 @@ describe("reference-style route UI", () => {
     expect(css).toContain(".route-marker.start span");
     expect(css).toContain(".route-marker.finish span");
     expect(css).toContain(".route-marker.mid span");
+  });
+
+  it("highlights map markers when hovering sidebar waypoints and convenience stores", () => {
+    const app = fs.readFileSync("src/app.ts", "utf8");
+    const css = fs.readFileSync("src/styles.css", "utf8");
+
+    expect(app).toContain("markerIdForWaypoint(");
+    expect(app).toContain("markerIdForStore(");
+    expect(app).toContain("highlightMarker(");
+    expect(app).toContain('data-marker-id="');
+    expect(app).toContain('elements.info.addEventListener("pointerover"');
+    expect(app).toContain('elements.info.addEventListener("pointerout"');
+    expect(css).toContain(".route-marker.is-highlighted span");
+    expect(css).toContain(".store-marker.is-highlighted span");
+  });
+
+  it("supports tapping sidebar marker labels on touch devices", () => {
+    const app = fs.readFileSync("src/app.ts", "utf8");
+    const css = fs.readFileSync("src/styles.css", "utf8");
+
+    expect(app).toContain("togglePinnedMarker(");
+    expect(app).toContain('elements.info.addEventListener("click"');
+    expect(app).toContain('elements.info.addEventListener("keydown"');
+    expect(app).toContain('tabindex="0"');
+    expect(app).toContain('aria-pressed="false"');
+    expect(css).toContain("touch-action: manipulation");
+    expect(css).toContain(".landmark-item.is-active");
+    expect(css).toContain(".store-list .store-item.is-active");
+  });
+
+  it("can place the user's current location on the map", () => {
+    const app = fs.readFileSync("src/app.ts", "utf8");
+    const css = fs.readFileSync("src/styles.css", "utf8");
+
+    expect(app).toContain('locationButton: requiredElement("#locationBtn"');
+    expect(app).toContain("showCurrentLocation(");
+    expect(app).toContain("navigator.geolocation.getCurrentPosition");
+    expect(app).toContain("currentLocationIcon(");
+    expect(app).toContain("locationLayer");
+    expect(css).toContain(".current-location-marker span");
   });
 
   it("uses the reference dark split layout styles", () => {

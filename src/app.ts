@@ -1,7 +1,7 @@
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import type * as Leaflet from "leaflet";
-import type { RouteDay, Waypoint } from "../types/routes.js";
+import type { ConvenienceStore, RouteDay, Waypoint } from "../types/routes.js";
 
 const colors = [
   "#38bdf8",
@@ -40,6 +40,11 @@ interface Translation {
   showAllRoutes: string;
   hideRestStops: string;
   showRestStops: string;
+  locateMe: string;
+  locating: string;
+  currentLocation: string;
+  locationAccuracy: string;
+  locationUnavailable: string;
   downloadGpx: string;
   legendLabel: string;
   legendRide: string;
@@ -97,6 +102,11 @@ const translations: Record<Language, Translation> = {
     showAllRoutes: "顯示全路線",
     hideRestStops: "隱藏休息點",
     showRestStops: "顯示休息點",
+    locateMe: "顯示現在位置",
+    locating: "定位中...",
+    currentLocation: "現在位置",
+    locationAccuracy: "定位精度",
+    locationUnavailable: "無法取得現在位置，請確認瀏覽器定位權限。",
     downloadGpx: "下載本日 GPX",
     legendLabel: "地圖圖例",
     legendRide: "單日路線",
@@ -152,6 +162,11 @@ const translations: Record<Language, Translation> = {
     showAllRoutes: "Show all routes",
     hideRestStops: "Hide rest stops",
     showRestStops: "Show rest stops",
+    locateMe: "Show current location",
+    locating: "Locating...",
+    currentLocation: "Current location",
+    locationAccuracy: "Accuracy",
+    locationUnavailable: "Unable to get your current location. Check browser location permission.",
     downloadGpx: "Download GPX",
     legendLabel: "Map legend",
     legendRide: "Daily route",
@@ -207,6 +222,11 @@ const translations: Record<Language, Translation> = {
     showAllRoutes: "全ルートを表示",
     hideRestStops: "休憩地点を非表示",
     showRestStops: "休憩地点を表示",
+    locateMe: "現在地を表示",
+    locating: "測位中...",
+    currentLocation: "現在地",
+    locationAccuracy: "測位精度",
+    locationUnavailable: "現在地を取得できません。ブラウザの位置情報権限を確認してください。",
     downloadGpx: "GPXをダウンロード",
     legendLabel: "地図凡例",
     legendRide: "日別ルート",
@@ -248,6 +268,9 @@ interface AppState {
   routes: RouteDay[];
   map: Leaflet.Map | null;
   layer: Leaflet.LayerGroup | null;
+  locationLayer: Leaflet.LayerGroup | null;
+  markerElements: Map<string, HTMLElement>;
+  pinnedMarkerId: string | null;
   currentIndex: number;
   showConvenienceStores: boolean;
   language: Language;
@@ -267,6 +290,9 @@ const state: AppState = {
   routes: [],
   map: null,
   layer: null,
+  locationLayer: null,
+  markerElements: new Map(),
+  pinnedMarkerId: null,
   currentIndex: 0,
   showConvenienceStores: true,
   language: "zh",
@@ -285,6 +311,7 @@ const elements = {
   nextButton: requiredElement("#nextBtn", HTMLButtonElement),
   allButton: requiredElement("#allBtn", HTMLButtonElement),
   poiToggleButton: requiredElement("#poiToggleBtn", HTMLButtonElement),
+  locationButton: requiredElement("#locationBtn", HTMLButtonElement),
   gpxLink: requiredElement("#gpxLink", HTMLAnchorElement),
   legend: requiredElement(".legend", HTMLDivElement),
   legendRide: requiredElement("#legendRide", HTMLSpanElement),
@@ -339,6 +366,7 @@ function updateStaticText(): void {
   elements.prevButton.textContent = copy.previousDay;
   elements.nextButton.textContent = copy.nextDay;
   elements.allButton.textContent = copy.showAllRoutes;
+  elements.locationButton.textContent = copy.locateMe;
   elements.gpxLink.textContent = copy.downloadGpx;
   elements.legend.setAttribute("aria-label", copy.legendLabel);
   elements.legendRide.textContent = copy.legendRide;
@@ -383,6 +411,14 @@ function requireLayer(): Leaflet.LayerGroup {
   }
 
   return state.layer;
+}
+
+function requireLocationLayer(): Leaflet.LayerGroup {
+  if (!state.locationLayer) {
+    throw new Error("Location layer is not initialized");
+  }
+
+  return state.locationLayer;
 }
 
 function isRideDay(day: RouteDay): day is RouteDay & { distanceKm: number } {
@@ -452,6 +488,42 @@ function markerGlyph(type: WaypointMarkerType): string {
   return "";
 }
 
+function markerIdForWaypoint(index: number): string {
+  return `waypoint:${index}`;
+}
+
+function markerIdForStore(store: ConvenienceStore): string {
+  return `store:${store.targetKm}:${store.id}`;
+}
+
+function registerMarker(markerId: string, marker: Leaflet.Marker): void {
+  const element = marker.getElement();
+  if (element) {
+    state.markerElements.set(markerId, element);
+  }
+}
+
+function highlightMarker(markerId: string | null): void {
+  for (const [id, element] of state.markerElements) {
+    element.classList.toggle("is-highlighted", Boolean(markerId) && id === markerId);
+  }
+  for (const element of elements.info.querySelectorAll<HTMLElement>("[data-marker-id]")) {
+    const isActive = Boolean(markerId) && element.dataset.markerId === markerId;
+    element.classList.toggle("is-active", isActive);
+    element.setAttribute("aria-pressed", String(isActive));
+  }
+}
+
+function togglePinnedMarker(markerId: string | null): void {
+  state.pinnedMarkerId = state.pinnedMarkerId === markerId ? null : markerId;
+  highlightMarker(state.pinnedMarkerId);
+}
+
+function sidebarMarkerTarget(eventTarget: EventTarget | null): HTMLElement | null {
+  const target = eventTarget instanceof HTMLElement ? eventTarget.closest<HTMLElement>("[data-marker-id]") : null;
+  return target && elements.info.contains(target) ? target : null;
+}
+
 function pointIcon(type: WaypointMarkerType): Leaflet.DivIcon {
   const isMidPoint = type === "mid";
   return L.divIcon({
@@ -471,6 +543,15 @@ function storeIcon(): Leaflet.DivIcon {
   });
 }
 
+function currentLocationIcon(): Leaflet.DivIcon {
+  return L.divIcon({
+    className: "current-location-marker",
+    html: "<span></span>",
+    iconSize: [20, 20],
+    iconAnchor: [10, 10],
+  });
+}
+
 function initMap(): void {
   state.map = L.map("map", {
     scrollWheelZoom: true,
@@ -483,10 +564,13 @@ function initMap(): void {
   }).addTo(state.map);
 
   state.layer = L.layerGroup().addTo(state.map);
+  state.locationLayer = L.layerGroup().addTo(state.map);
 }
 
 function clearMap(): void {
   requireLayer().clearLayers();
+  state.markerElements.clear();
+  state.pinnedMarkerId = null;
 }
 
 function fitPositions(positions: Leaflet.LatLngExpression[]): void {
@@ -581,7 +665,12 @@ function renderInfo(day: RouteDay | null): void {
     .split("→")
     .map((part) => part.trim())
     .filter(Boolean);
-  const waypoints = day.waypoints.map((point) => `<span class="pill">${escapeHtml(point.name)}</span>`).join("");
+  const waypoints = day.waypoints
+    .map(
+      (point, index) =>
+        `<span class="pill landmark-item" data-marker-id="${escapeHtml(markerIdForWaypoint(index))}" role="button" tabindex="0" aria-pressed="false">${escapeHtml(point.name)}</span>`,
+    )
+    .join("");
   const distanceLine = isRideDay(day)
     ? `${escapeHtml(t("pdfLabel"))} ${day.distanceKm.toFixed(1)} km<br>${escapeHtml(t("networkLabel"))} ${(day.generatedDistanceKm ?? 0).toFixed(1)} km`
     : formatDistance(day);
@@ -597,7 +686,8 @@ function renderInfo(day: RouteDay | null): void {
   const restStops = day.convenienceStores ?? [];
   const storeItems = restStops
     .map(
-      (store) => `<li class="store-item">${storeDetailMarkup(store)}</li>`,
+      (store) =>
+        `<li class="store-item" data-marker-id="${escapeHtml(markerIdForStore(store))}" tabindex="0" aria-pressed="false">${storeDetailMarkup(store)}</li>`,
     )
     .join("");
   const storeBlock = restStops.length > 0
@@ -643,14 +733,67 @@ function updateNavigation(): void {
   elements.poiToggleButton.setAttribute("aria-pressed", String(state.showConvenienceStores));
 }
 
+function drawCurrentLocation(position: GeolocationPosition): void {
+  const location: Leaflet.LatLngExpression = [
+    position.coords.latitude,
+    position.coords.longitude,
+  ];
+  const accuracy = Math.max(0, Math.round(position.coords.accuracy));
+  const locationLayer = requireLocationLayer();
+  locationLayer.clearLayers();
+
+  L.circle(location, {
+    radius: accuracy,
+    color: "#2563eb",
+    fillColor: "#60a5fa",
+    fillOpacity: 0.14,
+    weight: 2,
+  }).addTo(locationLayer);
+
+  L.marker(location, { icon: currentLocationIcon() })
+    .addTo(locationLayer)
+    .bindPopup(`<b>${escapeHtml(t("currentLocation"))}</b><br>${escapeHtml(t("locationAccuracy"))} ${accuracy}m`)
+    .openPopup();
+
+  requireMap().setView(location, Math.max(requireMap().getZoom(), 15));
+}
+
+function showCurrentLocation(): void {
+  if (!navigator.geolocation) {
+    window.alert(t("locationUnavailable"));
+    return;
+  }
+
+  elements.locationButton.disabled = true;
+  elements.locationButton.textContent = t("locating");
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      drawCurrentLocation(position);
+      elements.locationButton.disabled = false;
+      elements.locationButton.textContent = t("locateMe");
+    },
+    () => {
+      window.alert(t("locationUnavailable"));
+      elements.locationButton.disabled = false;
+      elements.locationButton.textContent = t("locateMe");
+    },
+    {
+      enableHighAccuracy: true,
+      maximumAge: 10_000,
+      timeout: 10_000,
+    },
+  );
+}
+
 function drawMarkers(day: RouteDay, positions: Leaflet.LatLngExpression[]): void {
   day.waypoints.forEach((waypoint, index) => {
     const type = markerTypeForWaypoint(index, day.waypoints.length);
     const position = waypointPosition(waypoint);
     positions.push(position);
-    L.marker(position, { icon: pointIcon(type) })
+    const marker = L.marker(position, { icon: pointIcon(type) })
       .addTo(requireLayer())
       .bindPopup(`<b>${markerLabel(type)}｜${escapeHtml(waypoint.name)}</b><br>${dayCode(day)}｜${escapeHtml(day.title)}`);
+    registerMarker(markerIdForWaypoint(index), marker);
   });
 }
 
@@ -662,11 +805,12 @@ function drawConvenienceStores(day: RouteDay, positions: Leaflet.LatLngExpressio
   for (const store of day.convenienceStores ?? []) {
     const position: Leaflet.LatLngExpression = [store.lat, store.lon];
     positions.push(position);
-    L.marker(position, { icon: storeIcon() })
+    const marker = L.marker(position, { icon: storeIcon() })
       .addTo(requireLayer())
       .bindPopup(
         `<div class="store-popup">${storeDetailMarkup(store)}</div>`,
       );
+    registerMarker(markerIdForStore(store), marker);
   }
 }
 
@@ -761,6 +905,39 @@ async function main(): Promise<void> {
     elements.prevButton.addEventListener("click", () => drawDay(state.currentIndex - 1));
     elements.nextButton.addEventListener("click", () => drawDay(state.currentIndex + 1));
     elements.allButton.addEventListener("click", drawOverview);
+    elements.locationButton.addEventListener("click", showCurrentLocation);
+    elements.info.addEventListener("pointerover", (event) => {
+      const target = sidebarMarkerTarget(event.target);
+      if (target) {
+        highlightMarker(target.dataset.markerId ?? null);
+      }
+    });
+    elements.info.addEventListener("pointerout", (event) => {
+      const target = sidebarMarkerTarget(event.target);
+      const relatedTarget = event.relatedTarget instanceof Node ? event.relatedTarget : null;
+      if (target && (!relatedTarget || !target.contains(relatedTarget))) {
+        highlightMarker(state.pinnedMarkerId);
+      }
+    });
+    elements.info.addEventListener("click", (event) => {
+      if (event.target instanceof HTMLElement && event.target.closest("a")) {
+        return;
+      }
+      const target = sidebarMarkerTarget(event.target);
+      if (target) {
+        togglePinnedMarker(target.dataset.markerId ?? null);
+      }
+    });
+    elements.info.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" && event.key !== " ") {
+        return;
+      }
+      const target = sidebarMarkerTarget(event.target);
+      if (target) {
+        event.preventDefault();
+        togglePinnedMarker(target.dataset.markerId ?? null);
+      }
+    });
     elements.poiToggleButton.addEventListener("click", () => {
       state.showConvenienceStores = !state.showConvenienceStores;
       drawDay(state.currentIndex);
