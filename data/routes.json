@@ -60,18 +60,13 @@
         "lon": 120.7869
       },
       {
-        "name": "貓貍山公園",
-        "lat": 24.5638,
-        "lon": 120.8208
-      },
-      {
         "name": "苗栗高中",
         "lat": 24.5584,
         "lon": 120.8163
       }
     ],
-    "generatedDistanceKm": 56.2,
-    "distanceDeltaKm": 2.8,
+    "generatedDistanceKm": 54.2,
+    "distanceDeltaKm": 0.8,
     "distanceWarning": null,
     "routeReview": {
       "selectedCandidate": "pdf-waypoints",
@@ -86,11 +81,10 @@
             "后里車站",
             "三義車站",
             "銅鑼車站",
-            "貓貍山公園",
             "苗栗高中"
           ],
-          "generatedDistanceKm": 56.2,
-          "distanceDeltaKm": 2.8,
+          "generatedDistanceKm": 54.2,
+          "distanceDeltaKm": 0.8,
           "selected": true
         },
         {
@@ -123,66 +117,66 @@
       {
         "id": "node/13034598834",
         "name": "萊爾富",
+        "displayName": "萊爾富 豐原鑫豐南",
+        "metadataVersion": 3,
         "brand": "Hi-Life",
+        "address": "臺中市豐原區豐田里豐南街66巷",
+        "addressSource": "reverse-geocode",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=24.2393306%2C120.7135242",
         "lat": 24.2393306,
         "lon": 120.7135242,
         "distanceFromRouteM": 184,
         "targetKm": 10,
         "routeProgressKm": 10.9,
-        "sideOfRoute": "right",
-        "address": "臺中市豐原區豐田里豐南街66巷",
-        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=24.2393306%2C120.7135242",
-        "addressSource": "reverse-geocode",
-        "displayName": "萊爾富 豐原鑫豐南",
-        "metadataVersion": 3
+        "sideOfRoute": "right"
       },
       {
         "id": "node/4132605203",
         "name": "7-Eleven",
+        "displayName": "7-Eleven",
+        "metadataVersion": 3,
         "brand": "7-ELEVEN",
+        "address": "臺中市后里區義德里甲后路一段",
+        "addressSource": "reverse-geocode",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=24.3089181%2C120.7246058",
         "lat": 24.3089181,
         "lon": 120.7246058,
         "distanceFromRouteM": 11,
         "targetKm": 20,
         "routeProgressKm": 19.7,
-        "sideOfRoute": "right",
-        "address": "臺中市后里區義德里甲后路一段",
-        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=24.3089181%2C120.7246058",
-        "addressSource": "reverse-geocode",
-        "displayName": "7-Eleven",
-        "metadataVersion": 3
+        "sideOfRoute": "right"
       },
       {
         "id": "way/965223091",
         "name": "7-Eleven",
+        "displayName": "7-Eleven 千晴門市",
+        "metadataVersion": 3,
         "brand": "7-ELEVEN",
+        "address": "苗栗縣西湖村尖豐公路",
+        "addressSource": "reverse-geocode",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=24.3789693%2C120.7503643",
         "lat": 24.3789693,
         "lon": 120.7503643,
         "distanceFromRouteM": 23,
         "targetKm": 30,
         "routeProgressKm": 30.2,
-        "sideOfRoute": "right",
-        "address": "苗栗縣西湖村尖豐公路",
-        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=24.3789693%2C120.7503643",
-        "addressSource": "reverse-geocode",
-        "displayName": "7-Eleven 千晴門市",
-        "metadataVersion": 3
+        "sideOfRoute": "right"
       },
       {
-        "id": "node/3303577752",
-        "name": "便利商店",
-        "brand": null,
-        "lat": 24.4251874,
-        "lon": 120.7748219,
-        "distanceFromRouteM": 26,
-        "targetKm": 40,
-        "routeProgressKm": 36.4,
-        "sideOfRoute": "right",
-        "address": "苗栗縣双湖村中正路",
-        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=24.4251874%2C120.7748219",
+        "id": "node/2769810641",
+        "name": "7-Eleven",
+        "displayName": "7-Eleven",
+        "metadataVersion": 3,
+        "brand": "7-ELEVEN",
+        "address": "苗栗縣銅鑼村中正路",
         "addressSource": "reverse-geocode",
-        "displayName": "便利商店",
-        "metadataVersion": 3
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=24.4818929%2C120.7866694",
+        "lat": 24.4818929,
+        "lon": 120.7866694,
+        "distanceFromRouteM": 11,
+        "targetKm": 40,
+        "routeProgressKm": 42.9,
+        "sideOfRoute": "right"
       }
     ],
     "routingStatus": "routed",
@@ -4341,444 +4335,60 @@
           24.551879
         ],
         [
-          120.816632,
-          24.552263
+          120.816305,
+          24.552409
         ],
         [
-          120.817165,
-          24.552696
+          120.816686,
+          24.553556
         ],
         [
-          120.817518,
-          24.553026
+          120.816587,
+          24.554626
         ],
         [
-          120.817581,
-          24.553104
+          120.816496,
+          24.555431
         ],
         [
-          120.817633,
-          24.553142
+          120.816061,
+          24.556443
         ],
         [
-          120.81769,
-          24.553185
+          120.816003,
+          24.556581
         ],
         [
-          120.817744,
-          24.553225
+          120.815804,
+          24.556954
         ],
         [
-          120.817817,
-          24.553284
+          120.815796,
+          24.556974
         ],
         [
-          120.818246,
-          24.553631
+          120.815778,
+          24.557017
         ],
         [
-          120.818321,
-          24.553689
+          120.815752,
+          24.55708
         ],
         [
-          120.818505,
-          24.553831
+          120.815744,
+          24.557101
         ],
         [
-          120.818555,
-          24.553878
+          120.815731,
+          24.557133
         ],
         [
-          120.818567,
-          24.553897
+          120.816787,
+          24.557737
         ],
         [
-          120.818592,
-          24.553934
-        ],
-        [
-          120.818623,
-          24.553996
-        ],
-        [
-          120.818645,
-          24.554067
-        ],
-        [
-          120.818663,
-          24.554145
-        ],
-        [
-          120.818683,
-          24.554226
-        ],
-        [
-          120.818818,
-          24.554698
-        ],
-        [
-          120.818858,
-          24.554822
-        ],
-        [
-          120.818917,
-          24.554932
-        ],
-        [
-          120.818969,
-          24.555016
-        ],
-        [
-          120.819218,
-          24.555348
-        ],
-        [
-          120.819281,
-          24.55543
-        ],
-        [
-          120.819463,
-          24.55568
-        ],
-        [
-          120.819762,
-          24.556119
-        ],
-        [
-          120.819795,
-          24.556167
-        ],
-        [
-          120.819835,
-          24.556251
-        ],
-        [
-          120.819974,
-          24.556501
-        ],
-        [
-          120.820129,
-          24.556737
-        ],
-        [
-          120.820237,
-          24.556961
-        ],
-        [
-          120.819698,
-          24.557199
-        ],
-        [
-          120.819391,
-          24.55735
-        ],
-        [
-          120.818861,
-          24.557576
-        ],
-        [
-          120.81841,
-          24.557791
-        ],
-        [
-          120.81822,
-          24.557912
-        ],
-        [
-          120.818059,
-          24.558053
-        ],
-        [
-          120.817983,
-          24.55815
-        ],
-        [
-          120.817964,
-          24.558175
-        ],
-        [
-          120.817884,
-          24.558277
-        ],
-        [
-          120.817841,
-          24.558341
-        ],
-        [
-          120.817631,
-          24.558626
-        ],
-        [
-          120.817548,
-          24.558747
-        ],
-        [
-          120.817525,
-          24.558782
-        ],
-        [
-          120.817443,
-          24.558902
-        ],
-        [
-          120.817423,
-          24.55893
-        ],
-        [
-          120.817331,
-          24.559058
-        ],
-        [
-          120.817212,
-          24.559224
-        ],
-        [
-          120.817142,
-          24.55929
-        ],
-        [
-          120.81707,
-          24.559357
-        ],
-        [
-          120.817156,
-          24.559433
-        ],
-        [
-          120.817429,
-          24.559698
-        ],
-        [
-          120.817599,
-          24.559857
-        ],
-        [
-          120.818155,
-          24.560386
-        ],
-        [
-          120.818536,
-          24.560768
-        ],
-        [
-          120.818686,
-          24.5609
-        ],
-        [
-          120.819009,
-          24.561243
-        ],
-        [
-          120.819084,
-          24.561319
-        ],
-        [
-          120.819106,
-          24.561342
-        ],
-        [
-          120.819535,
-          24.561778
-        ],
-        [
-          120.819669,
-          24.561914
-        ],
-        [
-          120.819897,
-          24.562294
-        ],
-        [
-          120.820085,
-          24.562539
-        ],
-        [
-          120.820237,
-          24.562865
-        ],
-        [
-          120.820403,
-          24.562828
-        ],
-        [
-          120.820437,
-          24.562957
-        ],
-        [
-          120.820665,
-          24.563829
-        ],
-        [
-          120.820711,
-          24.564005
-        ],
-        [
-          120.820715,
-          24.56402
-        ],
-        [
-          120.820771,
-          24.564233
-        ],
-        [
-          120.82081,
-          24.564363
-        ],
-        [
-          120.821595,
-          24.564181
-        ],
-        [
-          120.821689,
-          24.564102
-        ],
-        [
-          120.821671,
-          24.563993
-        ],
-        [
-          120.821594,
-          24.563697
-        ],
-        [
-          120.821541,
-          24.563482
-        ],
-        [
-          120.821527,
-          24.563416
-        ],
-        [
-          120.821506,
-          24.563356
-        ],
-        [
-          120.821452,
-          24.563083
-        ],
-        [
-          120.821403,
-          24.562959
-        ],
-        [
-          120.821374,
-          24.562905
-        ],
-        [
-          120.821288,
-          24.562821
-        ],
-        [
-          120.821197,
-          24.562772
-        ],
-        [
-          120.821123,
-          24.562748
-        ],
-        [
-          120.820965,
-          24.562729
-        ],
-        [
-          120.820829,
-          24.562741
-        ],
-        [
-          120.820648,
-          24.562776
-        ],
-        [
-          120.820403,
-          24.562828
-        ],
-        [
-          120.820237,
-          24.562865
-        ],
-        [
-          120.820085,
-          24.562539
-        ],
-        [
-          120.819897,
-          24.562294
-        ],
-        [
-          120.819669,
-          24.561914
-        ],
-        [
-          120.819535,
-          24.561778
-        ],
-        [
-          120.819106,
-          24.561342
-        ],
-        [
-          120.819084,
-          24.561319
-        ],
-        [
-          120.819009,
-          24.561243
-        ],
-        [
-          120.818686,
-          24.5609
-        ],
-        [
-          120.818536,
-          24.560768
-        ],
-        [
-          120.818155,
-          24.560386
-        ],
-        [
-          120.817599,
-          24.559857
-        ],
-        [
-          120.817429,
-          24.559698
-        ],
-        [
-          120.817156,
-          24.559433
-        ],
-        [
-          120.81707,
-          24.559357
-        ],
-        [
-          120.817003,
-          24.559288
-        ],
-        [
-          120.816857,
-          24.559147
-        ],
-        [
-          120.816508,
-          24.558798
-        ],
-        [
-          120.816482,
-          24.558772
-        ],
-        [
-          120.816194,
-          24.55852
-        ],
-        [
-          120.816175,
-          24.558476
-        ],
-        [
-          120.816182,
-          24.558417
+          120.816729,
+          24.557799
         ],
         [
           120.816238,
@@ -8446,6 +8056,22 @@
         "addressSource": "reverse-geocode",
         "displayName": "全家便利商店 復園店",
         "metadataVersion": 3
+      },
+      {
+        "id": "node/9229363426",
+        "name": "全家便利商店",
+        "displayName": "全家便利商店",
+        "metadataVersion": 3,
+        "brand": "FamilyMart",
+        "address": "新北市板橋區景星里四川路一段",
+        "addressSource": "reverse-geocode",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=25.0060715%2C121.4597712",
+        "lat": 25.0060715,
+        "lon": 121.4597712,
+        "distanceFromRouteM": 19,
+        "targetKm": 80,
+        "routeProgressKm": 80.1,
+        "sideOfRoute": "right"
       }
     ],
     "routingStatus": "routed",
@@ -16745,6 +16371,22 @@
         "addressSource": "osm",
         "displayName": "全家便利商店 頭城省道店",
         "metadataVersion": 3
+      },
+      {
+        "id": "node/13074031219",
+        "name": "全家便利商店",
+        "displayName": "全家便利商店 宜蘭國道店",
+        "metadataVersion": 3,
+        "brand": "FamilyMart",
+        "address": "宜蘭縣宜蘭市東港路一段250號",
+        "addressSource": "osm",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=24.7488482%2C121.7804519",
+        "lat": 24.7488482,
+        "lon": 121.7804519,
+        "distanceFromRouteM": 35,
+        "targetKm": 50,
+        "routeProgressKm": 49.5,
+        "sideOfRoute": "right"
       }
     ],
     "routingStatus": "routed",
@@ -51397,6 +51039,22 @@
         "addressSource": "reverse-geocode",
         "displayName": "7-Eleven",
         "metadataVersion": 3
+      },
+      {
+        "id": "node/6507896070",
+        "name": "全家便利商店",
+        "displayName": "全家便利商店 後壁茄苳店",
+        "metadataVersion": 3,
+        "brand": "FamilyMart",
+        "address": "臺南市上茄苳里縱貫公路",
+        "addressSource": "reverse-geocode",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=23.3887504%2C120.3756132",
+        "lat": 23.3887504,
+        "lon": 120.3756132,
+        "distanceFromRouteM": 13,
+        "targetKm": 120,
+        "routeProgressKm": 118.1,
+        "sideOfRoute": "right"
       }
     ],
     "routingStatus": "routed",
@@ -70697,6 +70355,22 @@
         "addressSource": "reverse-geocode",
         "displayName": "7-Eleven",
         "metadataVersion": 3
+      },
+      {
+        "id": "node/5554028723",
+        "name": "全家便利商店",
+        "displayName": "全家便利商店 霧峰九德店",
+        "metadataVersion": 3,
+        "brand": "FamilyMart",
+        "address": "臺中市霧峰區北柳里國中路",
+        "addressSource": "reverse-geocode",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=24.0661927%2C120.6916648",
+        "lat": 24.0661927,
+        "lon": 120.6916648,
+        "distanceFromRouteM": 138,
+        "targetKm": 50,
+        "routeProgressKm": 51,
+        "sideOfRoute": "right"
       }
     ],
     "routingStatus": "routed",

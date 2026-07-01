@@ -1,6 +1,7 @@
 import fs from "node:fs/promises";
 import { execFile } from "node:child_process";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 import { promisify } from "node:util";
 import { mergeRouteSchedule, parseRouteScheduleCsv } from "./route-schedule.js";
 import type {
@@ -31,7 +32,7 @@ const USE_CACHED_CONVENIENCE_STORES = process.env.USE_CACHED_CONVENIENCE_STORES 
 const POI_RADIUS_M = Number(process.env.POI_RADIUS_M || "1200");
 const REST_INTERVAL_KM = Number(process.env.REST_INTERVAL_KM || "10");
 const REST_WINDOW_KM = Number(process.env.REST_WINDOW_KM || "6");
-const FINISH_EXCLUSION_KM = Number(process.env.FINISH_EXCLUSION_KM || "15");
+const FINISH_EXCLUSION_KM = Number(process.env.FINISH_EXCLUSION_KM || "10");
 const MEANINGFUL_ROUTE_SAVING_KM = Number(process.env.MEANINGFUL_ROUTE_SAVING_KM || "8");
 const COMPARABLE_DISTANCE_DELTA_KM = Number(process.env.COMPARABLE_DISTANCE_DELTA_KM || "2");
 const OVERPASS_DELAY_MS = Number(process.env.OVERPASS_DELAY_MS || "3500");
@@ -43,6 +44,8 @@ const STORE_METADATA_VERSION = 3;
 const execFileAsync = promisify(execFile);
 let lastOverpassRequestAt = 0;
 let lastNominatimRequestAt = 0;
+
+type BuildRouteEnv = Partial<Pick<NodeJS.ProcessEnv, "BUILD_ROUTE_DAYS" | "ROUTE_DAYS" | "DAY">>;
 
 interface CoordinatePoint {
   lat: number;
@@ -106,6 +109,83 @@ interface SegmentProjection {
 
 function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
+}
+
+function parseDaySelector(values: string[]): Set<number> {
+  const days = values
+    .flatMap((value) => value.split(","))
+    .map((value) => value.trim())
+    .filter(Boolean)
+    .map((value) => {
+      const day = Number(value);
+      if (!Number.isInteger(day) || day < 0) {
+        throw new Error(`Invalid route day: ${value}`);
+      }
+      return day;
+    });
+
+  if (days.length === 0) {
+    throw new Error("Route day selector cannot be empty");
+  }
+
+  return new Set([...days].sort((a, b) => a - b));
+}
+
+export function parseRequestedDays(
+  args = process.argv.slice(2),
+  env: BuildRouteEnv = process.env,
+): Set<number> | null {
+  const values: string[] = [];
+
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index]!;
+    if (arg === "--day" || arg === "--days") {
+      const value = args[index + 1];
+      if (!value) {
+        throw new Error(`${arg} requires a day value`);
+      }
+      values.push(value);
+      index += 1;
+      continue;
+    }
+    if (arg.startsWith("--day=")) {
+      values.push(arg.slice("--day=".length));
+      continue;
+    }
+    if (arg.startsWith("--days=")) {
+      values.push(arg.slice("--days=".length));
+      continue;
+    }
+    if (arg === "--") {
+      continue;
+    }
+    if (arg.startsWith("-")) {
+      throw new Error(`Unknown build route option: ${arg}`);
+    }
+    values.push(arg);
+  }
+
+  const envValue = env.BUILD_ROUTE_DAYS ?? env.ROUTE_DAYS ?? env.DAY;
+  if (values.length === 0 && envValue) {
+    values.push(envValue);
+  }
+
+  return values.length > 0 ? parseDaySelector(values) : null;
+}
+
+export function shouldBuildRouteDay(day: number, requestedDays: ReadonlySet<number> | null): boolean {
+  return !requestedDays || requestedDays.has(day);
+}
+
+export function existingRouteOutputForSkippedDay(
+  day: RouteDay,
+  existingRoutes: ReadonlyMap<number, RouteDay>,
+): RouteDay {
+  const existingDay = existingRoutes.get(day.day);
+  if (!existingDay) {
+    throw new Error(`Cannot skip Day ${day.day} without existing generated route output`);
+  }
+  return existingDay;
 }
 
 function dayId(day: number): string {
@@ -540,9 +620,9 @@ function routePointAtKm(geometry: LineStringGeometry, targetKm: number): Coordin
   return { lat, lon };
 }
 
-function targetedConvenienceStoreQuery(geometry: LineStringGeometry): string {
+function targetedConvenienceStoreQuery(geometry: LineStringGeometry, targetKms = restStopTargets(geometryDistanceKm(geometry))): string {
   const aroundRadiusM = Math.ceil(REST_WINDOW_KM * 1000 + POI_RADIUS_M);
-  const clauses = restStopTargets(geometryDistanceKm(geometry))
+  const clauses = targetKms
     .map((targetKm) => {
       const point = routePointAtKm(geometry, targetKm);
       return `  node["shop"="convenience"](around:${aroundRadiusM},${point.lat},${point.lon});
@@ -686,9 +766,9 @@ function chunkGeometryBounds(geometry: LineStringGeometry): [number, number, num
   return chunks;
 }
 
-async function fetchOverpassElements(geometry: LineStringGeometry): Promise<OverpassElement[]> {
+async function fetchOverpassElements(geometry: LineStringGeometry, targetKms?: number[]): Promise<OverpassElement[]> {
   try {
-    return await queryOverpass(targetedConvenienceStoreQuery(geometry));
+    return await queryOverpass(targetedConvenienceStoreQuery(geometry, targetKms));
   } catch (error) {
     console.warn(`Targeted Overpass query failed, retrying by route bounds: ${errorMessage(error)}`);
   }
@@ -840,13 +920,17 @@ function storeScore(store: ConvenienceStore, targetKm: number): number {
   return progressPenalty + distancePenalty + sidePenalty;
 }
 
-function selectRestStops(stores: StoreWithSegment[], generatedDistanceKm: number): ConvenienceStore[] {
+function selectRestStops(
+  stores: StoreWithSegment[],
+  generatedDistanceKm: number,
+  targetKms = restStopTargets(generatedDistanceKm),
+): ConvenienceStore[] {
   const finishExclusionKm = Math.min(FINISH_EXCLUSION_KM, generatedDistanceKm * 0.25);
   const notNearFinish = stores.filter((store) => store.routeProgressKm <= generatedDistanceKm - finishExclusionKm);
   const selectedStops: ConvenienceStore[] = [];
   const usedStoreIds = new Set<string>();
 
-  for (const targetKm of restStopTargets(generatedDistanceKm)) {
+  for (const targetKm of targetKms) {
     const availableStores = notNearFinish.filter((store) => !usedStoreIds.has(store.id));
     const aroundTarget = availableStores.filter(
       (store) => Math.abs(store.routeProgressKm - targetKm) <= REST_WINDOW_KM,
@@ -869,7 +953,11 @@ function selectRestStops(stores: StoreWithSegment[], generatedDistanceKm: number
   return selectedStops;
 }
 
-function convenienceStoresNearRoute(elements: OverpassElement[], geometry: LineStringGeometry): ConvenienceStore[] {
+function convenienceStoresNearRoute(
+  elements: OverpassElement[],
+  geometry: LineStringGeometry,
+  targetKms?: number[],
+): ConvenienceStore[] {
   const stores: StoreWithSegment[] = [];
   const generatedDistanceKm = geometryDistanceKm(geometry);
 
@@ -923,7 +1011,7 @@ function convenienceStoresNearRoute(elements: OverpassElement[], geometry: LineS
 
   const candidates = stores
     .sort((a, b) => a.segmentIndex - b.segmentIndex || a.distanceFromRouteM - b.distanceFromRouteM);
-  return selectRestStops(candidates, generatedDistanceKm);
+  return selectRestStops(candidates, generatedDistanceKm, targetKms);
 }
 
 function cachedConvenienceStores(
@@ -966,6 +1054,33 @@ function targetMatchingCachedConvenienceStores(
     (store, index) => store.targetKm === expectedTargets[index],
   );
   return matchesTargets ? cachedDay.convenienceStores : null;
+}
+
+function partiallyMatchingCachedConvenienceStores(
+  cachedDay: RouteDay | undefined,
+  selectedCandidate: string,
+  generatedDistanceKm: number,
+): ConvenienceStore[] {
+  if (
+    !cachedDay ||
+    cachedDay.routeReview?.selectedCandidate !== selectedCandidate ||
+    typeof cachedDay.generatedDistanceKm !== "number" ||
+    Math.abs(cachedDay.generatedDistanceKm - generatedDistanceKm) > 0.2 ||
+    !Array.isArray(cachedDay.convenienceStores)
+  ) {
+    return [];
+  }
+
+  const expectedTargets = restStopTargets(generatedDistanceKm);
+  const expectedTargetSet = new Set(expectedTargets);
+  const storesByTarget = new Map(
+    cachedDay.convenienceStores
+      .filter((store) => expectedTargetSet.has(store.targetKm) && hasStoreDisplayFields(store))
+      .map((store) => [store.targetKm, withStoreDisplayFields(store)]),
+  );
+  return expectedTargets
+    .map((targetKm) => storesByTarget.get(targetKm))
+    .filter((store): store is ConvenienceStore => Boolean(store));
 }
 
 function fallbackCachedConvenienceStores(
@@ -1054,6 +1169,30 @@ async function fetchConvenienceStores(
     }
   }
 
+  const partialCachedStores = partiallyMatchingCachedConvenienceStores(
+    cachedDay,
+    selectedCandidate,
+    generatedDistanceKm,
+  );
+  const partialCachedTargets = new Set(partialCachedStores.map((store) => store.targetKm));
+  const missingTargets = restStopTargets(generatedDistanceKm).filter((targetKm) => !partialCachedTargets.has(targetKm));
+  if (partialCachedStores.length > 0 && missingTargets.length > 0) {
+    try {
+      const elements = await fetchOverpassElements(geometry, missingTargets);
+      const fetchedStores = convenienceStoresNearRoute(elements, geometry, missingTargets);
+      const stores = [...partialCachedStores, ...fetchedStores].sort((a, b) => a.targetKm - b.targetKm);
+      if (stores.length === expectedCount) {
+        console.log(
+          `Day ${day.day}: reused ${partialCachedStores.length} cached convenience store rest stops and fetched ${fetchedStores.length}`,
+        );
+        return stores;
+      }
+      console.warn(`Day ${day.day}: Overpass returned ${stores.length}/${expectedCount} convenience store rest stops`);
+    } catch (error) {
+      console.warn(`Day ${day.day}: missing convenience store lookup failed: ${errorMessage(error)}`);
+    }
+  }
+
   try {
     const elements = await fetchOverpassElements(geometry);
     const stores = convenienceStoresNearRoute(elements, geometry);
@@ -1105,12 +1244,26 @@ async function readSourceRoutes(): Promise<RouteDay[]> {
 async function build() {
   const source = await readSourceRoutes();
   const existingRoutes = await readExistingRoutes();
+  const requestedDays = parseRequestedDays();
+  if (requestedDays) {
+    const sourceDays = new Set(source.map((day) => day.day));
+    const unknownDays = [...requestedDays].filter((day) => !sourceDays.has(day));
+    if (unknownDays.length > 0) {
+      throw new Error(`Requested route day(s) not found: ${unknownDays.join(", ")}`);
+    }
+    console.log(`Building route day(s): ${[...requestedDays].join(", ")}`);
+  }
   await fs.mkdir(GPX_DIR, { recursive: true });
 
   const output = [];
   const warnings = [];
 
   for (const day of source) {
+    if (!shouldBuildRouteDay(day.day, requestedDays)) {
+      output.push(existingRouteOutputForSkippedDay(day, existingRoutes));
+      continue;
+    }
+
     if (day.type !== "ride") {
       output.push({
         ...day,
@@ -1207,7 +1360,9 @@ async function build() {
   console.log(`Wrote ${ROUTES_PATH}`);
 }
 
-build().catch((error) => {
-  console.error(error);
-  process.exit(1);
-});
+if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) {
+  build().catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
+}

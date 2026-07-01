@@ -14,7 +14,7 @@ export interface GpxFile {
 
 const REST_INTERVAL_KM = 10;
 const REST_WINDOW_KM = 6;
-const FINISH_EXCLUSION_KM = 15;
+const FINISH_EXCLUSION_KM = 10;
 const EXCLUDED_STORE_NAME_PATTERNS = [/shopee/i, /蝦皮/i];
 
 function restStopTargets(generatedDistanceKm: number): number[] {

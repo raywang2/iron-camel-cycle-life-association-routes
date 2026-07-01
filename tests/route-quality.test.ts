@@ -13,4 +13,10 @@ describe("generated route quality", () => {
     expect(day2?.routeReview?.selectedCandidate).toBe("reduced-waypoints");
     expect(day2?.generatedDistanceKm).toBeLessThan(60);
   });
+
+  it("keeps a convenience stop after 70km for day 3", () => {
+    const day3 = routes().find((route) => route.day === 3);
+
+    expect(day3?.convenienceStores?.map((store) => store.targetKm)).toContain(80);
+  });
 });
