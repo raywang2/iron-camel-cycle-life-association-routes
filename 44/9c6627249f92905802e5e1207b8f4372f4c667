@@ -1,0 +1,42 @@
+tests/build-routes-options.test.ts
+  s_1ae7bf14fd87ce::t_cb5a04939c0fc7 1-60
+tests/route-quality.test.ts
+  s_1ae7bf14fd87ce::t_fa30537b029abd 16-21
+scripts/build-routes.ts
+  s_1ae7bf14fd87ce::t_d4a7ade45b7f8f 1059-1085
+  s_1ae7bf14fd87ce::t_0e5f0f12b14b28 1247-1255,1262-1266,1363-1368
+  s_1ae7bf14fd87ce::t_eba847b4e2cf9f 4,48
+  s_1ae7bf14fd87ce::t_28d40beade3ac8 35
+  s_1ae7bf14fd87ce::t_662090c3b0aa2a 623,625,769,771,923-927,933,956-960,1014
+  s_1ae7bf14fd87ce::t_d8702857852740 114-190
+  s_1ae7bf14fd87ce::t_b57a331830df32 1172-1195
+  s_1ae7bf14fd87ce::t_5ce9b7460ea364 49
+scripts/validate-output.ts
+  s_1ae7bf14fd87ce::t_797438f6d44fc8 17
+data/routes.json
+  s_1ae7bf14fd87ce::t_0bad7d4ae7fd0f 123-125,131,136-137,139-141,147,152-153,155-157,163,166-171,173-179,4338-4339,4342-4343,4346-4347,4350-4351,4354-4355,4358-4359,4362-4363,4366-4367,4370-4371,4374-4375,4378-4379,4382-4383,4386-4387,4390-4391,8059-8074,16374-16389,51042-51057,70358-70366
+  s_1ae7bf14fd87ce::t_8e692d36f5fbcd 68-69,86-87,120-121,70367-70373
+data/route-waypoints.json
+  h_c3a960f1d8b0a0 53,56,75,103-106,124,126,183-184,210,212,252-253,274,276-277,283-284,303-304,331,333
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.5",
+  "base_commit_sha": "449c6627249f92905802e5e1207b8f4372f4c667",
+  "prompts": {},
+  "humans": {
+    "h_c3a960f1d8b0a0": {
+      "author": "Ray Wang <sncorges@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_1ae7bf14fd87ce": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f1399-9cdd-7090-bf1a-2b71d472eb20",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Ray Wang <sncorges@gmail.com>"
+    }
+  }
+}
