@@ -153,7 +153,7 @@ describe("route waypoint source", () => {
 
   it("uses external KML routes with only start and finish markers for manually confirmed days", () => {
     const routes = sourceRoutes();
-    const externalRouteDays = [2, 3, 4, 5, 7, 8, 9, 11, 12, 13];
+    const externalRouteDays = [2, 3, 4, 5, 7, 8, 9, 11, 12, 13, 14];
 
     for (const day of externalRouteDays) {
       const route = routes.find((candidate) => candidate.day === day)!;
@@ -167,7 +167,7 @@ describe("route waypoint source", () => {
 
   it("keeps external KML start markers on the route starts except day 5 transfer route", () => {
     const routes = sourceRoutes();
-    const externalRouteDays = [1, 2, 3, 4, 7, 8, 9, 11, 12, 13];
+    const externalRouteDays = [1, 2, 3, 4, 7, 8, 9, 11, 12, 13, 14];
 
     for (const day of externalRouteDays) {
       const route = routes.find((candidate) => candidate.day === day)!;
