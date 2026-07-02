@@ -41,6 +41,19 @@ describe("route waypoint source", () => {
     }
   });
 
+  it("keeps the day 0 briefing venue as a map waypoint", () => {
+    const day0 = sourceRoutes().find((route) => route.day === 0)!;
+
+    expect(day0.type).toBe("lecture");
+    expect(day0.waypoints).toEqual([
+      {
+        name: "臺體體育場",
+        lat: 24.15239,
+        lon: 120.6898,
+      },
+    ]);
+  });
+
   it("uses accommodation endpoints in ride-day title and route text", () => {
     const routes = sourceRoutes().filter((route) => route.type === "ride");
 

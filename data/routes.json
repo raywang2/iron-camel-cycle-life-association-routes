@@ -12,7 +12,13 @@
     "lunchDistanceKm": null,
     "endAccommodation": "台體大國立臺灣體育運動大學",
     "description": "報到！行前安全講習(物資發放)",
-    "waypoints": [],
+    "waypoints": [
+      {
+        "name": "臺體體育場",
+        "lat": 24.15239,
+        "lon": 120.6898
+      }
+    ],
     "generatedDistanceKm": null,
     "distanceDeltaKm": null,
     "distanceWarning": null,
