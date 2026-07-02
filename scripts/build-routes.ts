@@ -7,6 +7,7 @@ import { mergeRouteSchedule, parseRouteScheduleCsv } from "./route-schedule.js";
 import type {
   ConvenienceStore,
   LineStringGeometry,
+  RouteGeometry,
   RouteCandidateReview,
   RouteDay,
   RouteReview,
@@ -23,6 +24,7 @@ export const DEFAULT_ROUTER_ENGINE = "valhalla";
 export const DEFAULT_ROUTER_PROFILE = "bicycle";
 export const DEFAULT_BICYCLE_USE_ROADS = 0;
 export const DEFAULT_BROUTER_PROFILE = "trekking";
+export const DEFAULT_REST_WINDOW_KM = 15;
 const ROUTER_ENGINE = process.env.ROUTER_ENGINE || DEFAULT_ROUTER_ENGINE;
 const ROUTER_URL = process.env.ROUTER_URL || "https://router.project-osrm.org";
 const VALHALLA_URL = process.env.VALHALLA_URL || "https://valhalla1.openstreetmap.de";
@@ -39,11 +41,10 @@ const OSM_API_URL = process.env.OSM_API_URL || "https://api.openstreetmap.org/ap
 const NOMINATIM_URL = process.env.NOMINATIM_URL || "https://nominatim.openstreetmap.org";
 const FETCH_CONVENIENCE_STORES = process.env.FETCH_CONVENIENCE_STORES !== "0";
 const USE_CACHED_CONVENIENCE_STORES = process.env.USE_CACHED_CONVENIENCE_STORES === "1";
+const REFETCH_CONVENIENCE_STORES = process.env.REFETCH_CONVENIENCE_STORES === "1";
 const POI_RADIUS_M = Number(process.env.POI_RADIUS_M || "1200");
 const REST_INTERVAL_KM = Number(process.env.REST_INTERVAL_KM || "10");
-const REST_WINDOW_KM = Number(process.env.REST_WINDOW_KM || "6");
-const FINISH_EXCLUSION_KM = Number(process.env.FINISH_EXCLUSION_KM || "10");
-const FINISH_EXCLUSION_TOLERANCE_KM = Number(process.env.FINISH_EXCLUSION_TOLERANCE_KM || "0.5");
+const REST_WINDOW_KM = Number(process.env.REST_WINDOW_KM || String(DEFAULT_REST_WINDOW_KM));
 const AVOID_FAST_ROADS = process.env.AVOID_FAST_ROADS !== "0";
 const FAST_ROAD_MATCH_DISTANCE_M = Number(process.env.FAST_ROAD_MATCH_DISTANCE_M || "22");
 const FAST_ROAD_MAX_HEADING_DIFF_DEG = Number(process.env.FAST_ROAD_MAX_HEADING_DIFF_DEG || "35");
@@ -360,8 +361,15 @@ function routeCandidateDefinitions(day: RouteDay): RouteCandidateDefinition[] {
   });
 }
 
-function geometryDistanceKm(geometry: LineStringGeometry): number {
-  const { coordinates } = geometry;
+function geometryLineStrings(geometry: RouteGeometry): [number, number][][] {
+  return geometry.type === "LineString" ? [geometry.coordinates] : geometry.coordinates;
+}
+
+function geometryCoordinates(geometry: RouteGeometry): [number, number][] {
+  return geometryLineStrings(geometry).flat();
+}
+
+function lineStringDistanceKm(coordinates: [number, number][]): number {
   let total = 0;
 
   for (let index = 1; index < coordinates.length; index += 1) {
@@ -374,6 +382,15 @@ function geometryDistanceKm(geometry: LineStringGeometry): number {
     const [lon, lat] = current;
     total += haversineKm({ lat: prevLat, lon: prevLon }, { lat, lon });
   }
+
+  return total;
+}
+
+function geometryDistanceKm(geometry: RouteGeometry): number {
+  const total = geometryLineStrings(geometry).reduce(
+    (sum, coordinates) => sum + lineStringDistanceKm(coordinates),
+    0,
+  );
 
   return Math.round(total * 10) / 10;
 }
@@ -496,12 +513,19 @@ function formatNominatimAddress(payload: NominatimReverseResponse): string | nul
   return composed || payload.display_name?.trim() || null;
 }
 
-function geometryToGpx(day: RouteDay, geometry: LineStringGeometry): string {
-  const points = geometry.coordinates
-    .map(
-      ([lon, lat]) =>
-        `      <trkpt lat="${lat.toFixed(6)}" lon="${lon.toFixed(6)}"></trkpt>`,
-    )
+function geometryToGpx(day: RouteDay, geometry: RouteGeometry): string {
+  const trackSegments = geometryLineStrings(geometry)
+    .map((coordinates) => {
+      const points = coordinates
+        .map(
+          ([lon, lat]) =>
+            `      <trkpt lat="${lat.toFixed(6)}" lon="${lon.toFixed(6)}"></trkpt>`,
+        )
+        .join("\n");
+      return `    <trkseg>
+${points}
+    </trkseg>`;
+    })
     .join("\n");
 
   return `<?xml version="1.0" encoding="UTF-8"?>
@@ -512,12 +536,53 @@ function geometryToGpx(day: RouteDay, geometry: LineStringGeometry): string {
   </metadata>
   <trk>
     <name>${escapeXml(`Day ${day.day} ${day.title}`)}</name>
-    <trkseg>
-${points}
-    </trkseg>
+${trackSegments}
   </trk>
 </gpx>
 `;
+}
+
+export function parseKmlLineStringGeometry(kml: string): RouteGeometry {
+  const lineStrings = [...kml.matchAll(/<LineString\b[^>]*>([\s\S]*?)<\/LineString>/g)]
+    .map((lineStringMatch) => {
+      const coordinatesText = lineStringMatch[1]?.match(/<coordinates>([\s\S]*?)<\/coordinates>/)?.[1] ?? "";
+      return coordinatesText
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean)
+        .map((coordinate) => {
+          const [lon, lat] = coordinate.split(",").map(Number);
+          return typeof lon === "number" && Number.isFinite(lon) &&
+            typeof lat === "number" && Number.isFinite(lat)
+            ? [lon, lat] as [number, number]
+            : null;
+        })
+        .filter((coordinate): coordinate is [number, number] => Boolean(coordinate));
+    })
+    .filter((coordinates) => coordinates.length >= 2);
+
+  if (lineStrings.length === 0) {
+    throw new Error("KML route does not include a LineString with at least two coordinates");
+  }
+
+  if (lineStrings.length === 1) {
+    return {
+      type: "LineString",
+      coordinates: lineStrings[0]!,
+    };
+  }
+
+  return {
+    type: "MultiLineString",
+    coordinates: lineStrings,
+  };
+}
+
+async function readExternalRouteGeometry(externalRoutePath: string): Promise<RouteGeometry> {
+  const routePath = path.isAbsolute(externalRoutePath)
+    ? externalRoutePath
+    : path.join(ROOT, externalRoutePath);
+  return parseKmlLineStringGeometry(await fs.readFile(routePath, "utf8"));
 }
 
 async function routeWithOsrm(waypoints: Waypoint[]): Promise<LineStringGeometry> {
@@ -922,8 +987,27 @@ function createRouteReview(day: RouteDay, selected: BuiltRouteCandidate, candida
   };
 }
 
-function geometryBounds(geometry: LineStringGeometry): [number, number, number, number] {
-  return coordinateBounds(geometry.coordinates);
+function createExternalRouteReview(day: RouteDay, geometry: RouteGeometry): RouteReview {
+  const generatedDistanceKm = geometryDistanceKm(geometry);
+
+  return {
+    selectedCandidate: "external-kml",
+    reviewNote: "已使用人工確認的 Google My Maps KML 路線。",
+    candidates: [
+      {
+        id: "external-kml",
+        label: "Google My Maps KML",
+        waypointNames: day.waypoints.map((waypoint) => waypoint.name),
+        generatedDistanceKm,
+        distanceDeltaKm: calculateDistanceDeltaKm(generatedDistanceKm, day.distanceKm),
+        selected: true,
+      },
+    ],
+  };
+}
+
+function geometryBounds(geometry: RouteGeometry): [number, number, number, number] {
+  return coordinateBounds(geometryCoordinates(geometry));
 }
 
 function coordinateBounds(coordinates: [number, number][]): [number, number, number, number] {
@@ -950,31 +1034,34 @@ out center tags;
 `;
 }
 
-function routePointAtKm(geometry: LineStringGeometry, targetKm: number): CoordinatePoint {
+function routePointAtKm(geometry: RouteGeometry, targetKm: number): CoordinatePoint {
   let cumulativeKm = 0;
 
-  for (let index = 1; index < geometry.coordinates.length; index += 1) {
-    const previous = geometry.coordinates[index - 1];
-    const current = geometry.coordinates[index];
-    if (!previous || !current) {
-      continue;
-    }
+  for (const coordinates of geometryLineStrings(geometry)) {
+    for (let index = 1; index < coordinates.length; index += 1) {
+      const previous = coordinates[index - 1];
+      const current = coordinates[index];
+      if (!previous || !current) {
+        continue;
+      }
 
-    const start = { lat: previous[1], lon: previous[0] };
-    const end = { lat: current[1], lon: current[0] };
-    const segmentKm = haversineKm(start, end);
-    if (cumulativeKm + segmentKm >= targetKm) {
-      const t = segmentKm === 0 ? 0 : (targetKm - cumulativeKm) / segmentKm;
-      return {
-        lat: start.lat + (end.lat - start.lat) * t,
-        lon: start.lon + (end.lon - start.lon) * t,
-      };
-    }
+      const start = { lat: previous[1], lon: previous[0] };
+      const end = { lat: current[1], lon: current[0] };
+      const segmentKm = haversineKm(start, end);
+      if (cumulativeKm + segmentKm >= targetKm) {
+        const t = segmentKm === 0 ? 0 : (targetKm - cumulativeKm) / segmentKm;
+        return {
+          lat: start.lat + (end.lat - start.lat) * t,
+          lon: start.lon + (end.lon - start.lon) * t,
+        };
+      }
 
-    cumulativeKm += segmentKm;
+      cumulativeKm += segmentKm;
+    }
   }
 
-  const [lon, lat] = geometry.coordinates.at(-1) ?? geometry.coordinates[0] ?? [0, 0];
+  const coordinates = geometryCoordinates(geometry);
+  const [lon, lat] = coordinates.at(-1) ?? coordinates[0] ?? [0, 0];
   return { lat, lon };
 }
 
@@ -1093,55 +1180,57 @@ async function fastRoadIndex(): Promise<FastRoadIndex> {
   return fastRoadIndexPromise;
 }
 
-async function fastRoadMatches(geometry: LineStringGeometry): Promise<FastRoadMatch[]> {
+async function fastRoadMatches(geometry: RouteGeometry): Promise<FastRoadMatch[]> {
   const roads = await fastRoadIndex();
   const groups = new Map<string, FastRoadMatch>();
   let routeProgressKm = 0;
 
-  for (let routeIndex = 1; routeIndex < geometry.coordinates.length; routeIndex += 1) {
-    const previous = geometry.coordinates[routeIndex - 1];
-    const current = geometry.coordinates[routeIndex];
-    if (!previous || !current) {
-      continue;
-    }
-    const start = { lat: previous[1], lon: previous[0] };
-    const end = { lat: current[1], lon: current[0] };
-    const segmentKm = haversineKm(start, end);
-    const midpoint = {
-      lat: (start.lat + end.lat) / 2,
-      lon: (start.lon + end.lon) / 2,
-    };
-    const routeHeading = headingDeg(start, end);
-    let best: { road: FastRoadSegment; distanceM: number } | null = null;
-
-    for (const road of nearbyFastRoadSegments(roads, midpoint)) {
-      const distanceM = pointToSegmentDistanceM(midpoint, road.start, road.end).distanceM;
-      if (distanceM > FAST_ROAD_MATCH_DISTANCE_M) {
+  for (const coordinates of geometryLineStrings(geometry)) {
+    for (let routeIndex = 1; routeIndex < coordinates.length; routeIndex += 1) {
+      const previous = coordinates[routeIndex - 1];
+      const current = coordinates[routeIndex];
+      if (!previous || !current) {
         continue;
       }
-      if (headingDiffDeg(routeHeading, road.heading) > FAST_ROAD_MAX_HEADING_DIFF_DEG) {
-        continue;
-      }
-      if (!best || distanceM < best.distanceM) {
-        best = { road, distanceM };
-      }
-    }
-
-    if (best) {
-      const group = groups.get(best.road.id) ?? {
-        id: best.road.id,
-        label: best.road.label,
-        matchedKm: 0,
-        firstKm: routeProgressKm,
-        lastKm: routeProgressKm,
+      const start = { lat: previous[1], lon: previous[0] };
+      const end = { lat: current[1], lon: current[0] };
+      const segmentKm = haversineKm(start, end);
+      const midpoint = {
+        lat: (start.lat + end.lat) / 2,
+        lon: (start.lon + end.lon) / 2,
       };
-      group.matchedKm += segmentKm;
-      group.firstKm = Math.min(group.firstKm, routeProgressKm);
-      group.lastKm = Math.max(group.lastKm, routeProgressKm + segmentKm);
-      groups.set(best.road.id, group);
-    }
+      const routeHeading = headingDeg(start, end);
+      let best: { road: FastRoadSegment; distanceM: number } | null = null;
 
-    routeProgressKm += segmentKm;
+      for (const road of nearbyFastRoadSegments(roads, midpoint)) {
+        const distanceM = pointToSegmentDistanceM(midpoint, road.start, road.end).distanceM;
+        if (distanceM > FAST_ROAD_MATCH_DISTANCE_M) {
+          continue;
+        }
+        if (headingDiffDeg(routeHeading, road.heading) > FAST_ROAD_MAX_HEADING_DIFF_DEG) {
+          continue;
+        }
+        if (!best || distanceM < best.distanceM) {
+          best = { road, distanceM };
+        }
+      }
+
+      if (best) {
+        const group = groups.get(best.road.id) ?? {
+          id: best.road.id,
+          label: best.road.label,
+          matchedKm: 0,
+          firstKm: routeProgressKm,
+          lastKm: routeProgressKm,
+        };
+        group.matchedKm += segmentKm;
+        group.firstKm = Math.min(group.firstKm, routeProgressKm);
+        group.lastKm = Math.max(group.lastKm, routeProgressKm + segmentKm);
+        groups.set(best.road.id, group);
+      }
+
+      routeProgressKm += segmentKm;
+    }
   }
 
   return [...groups.values()]
@@ -1149,7 +1238,7 @@ async function fastRoadMatches(geometry: LineStringGeometry): Promise<FastRoadMa
     .sort((a, b) => b.matchedKm - a.matchedKm);
 }
 
-function targetedConvenienceStoreQuery(geometry: LineStringGeometry, targetKms = restStopTargets(geometryDistanceKm(geometry))): string {
+function targetedConvenienceStoreQuery(geometry: RouteGeometry, targetKms = restStopTargets(geometryDistanceKm(geometry))): string {
   const aroundRadiusM = Math.ceil(REST_WINDOW_KM * 1000 + POI_RADIUS_M);
   const clauses = targetKms
     .map((targetKm) => {
@@ -1294,8 +1383,8 @@ async function reverseGeocodeAddress(lat: number, lon: number): Promise<string |
   return formatNominatimAddress((await response.json()) as NominatimReverseResponse);
 }
 
-function chunkGeometryBounds(geometry: LineStringGeometry): [number, number, number, number][] {
-  const coordinates = geometry.coordinates;
+function chunkGeometryBounds(geometry: RouteGeometry): [number, number, number, number][] {
+  const coordinates = geometryCoordinates(geometry);
   const chunkCount = Math.min(8, Math.max(2, Math.ceil(coordinates.length / 220)));
   const chunkSize = Math.ceil(coordinates.length / chunkCount);
   const chunks: [number, number, number, number][] = [];
@@ -1310,7 +1399,7 @@ function chunkGeometryBounds(geometry: LineStringGeometry): [number, number, num
   return chunks;
 }
 
-async function fetchOverpassElements(geometry: LineStringGeometry, targetKms?: number[]): Promise<OverpassElement[]> {
+async function fetchOverpassElements(geometry: RouteGeometry, targetKms?: number[]): Promise<OverpassElement[]> {
   try {
     return await queryOverpass(targetedConvenienceStoreQuery(geometry, targetKms));
   } catch (error) {
@@ -1405,7 +1494,7 @@ function pointToSegmentDistanceM(
 
 function nearestRouteDistance(
   store: CoordinatePoint,
-  geometry: LineStringGeometry,
+  geometry: RouteGeometry,
 ): { distanceM: number; segmentIndex: number; routeProgressKm: number; sideOfRoute: ConvenienceStore["sideOfRoute"] } {
   let bestDistance = Number.POSITIVE_INFINITY;
   let bestSegmentIndex = 0;
@@ -1413,27 +1502,31 @@ function nearestRouteDistance(
   let bestSideOfRoute: ConvenienceStore["sideOfRoute"] = "on-route";
   let cumulativeKm = 0;
 
-  for (let index = 1; index < geometry.coordinates.length; index += 1) {
-    const previous = geometry.coordinates[index - 1];
-    const current = geometry.coordinates[index];
-    if (!previous || !current) {
-      continue;
+  let segmentIndex = 0;
+  for (const coordinates of geometryLineStrings(geometry)) {
+    for (let index = 1; index < coordinates.length; index += 1) {
+      segmentIndex += 1;
+      const previous = coordinates[index - 1];
+      const current = coordinates[index];
+      if (!previous || !current) {
+        continue;
+      }
+      const segmentStart = { lat: previous[1], lon: previous[0] };
+      const segmentEnd = { lat: current[1], lon: current[0] };
+      const segmentKm = haversineKm(segmentStart, segmentEnd);
+      const projection = pointToSegmentDistanceM(
+        store,
+        segmentStart,
+        segmentEnd,
+      );
+      if (projection.distanceM < bestDistance) {
+        bestDistance = projection.distanceM;
+        bestSegmentIndex = segmentIndex;
+        bestRouteProgressKm = Math.round((cumulativeKm + segmentKm * projection.t) * 10) / 10;
+        bestSideOfRoute = projection.sideOfRoute;
+      }
+      cumulativeKm += segmentKm;
     }
-    const segmentStart = { lat: previous[1], lon: previous[0] };
-    const segmentEnd = { lat: current[1], lon: current[0] };
-    const segmentKm = haversineKm(segmentStart, segmentEnd);
-    const projection = pointToSegmentDistanceM(
-      store,
-      segmentStart,
-      segmentEnd,
-    );
-    if (projection.distanceM < bestDistance) {
-      bestDistance = projection.distanceM;
-      bestSegmentIndex = index;
-      bestRouteProgressKm = Math.round((cumulativeKm + segmentKm * projection.t) * 10) / 10;
-      bestSideOfRoute = projection.sideOfRoute;
-    }
-    cumulativeKm += segmentKm;
   }
 
   return {
@@ -1444,11 +1537,9 @@ function nearestRouteDistance(
   };
 }
 
-function restStopTargets(generatedDistanceKm: number): number[] {
-  const finishExclusionKm = Math.min(FINISH_EXCLUSION_KM, generatedDistanceKm * 0.25);
-  const lastTargetKm = generatedDistanceKm - finishExclusionKm + FINISH_EXCLUSION_TOLERANCE_KM;
+export function restStopTargets(generatedDistanceKm: number): number[] {
   const targets = [];
-  for (let target = REST_INTERVAL_KM; target <= lastTargetKm; target += REST_INTERVAL_KM) {
+  for (let target = REST_INTERVAL_KM; target <= generatedDistanceKm + Number.EPSILON; target += REST_INTERVAL_KM) {
     targets.push(target);
   }
   return targets;
@@ -1470,13 +1561,11 @@ function selectRestStops(
   generatedDistanceKm: number,
   targetKms = restStopTargets(generatedDistanceKm),
 ): ConvenienceStore[] {
-  const finishExclusionKm = Math.min(FINISH_EXCLUSION_KM, generatedDistanceKm * 0.25);
-  const notNearFinish = stores.filter((store) => store.routeProgressKm <= generatedDistanceKm - finishExclusionKm);
   const selectedStops: ConvenienceStore[] = [];
   const usedStoreIds = new Set<string>();
 
   for (const targetKm of targetKms) {
-    const availableStores = notNearFinish.filter((store) => !usedStoreIds.has(store.id));
+    const availableStores = stores.filter((store) => !usedStoreIds.has(store.id));
     const aroundTarget = availableStores.filter(
       (store) => Math.abs(store.routeProgressKm - targetKm) <= REST_WINDOW_KM,
     );
@@ -1500,7 +1589,7 @@ function selectRestStops(
 
 function convenienceStoresNearRoute(
   elements: OverpassElement[],
-  geometry: LineStringGeometry,
+  geometry: RouteGeometry,
   targetKms?: number[],
 ): ConvenienceStore[] {
   const stores: StoreWithSegment[] = [];
@@ -1704,7 +1793,7 @@ async function enrichSelectedConvenienceStores(stores: ConvenienceStore[]): Prom
 
 async function fetchConvenienceStores(
   day: RouteDay,
-  geometry: LineStringGeometry,
+  geometry: RouteGeometry,
   cachedDay: RouteDay | undefined,
   selectedCandidate: string,
 ): Promise<ConvenienceStore[]> {
@@ -1714,57 +1803,59 @@ async function fetchConvenienceStores(
 
   const generatedDistanceKm = geometryDistanceKm(geometry);
   const expectedCount = expectedRestStopCount(generatedDistanceKm);
-  if (USE_CACHED_CONVENIENCE_STORES) {
-    const fallbackCachedStores = fallbackCachedConvenienceStores(cachedDay, generatedDistanceKm);
-    if (fallbackCachedStores) {
-      console.log(`Day ${day.day}: using cached convenience store rest stops by request`);
-      return fallbackCachedStores;
-    }
-  }
-  const cachedStores = cachedConvenienceStores(cachedDay, selectedCandidate, generatedDistanceKm);
-  if (cachedStores) {
-    console.log(`Day ${day.day}: using cached convenience store rest stops`);
-    return cachedStores;
-  }
-
-  const metadataOnlyCachedStores = targetMatchingCachedConvenienceStores(cachedDay, generatedDistanceKm);
-  if (
-    metadataOnlyCachedStores &&
-    cachedDay?.routeReview?.selectedCandidate === selectedCandidate &&
-    typeof cachedDay.generatedDistanceKm === "number" &&
-    Math.abs(cachedDay.generatedDistanceKm - generatedDistanceKm) <= 0.2
-  ) {
-    try {
-      const stores = await enrichCachedConvenienceStores(metadataOnlyCachedStores);
-      console.log(`Day ${day.day}: refreshed cached convenience store metadata`);
-      return stores;
-    } catch (error) {
-      console.warn(`Day ${day.day}: convenience store metadata refresh failed: ${errorMessage(error)}`);
-      return metadataOnlyCachedStores.map(withStoreDisplayFields);
-    }
-  }
-
-  const partialCachedStores = partiallyMatchingCachedConvenienceStores(
-    cachedDay,
-    selectedCandidate,
-    generatedDistanceKm,
-  );
-  const partialCachedTargets = new Set(partialCachedStores.map((store) => store.targetKm));
-  const missingTargets = restStopTargets(generatedDistanceKm).filter((targetKm) => !partialCachedTargets.has(targetKm));
-  if (partialCachedStores.length > 0 && missingTargets.length > 0) {
-    try {
-      const elements = await fetchOverpassElements(geometry, missingTargets);
-      const fetchedStores = convenienceStoresNearRoute(elements, geometry, missingTargets);
-      const stores = [...partialCachedStores, ...fetchedStores].sort((a, b) => a.targetKm - b.targetKm);
-      if (stores.length === expectedCount) {
-        console.log(
-          `Day ${day.day}: reused ${partialCachedStores.length} cached convenience store rest stops and fetched ${fetchedStores.length}`,
-        );
-        return enrichSelectedConvenienceStores(stores);
+  if (!REFETCH_CONVENIENCE_STORES) {
+    if (USE_CACHED_CONVENIENCE_STORES) {
+      const fallbackCachedStores = fallbackCachedConvenienceStores(cachedDay, generatedDistanceKm);
+      if (fallbackCachedStores) {
+        console.log(`Day ${day.day}: using cached convenience store rest stops by request`);
+        return fallbackCachedStores;
       }
-      console.warn(`Day ${day.day}: Overpass returned ${stores.length}/${expectedCount} convenience store rest stops`);
-    } catch (error) {
-      console.warn(`Day ${day.day}: missing convenience store lookup failed: ${errorMessage(error)}`);
+    }
+    const cachedStores = cachedConvenienceStores(cachedDay, selectedCandidate, generatedDistanceKm);
+    if (cachedStores) {
+      console.log(`Day ${day.day}: using cached convenience store rest stops`);
+      return cachedStores;
+    }
+
+    const metadataOnlyCachedStores = targetMatchingCachedConvenienceStores(cachedDay, generatedDistanceKm);
+    if (
+      metadataOnlyCachedStores &&
+      cachedDay?.routeReview?.selectedCandidate === selectedCandidate &&
+      typeof cachedDay.generatedDistanceKm === "number" &&
+      Math.abs(cachedDay.generatedDistanceKm - generatedDistanceKm) <= 0.2
+    ) {
+      try {
+        const stores = await enrichCachedConvenienceStores(metadataOnlyCachedStores);
+        console.log(`Day ${day.day}: refreshed cached convenience store metadata`);
+        return stores;
+      } catch (error) {
+        console.warn(`Day ${day.day}: convenience store metadata refresh failed: ${errorMessage(error)}`);
+        return metadataOnlyCachedStores.map(withStoreDisplayFields);
+      }
+    }
+
+    const partialCachedStores = partiallyMatchingCachedConvenienceStores(
+      cachedDay,
+      selectedCandidate,
+      generatedDistanceKm,
+    );
+    const partialCachedTargets = new Set(partialCachedStores.map((store) => store.targetKm));
+    const missingTargets = restStopTargets(generatedDistanceKm).filter((targetKm) => !partialCachedTargets.has(targetKm));
+    if (partialCachedStores.length > 0 && missingTargets.length > 0) {
+      try {
+        const elements = await fetchOverpassElements(geometry, missingTargets);
+        const fetchedStores = convenienceStoresNearRoute(elements, geometry, missingTargets);
+        const stores = [...partialCachedStores, ...fetchedStores].sort((a, b) => a.targetKm - b.targetKm);
+        if (stores.length === expectedCount) {
+          console.log(
+            `Day ${day.day}: reused ${partialCachedStores.length} cached convenience store rest stops and fetched ${fetchedStores.length}`,
+          );
+          return enrichSelectedConvenienceStores(stores);
+        }
+        console.warn(`Day ${day.day}: Overpass returned ${stores.length}/${expectedCount} convenience store rest stops`);
+      } catch (error) {
+        console.warn(`Day ${day.day}: missing convenience store lookup failed: ${errorMessage(error)}`);
+      }
     }
   }
 
@@ -1773,10 +1864,12 @@ async function fetchConvenienceStores(
     const stores = convenienceStoresNearRoute(elements, geometry);
     if (stores.length < expectedCount) {
       console.warn(`Day ${day.day}: Overpass returned ${stores.length}/${expectedCount} convenience store rest stops`);
-      const fallbackCachedStores = fallbackCachedConvenienceStores(cachedDay, generatedDistanceKm);
-      if (fallbackCachedStores) {
-        console.warn(`Day ${day.day}: using cached convenience store rest stops after incomplete Overpass result`);
-        return fallbackCachedStores;
+      if (!REFETCH_CONVENIENCE_STORES) {
+        const fallbackCachedStores = fallbackCachedConvenienceStores(cachedDay, generatedDistanceKm);
+        if (fallbackCachedStores) {
+          console.warn(`Day ${day.day}: using cached convenience store rest stops after incomplete Overpass result`);
+          return fallbackCachedStores;
+        }
       }
     }
     console.log(
@@ -1785,10 +1878,12 @@ async function fetchConvenienceStores(
     return enrichSelectedConvenienceStores(stores);
   } catch (error) {
     console.warn(`Day ${day.day}: convenience store lookup failed: ${errorMessage(error)}`);
-    const fallbackCachedStores = fallbackCachedConvenienceStores(cachedDay, generatedDistanceKm);
-    if (fallbackCachedStores) {
-      console.warn(`Day ${day.day}: using cached convenience store rest stops with coordinate fallback`);
-      return fallbackCachedStores;
+    if (!REFETCH_CONVENIENCE_STORES) {
+      const fallbackCachedStores = fallbackCachedConvenienceStores(cachedDay, generatedDistanceKm);
+      if (fallbackCachedStores) {
+        console.warn(`Day ${day.day}: using cached convenience store rest stops with coordinate fallback`);
+        return fallbackCachedStores;
+      }
     }
     return [];
   }
@@ -1856,18 +1951,23 @@ async function build() {
       throw new Error(`Day ${day.day} needs at least two waypoints`);
     }
 
-    let geometry;
-    let routingStatus = "routed";
+    let geometry: RouteGeometry;
+    let routingStatus: RouteDay["routingStatus"] = "routed";
     let routeReview: RouteReview | undefined;
     let convenienceStores: ConvenienceStore[] = [];
     let selectedWaypoints = day.waypoints;
     try {
-      const candidates = await buildRouteCandidates(day);
-      const selectedCandidate = selectRouteCandidate(day, candidates);
-      selectedCandidate.selected = true;
-      geometry = selectedCandidate.geometry;
-      selectedWaypoints = selectedCandidate.waypoints;
-      routeReview = createRouteReview(day, selectedCandidate, candidates);
+      if (day.externalRoutePath) {
+        geometry = await readExternalRouteGeometry(day.externalRoutePath);
+        routeReview = createExternalRouteReview(day, geometry);
+      } else {
+        const candidates = await buildRouteCandidates(day);
+        const selectedCandidate = selectRouteCandidate(day, candidates);
+        selectedCandidate.selected = true;
+        geometry = selectedCandidate.geometry;
+        selectedWaypoints = selectedCandidate.waypoints;
+        routeReview = createRouteReview(day, selectedCandidate, candidates);
+      }
       convenienceStores = await fetchConvenienceStores(
         day,
         geometry,

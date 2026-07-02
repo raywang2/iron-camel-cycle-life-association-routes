@@ -58,6 +58,7 @@ interface Translation {
   startMarker: string;
   finishMarker: string;
   finishDistance: string;
+  estimatedDistance: string;
   waypointMarker: string;
   rightSide: string;
   onRoute: string;
@@ -121,6 +122,7 @@ const translations: Record<Language, Translation> = {
     startMarker: "起點",
     finishMarker: "終點",
     finishDistance: "終點距離",
+    estimatedDistance: "預估距離",
     waypointMarker: "路點",
     rightSide: "順向側",
     onRoute: "路線旁",
@@ -136,7 +138,7 @@ const translations: Record<Language, Translation> = {
     allRoutesTitle: "完整環島路線",
     overviewNote: "彩色線條為各日可騎乘路線。選擇任一天可查看單日高亮路線與下載 GPX。",
     restStopsTitle: "每 10km 左右休息點：",
-    noRestStops: "此日尚未找到符合每 10km、非終點附近的便利商店休息點。",
+    noRestStops: "此日尚未找到符合每 10km 左右的便利商店休息點。",
     loadFailedSummary: "路線資料載入失敗。",
     loadFailedBadge: "載入失敗",
     loadFailedTitle: "無法載入路線資料",
@@ -182,6 +184,7 @@ const translations: Record<Language, Translation> = {
     startMarker: "Start",
     finishMarker: "Finish",
     finishDistance: "Finish distance",
+    estimatedDistance: "Estimated distance",
     waypointMarker: "Waypoint",
     rightSide: "same side",
     onRoute: "on route",
@@ -197,7 +200,7 @@ const translations: Record<Language, Translation> = {
     allRoutesTitle: "Full Taiwan Route",
     overviewNote: "Colored lines show each riding day. Select a day to highlight one route and download its GPX.",
     restStopsTitle: "Rest stops around every 10 km:",
-    noRestStops: "No convenience-store rest stops were found for this day around every 10 km and away from the finish.",
+    noRestStops: "No convenience-store rest stops were found for this day around every 10 km.",
     loadFailedSummary: "Route data failed to load.",
     loadFailedBadge: "Load failed",
     loadFailedTitle: "Unable to load route data",
@@ -243,6 +246,7 @@ const translations: Record<Language, Translation> = {
     startMarker: "出発地",
     finishMarker: "到着地",
     finishDistance: "到着距離",
+    estimatedDistance: "推定距離",
     waypointMarker: "経由地",
     rightSide: "順方向側",
     onRoute: "ルート沿い",
@@ -258,7 +262,7 @@ const translations: Record<Language, Translation> = {
     allRoutesTitle: "台湾一周フルルート",
     overviewNote: "色付きの線は各走行日のルートです。日付を選ぶと単日のルートを強調表示し、GPXをダウンロードできます。",
     restStopsTitle: "約10kmごとの休憩地点：",
-    noRestStops: "この日は約10kmごと、かつ終点付近を除いた条件に合うコンビニ休憩地点が見つかっていません。",
+    noRestStops: "この日は約10kmごとの条件に合うコンビニ休憩地点が見つかっていません。",
     loadFailedSummary: "ルートデータの読み込みに失敗しました。",
     loadFailedBadge: "読み込み失敗",
     loadFailedTitle: "ルートデータを読み込めません",
@@ -433,6 +437,10 @@ function isRideDay(day: RouteDay): day is RouteDay & { distanceKm: number } {
   return day.type === "ride" && typeof day.distanceKm === "number";
 }
 
+function isExternalRoute(day: RouteDay): boolean {
+  return day.routeReview?.selectedCandidate === "external-kml";
+}
+
 function escapeHtml(value: string): string {
   return value
     .replaceAll("&", "&amp;")
@@ -481,12 +489,17 @@ function routeStyle(index: number, selected = false): Leaflet.PathOptions {
   };
 }
 
-function routeCoordinates(day: RouteDay): Leaflet.LatLngExpression[] {
+function routeCoordinateSegments(day: RouteDay): Leaflet.LatLngExpression[][] {
   if (!day.geojson) {
     return [];
   }
 
-  return day.geojson.coordinates.map(([lon, lat]) => [lat, lon]);
+  const lineStrings = day.geojson.type === "LineString" ? [day.geojson.coordinates] : day.geojson.coordinates;
+  return lineStrings.map((coordinates) => coordinates.map(([lon, lat]) => [lat, lon]));
+}
+
+function routeCoordinates(day: RouteDay): Leaflet.LatLngExpression[] {
+  return routeCoordinateSegments(day).flat();
 }
 
 function waypointPosition(waypoint: Waypoint): Leaflet.LatLngExpression {
@@ -646,13 +659,27 @@ function formatDistance(day: RouteDay): string {
   if (!isRideDay(day)) {
     return day.type === "lecture" ? t("lecture") : t("restDay");
   }
+  if (isExternalRoute(day)) {
+    return externalRouteDistance(day);
+  }
 
   return `${day.distanceKm.toFixed(1)} km`;
+}
+
+function externalRouteDistance(day: RouteDay): string {
+  return typeof day.generatedDistanceKm === "number"
+    ? `${t("estimatedDistance")} ${day.generatedDistanceKm.toFixed(1)} km`
+    : "";
 }
 
 function finishDistanceMarkup(day: RouteDay): string | null {
   if (!isRideDay(day)) {
     return null;
+  }
+
+  if (isExternalRoute(day)) {
+    const distance = externalRouteDistance(day);
+    return distance ? escapeHtml(distance) : null;
   }
 
   const distanceParts = [
@@ -670,6 +697,10 @@ function waypointPopupMarkup(day: RouteDay, waypoint: Waypoint, type: WaypointMa
     `${dayCode(day)}｜${escapeHtml(day.title)}`,
     distanceLine,
   ].filter((line): line is string => Boolean(line)).join("<br>");
+}
+
+function routePopupText(day: RouteDay): string {
+  return [dayCode(day), escapeHtml(day.title), formatDistance(day)].filter(Boolean).join("｜");
 }
 
 function formatStoreSide(side: NonNullable<RouteDay["convenienceStores"]>[number]["sideOfRoute"]): string {
@@ -717,7 +748,7 @@ function renderDayOptions(): void {
   state.routes.forEach((day, index) => {
     const option = document.createElement("option");
     option.value = String(index);
-    option.textContent = `${dayCode(day)}｜${day.title}｜${formatDistance(day)}`;
+    option.textContent = [dayCode(day), day.title, formatDistance(day)].filter(Boolean).join("｜");
     elements.daySelect.append(option);
   });
 }
@@ -752,8 +783,11 @@ function renderInfo(day: RouteDay | null): void {
     )
     .join("");
   const distanceLine = isRideDay(day)
-    ? `${escapeHtml(t("pdfLabel"))} ${day.distanceKm.toFixed(1)} km<br>${escapeHtml(t("networkLabel"))} ${(day.generatedDistanceKm ?? 0).toFixed(1)} km`
+    ? isExternalRoute(day)
+      ? escapeHtml(externalRouteDistance(day))
+      : `${escapeHtml(t("pdfLabel"))} ${day.distanceKm.toFixed(1)} km<br>${escapeHtml(t("networkLabel"))} ${(day.generatedDistanceKm ?? 0).toFixed(1)} km`
     : formatDistance(day);
+  const distanceBlock = distanceLine ? `<div class="km">${distanceLine}</div>` : "";
   const reviewNote = day.routeReview?.reviewNote ? `<p class="note">${escapeHtml(day.routeReview.reviewNote)}</p>` : "";
   const lunchParts = [
     day.lunchStop ? `${t("lunchStop")}：${day.lunchStop}` : null,
@@ -783,7 +817,7 @@ function renderInfo(day: RouteDay | null): void {
         <span class="badge">${dayCode(day)}｜${escapeHtml(day.date)}（${escapeHtml(t("weekdayPrefix"))}${escapeHtml(day.weekday)}）</span>
         <h2>${escapeHtml(day.title)}</h2>
       </div>
-      <div class="km">${distanceLine}</div>
+      ${distanceBlock}
     </div>
     <ul>${routeParts.map((part) => `<li>${escapeHtml(part)}</li>`).join("")}</ul>
     ${lunchBlock}
@@ -907,12 +941,14 @@ function drawDay(index: number): void {
   updateGpxLink(day);
 
   const bounds: Leaflet.LatLngExpression[] = [];
-  const coordinates = routeCoordinates(day);
-  if (coordinates.length > 1) {
-    L.polyline(coordinates, routeStyle(state.currentIndex, true))
-      .addTo(requireLayer())
-      .bindPopup(`${dayCode(day)}｜${escapeHtml(day.title)}｜${formatDistance(day)}`);
-    bounds.push(...coordinates);
+  const routeSegments = routeCoordinateSegments(day);
+  for (const coordinates of routeSegments) {
+    if (coordinates.length > 1) {
+      L.polyline(coordinates, routeStyle(state.currentIndex, true))
+        .addTo(requireLayer())
+        .bindPopup(routePopupText(day));
+      bounds.push(...coordinates);
+    }
   }
 
   drawMarkers(day, bounds);
@@ -937,15 +973,17 @@ function drawOverview(): void {
 
   const bounds: Leaflet.LatLngExpression[] = [];
   state.routes.forEach((day, index) => {
-    const coordinates = routeCoordinates(day);
-    if (coordinates.length <= 1) {
-      return;
-    }
+    const routeSegments = routeCoordinateSegments(day);
+    for (const coordinates of routeSegments) {
+      if (coordinates.length <= 1) {
+        continue;
+      }
 
-    L.polyline(coordinates, routeStyle(index))
-      .addTo(requireLayer())
-      .bindPopup(`${dayCode(day)}｜${escapeHtml(day.title)}｜${formatDistance(day)}`);
-    bounds.push(...coordinates);
+      L.polyline(coordinates, routeStyle(index))
+        .addTo(requireLayer())
+        .bindPopup(routePopupText(day));
+      bounds.push(...coordinates);
+    }
   });
 
   fitPositions(bounds);

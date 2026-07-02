@@ -11,6 +11,13 @@ export interface LineStringGeometry {
   coordinates: [number, number][];
 }
 
+export interface MultiLineStringGeometry {
+  type: "MultiLineString";
+  coordinates: [number, number][][];
+}
+
+export type RouteGeometry = LineStringGeometry | MultiLineStringGeometry;
+
 export interface RouteCandidateReview {
   id: string;
   label: string;
@@ -56,6 +63,7 @@ export interface RouteDay {
   lunchStop?: string | null;
   lunchDistanceKm?: number | null;
   endAccommodation?: string | null;
+  externalRoutePath?: string;
   description: string;
   waypoints: Waypoint[];
   generatedDistanceKm?: number | null;
@@ -64,6 +72,6 @@ export interface RouteDay {
   routeReview?: RouteReview;
   convenienceStores?: ConvenienceStore[];
   routingStatus?: "routed" | "fallback" | null;
-  geojson?: LineStringGeometry | null;
+  geojson?: RouteGeometry | null;
   gpxPath?: string | null;
 }

@@ -1,5 +1,5 @@
 import fs from "node:fs/promises";
-import type { RouteDay } from "../types/routes.js";
+import type { RouteDay, RouteGeometry } from "../types/routes.js";
 
 export function assert(condition: unknown, message: string): asserts condition {
   if (!condition) {
@@ -13,16 +13,12 @@ export interface GpxFile {
 }
 
 const REST_INTERVAL_KM = 10;
-const REST_WINDOW_KM = 6;
-const FINISH_EXCLUSION_KM = 10;
-const FINISH_EXCLUSION_TOLERANCE_KM = 0.5;
+const REST_WINDOW_KM = 15;
 const EXCLUDED_STORE_NAME_PATTERNS = [/shopee/i, /蝦皮/i];
 
 function restStopTargets(generatedDistanceKm: number): number[] {
-  const finishExclusionKm = Math.min(FINISH_EXCLUSION_KM, generatedDistanceKm * 0.25);
-  const lastTargetKm = generatedDistanceKm - finishExclusionKm + FINISH_EXCLUSION_TOLERANCE_KM;
   const targets = [];
-  for (let target = REST_INTERVAL_KM; target <= lastTargetKm; target += REST_INTERVAL_KM) {
+  for (let target = REST_INTERVAL_KM; target <= generatedDistanceKm + Number.EPSILON; target += REST_INTERVAL_KM) {
     targets.push(target);
   }
   return targets;
@@ -30,6 +26,10 @@ function restStopTargets(generatedDistanceKm: number): number[] {
 
 function isExcludedRestStopName(name: string): boolean {
   return EXCLUDED_STORE_NAME_PATTERNS.some((pattern) => pattern.test(name));
+}
+
+function routeGeometryCoordinates(geometry: RouteGeometry): [number, number][] {
+  return geometry.type === "LineString" ? geometry.coordinates : geometry.coordinates.flat();
 }
 
 export function validateRouteOutput(routes: RouteDay[], gpxFiles: GpxFile[]): void {
@@ -129,11 +129,6 @@ export function validateRouteOutput(routes: RouteDay[], gpxFiles: GpxFile[]): vo
           Math.abs(store.routeProgressKm - store.targetKm) <= REST_WINDOW_KM,
           `Day ${day.day} convenience store should be around ${store.targetKm}km from start`,
         );
-        const finishExclusionKm = Math.min(FINISH_EXCLUSION_KM, day.generatedDistanceKm * 0.25);
-        assert(
-          store.routeProgressKm <= day.generatedDistanceKm - finishExclusionKm,
-          `Day ${day.day} convenience store should not be near the finish`,
-        );
         assert(
           ["right", "left", "on-route"].includes(store.sideOfRoute),
           `Day ${day.day} convenience store needs route side`,
@@ -142,15 +137,19 @@ export function validateRouteOutput(routes: RouteDay[], gpxFiles: GpxFile[]): vo
       assert(day.gpxPath === expectedGpxPath, `Day ${day.day} must use ${expectedGpxPath}`);
       assert(!seenGpxPaths.has(day.gpxPath), `Duplicate GPX path for day ${day.day}`);
       seenGpxPaths.add(day.gpxPath);
-      assert(day.geojson?.type === "LineString", `Day ${day.day} needs LineString geometry`);
+      assert(
+        day.geojson?.type === "LineString" || day.geojson?.type === "MultiLineString",
+        `Day ${day.day} needs LineString or MultiLineString geometry`,
+      );
       assert(Array.isArray(day.waypoints), `Day ${day.day} waypoints must be an array`);
       assert(Array.isArray(day.geojson.coordinates), `Day ${day.day} geometry coordinates must be an array`);
+      const routeCoordinates = routeGeometryCoordinates(day.geojson);
       assert(
-        day.geojson.coordinates.length > day.waypoints.length,
+        routeCoordinates.length > day.waypoints.length,
         `Day ${day.day} geometry must have more points than waypoints`,
       );
       assert(
-        day.geojson.coordinates.length >= 20,
+        routeCoordinates.length >= 20,
         `Day ${day.day} geometry must contain at least 20 points`,
       );
       const gpx = gpxContentByPath.get(day.gpxPath);

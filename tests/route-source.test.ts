@@ -11,6 +11,42 @@ function routesCsv(): string {
   return fs.readFileSync("routes.csv", "utf8");
 }
 
+function externalRouteEndpointCoordinates(route: RouteDay): { start: [number, number]; finish: [number, number] } {
+  const kml = fs.readFileSync(route.externalRoutePath!, "utf8");
+  const lineStrings = [...kml.matchAll(/<LineString\b[^>]*>([\s\S]*?)<\/LineString>/g)]
+    .map((match) => {
+      const coordinatesText = match[1]?.match(/<coordinates>([\s\S]*?)<\/coordinates>/)?.[1] ?? "";
+      return coordinatesText
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean)
+        .map((coordinate) => {
+          const [lon, lat] = coordinate.split(",").map(Number);
+          return [lon, lat] as [number, number];
+        });
+    })
+    .filter((coordinates) => coordinates.length >= 2);
+  const start = lineStrings[0]?.[0];
+  const finish = lineStrings.at(-1)?.at(-1);
+
+  if (!start || !finish) {
+    throw new Error(`Missing KML route endpoints for day ${route.day}`);
+  }
+
+  return { start, finish };
+}
+
+function expectWaypointNearCoordinate(
+  waypoint: NonNullable<RouteDay["waypoints"][number]>,
+  [lon, lat]: [number, number],
+): void {
+  const latDeltaKm = (waypoint.lat - lat) * 111.32;
+  const lonDeltaKm = (waypoint.lon - lon) * 111.32 * Math.cos((lat * Math.PI) / 180);
+  const distanceKm = Math.hypot(latDeltaKm, lonDeltaKm);
+
+  expect(distanceKm).toBeLessThanOrEqual(0.3);
+}
+
 describe("route waypoint source", () => {
   it("keeps end accommodation in route-waypoints source data", () => {
     const routes = sourceRoutes();
@@ -107,39 +143,37 @@ describe("route waypoint source", () => {
     expect(day14.endAccommodation).toBe("國立臺灣體育運動大學");
   });
 
-  it("keeps road-level shaping waypoints for day 1 PDF route text", () => {
+  it("uses the external day 1 KML route with only start and finish markers", () => {
     const day1 = sourceRoutes().find((route) => route.day === 1)!;
     const waypointNames = day1.waypoints.map((waypoint) => waypoint.name);
 
-    expect(waypointNames).toEqual(expect.arrayContaining([
-      "崇德路一段",
-      "崇德路二段",
-      "崇德路三段",
-      "崇德路四段",
-      "崇德路五段",
-      "豐原大道",
-      "豐科路",
-      "后科路",
-      "台13三義段",
-      "山線鐵路自行車道",
-      "苗28",
-      "貓貍山公園",
-      "公園路",
-    ]));
+    expect(day1.externalRoutePath).toBe("data/external-routes/day-01.kml");
+    expect(waypointNames).toEqual(["國立臺灣體育運動大學", "苗栗高中"]);
   });
 
-  it("keeps day 2 on land and follows the 17km coast into Nanliao", () => {
-    const day2 = sourceRoutes().find((route) => route.day === 2)!;
-    const waypointNames = day2.waypoints.map((waypoint) => waypoint.name);
-    const coastalWaypoint = day2.waypoints.find((waypoint) => waypoint.name === "苗栗濱海自行車道")!;
+  it("uses external KML routes with only start and finish markers for manually confirmed days", () => {
+    const routes = sourceRoutes();
+    const externalRouteDays = [2, 3, 4, 5, 7, 8, 9, 11, 12, 13];
 
-    expect(coastalWaypoint.lon).toBeGreaterThan(120.85);
-    expect(waypointNames).toEqual(expect.arrayContaining([
-      "苗栗濱海自行車道",
-      "海山漁港",
-      "香山濕地",
-      "港南濱海風景區",
-      "南寮漁港",
-    ]));
+    for (const day of externalRouteDays) {
+      const route = routes.find((candidate) => candidate.day === day)!;
+
+      expect(route.externalRoutePath).toBe(`data/external-routes/day-${String(day).padStart(2, "0")}.kml`);
+      expect(route.waypoints).toHaveLength(2);
+      expect(route.waypoints[0]?.name).toBeTruthy();
+      expect(route.waypoints.at(-1)?.name).toBe(route.endAccommodation);
+    }
+  });
+
+  it("keeps external KML start markers on the route starts except day 5 transfer route", () => {
+    const routes = sourceRoutes();
+    const externalRouteDays = [1, 2, 3, 4, 7, 8, 9, 11, 12, 13];
+
+    for (const day of externalRouteDays) {
+      const route = routes.find((candidate) => candidate.day === day)!;
+      const endpoints = externalRouteEndpointCoordinates(route);
+
+      expectWaypointNearCoordinate(route.waypoints[0]!, endpoints.start);
+    }
   });
 });

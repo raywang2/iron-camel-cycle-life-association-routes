@@ -90,6 +90,24 @@ describe("reference-style route UI", () => {
     expect(app).toContain("finishDistanceMarkup(day)");
   });
 
+  it("detects external KML routes for custom distance display", () => {
+    const app = fs.readFileSync("src/app.ts", "utf8");
+
+    expect(app).toContain("isExternalRoute(");
+    expect(app).toContain('day.routeReview?.selectedCandidate === "external-kml"');
+    expect(app).toContain("isExternalRoute(day)");
+  });
+
+  it("labels external KML route distance as estimated distance", () => {
+    const app = fs.readFileSync("src/app.ts", "utf8");
+
+    expect(app).toContain("estimatedDistance");
+    expect(app).toContain("預估距離");
+    expect(app).toContain("Estimated distance");
+    expect(app).toContain("推定距離");
+    expect(app).toContain("externalRouteDistance(");
+  });
+
   it("highlights map markers when hovering sidebar waypoints and convenience stores", () => {
     const app = fs.readFileSync("src/app.ts", "utf8");
     const css = fs.readFileSync("src/styles.css", "utf8");

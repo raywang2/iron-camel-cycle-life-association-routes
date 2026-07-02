@@ -353,7 +353,7 @@ describe("validateRouteOutput", () => {
     expect(() => validateRouteOutput(routes, gpxFor(routes))).not.toThrow();
   });
 
-  it("rejects convenience stores outside their 10km rest window", () => {
+  it("rejects convenience stores outside their wider 10km rest window", () => {
     const routes = validRoutes();
     routes[1] = {
       ...routes[1]!,
@@ -371,7 +371,7 @@ describe("validateRouteOutput", () => {
           lon: 120,
           distanceFromRouteM: 30,
           targetKm: 10,
-          routeProgressKm: 17,
+          routeProgressKm: 26,
           sideOfRoute: "right",
         },
       ],
@@ -480,7 +480,7 @@ describe("validateRouteOutput", () => {
     );
   });
 
-  it("rejects convenience stores whose target would be near the finish", () => {
+  it("accepts every 10km convenience-store target through the route distance", () => {
     const routes = validRoutes();
     routes[1] = {
       ...routes[1]!,
@@ -519,8 +519,6 @@ describe("validateRouteOutput", () => {
       ],
     };
 
-    expect(() => validateRouteOutput(routes, gpxFor(routes))).toThrow(
-      "Day 1 convenience store target should be an expected 10km rest stop",
-    );
+    expect(() => validateRouteOutput(routes, gpxFor(routes))).not.toThrow();
   });
 });

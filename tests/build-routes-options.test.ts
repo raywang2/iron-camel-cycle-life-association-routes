@@ -3,11 +3,14 @@ import fs from "node:fs";
 import {
   DEFAULT_BICYCLE_USE_ROADS,
   DEFAULT_BROUTER_PROFILE,
+  DEFAULT_REST_WINDOW_KM,
   DEFAULT_ROUTER_ENGINE,
   DEFAULT_ROUTER_PROFILE,
   brouterFastRoadLabels,
   existingRouteOutputForSkippedDay,
+  parseKmlLineStringGeometry,
   parseRequestedDays,
+  restStopTargets,
   shouldBuildRouteDay,
 } from "../scripts/build-routes.js";
 import type { RouteDay } from "../types/routes.js";
@@ -37,6 +40,10 @@ describe("build route options", () => {
     expect(DEFAULT_BICYCLE_USE_ROADS).toBe(0);
   });
 
+  it("allows wider progress windows so every 10km target can receive a rest stop", () => {
+    expect(DEFAULT_REST_WINDOW_KM).toBe(15);
+  });
+
   it("supports BRouter trekking as an alternate bicycle routing engine", () => {
     const buildScript = fs.readFileSync("scripts/build-routes.ts", "utf8");
 
@@ -62,11 +69,139 @@ describe("build route options", () => {
     ).toEqual(["highway=trunk motorroad=yes"]);
   });
 
+  it("parses a single LineString from exported KML routes", () => {
+    const geometry = parseKmlLineStringGeometry(`
+      <kml>
+        <Document>
+          <Placemark>
+            <name>Short point</name>
+            <Point><coordinates>120.1,24.1,0</coordinates></Point>
+          </Placemark>
+          <Placemark>
+            <name>Route</name>
+            <LineString>
+              <coordinates>
+                120.0,24.0,0
+                120.1,24.1,0
+                120.2,24.2,0
+              </coordinates>
+            </LineString>
+          </Placemark>
+        </Document>
+      </kml>
+    `);
+
+    expect(geometry).toEqual({
+      type: "LineString",
+      coordinates: [
+        [120.0, 24.0],
+        [120.1, 24.1],
+        [120.2, 24.2],
+      ],
+    });
+  });
+
+  it("parses multiple LineStrings from exported KML routes as MultiLineString", () => {
+    const geometry = parseKmlLineStringGeometry(`
+      <kml>
+        <Document>
+          <Placemark>
+            <name>Route part 1</name>
+            <LineString>
+              <coordinates>
+                120.0,24.0,0
+                120.1,24.1,0
+              </coordinates>
+            </LineString>
+          </Placemark>
+          <Placemark>
+            <name>Route part 2</name>
+            <LineString>
+              <coordinates>
+                120.1,24.1,0
+                120.2,24.2,0
+              </coordinates>
+            </LineString>
+          </Placemark>
+        </Document>
+      </kml>
+    `);
+
+    expect(geometry).toEqual({
+      type: "MultiLineString",
+      coordinates: [
+        [
+          [120.0, 24.0],
+          [120.1, 24.1],
+        ],
+        [
+          [120.1, 24.1],
+          [120.2, 24.2],
+        ],
+      ],
+    });
+  });
+
+  it("keeps distant disconnected KML LineStrings in document order", () => {
+    const geometry = parseKmlLineStringGeometry(`
+      <kml>
+        <Document>
+          <Placemark>
+            <name>Station transfer</name>
+            <LineString>
+              <coordinates>
+                121.7,24.6,0
+                121.7,24.7,0
+              </coordinates>
+            </LineString>
+          </Placemark>
+          <Placemark>
+            <name>Ride route</name>
+            <LineString>
+              <coordinates>
+                121.0,24.0,0
+                121.1,24.1,0
+                121.2,24.2,0
+              </coordinates>
+            </LineString>
+          </Placemark>
+        </Document>
+      </kml>
+    `);
+
+    expect(geometry).toEqual({
+      type: "MultiLineString",
+      coordinates: [
+        [
+          [121.7, 24.6],
+          [121.7, 24.7],
+        ],
+        [
+          [121.0, 24.0],
+          [121.1, 24.1],
+          [121.2, 24.2],
+        ],
+      ],
+    });
+  });
+
   it("sends an explicit user agent to Overpass for POI lookups", () => {
     const buildScript = fs.readFileSync("scripts/build-routes.ts", "utf8");
 
     expect(buildScript).toContain('"User-Agent": "2026-iron-camel-routes/1.0"');
     expect(buildScript).toContain('"Accept": "application/json"');
+  });
+
+  it("supports forcing convenience-store lookup refresh", () => {
+    const buildScript = fs.readFileSync("scripts/build-routes.ts", "utf8");
+
+    expect(buildScript).toContain("REFETCH_CONVENIENCE_STORES");
+    expect(buildScript).toContain("if (!REFETCH_CONVENIENCE_STORES)");
+  });
+
+  it("marks every 10km rest-stop target through the route distance", () => {
+    expect(restStopTargets(56.1)).toEqual([10, 20, 30, 40, 50]);
+    expect(restStopTargets(60)).toEqual([10, 20, 30, 40, 50, 60]);
   });
 
   it("parses requested route days from CLI arguments", () => {
