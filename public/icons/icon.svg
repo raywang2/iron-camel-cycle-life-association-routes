@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="2026 鐵駱駝環島路線">
+  <rect width="512" height="512" rx="112" fill="#07111f"/>
+  <path d="M149 320c-45 0-81-36-81-81s36-81 81-81 81 36 81 81-36 81-81 81Zm0-42c22 0 39-17 39-39s-17-39-39-39-39 17-39 39 17 39 39 39Zm214 42c-45 0-81-36-81-81s36-81 81-81 81 36 81 81-36 81-81 81Zm0-42c22 0 39-17 39-39s-17-39-39-39-39 17-39 39 17 39 39 39Z" fill="#e2e8f0"/>
+  <path d="M151 236h58l33-82h50l42 82h31" fill="none" stroke="#38bdf8" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M231 236h81l-43-82-38 82Z" fill="none" stroke="#22c55e" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M176 367c66 45 160 45 226-1" fill="none" stroke="#f97316" stroke-width="26" stroke-linecap="round"/>
+  <circle cx="256" cy="105" r="28" fill="#f97316"/>
+</svg>

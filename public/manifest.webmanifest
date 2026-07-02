@@ -1,0 +1,19 @@
+{
+  "name": "2026 鐵駱駝環島路線",
+  "short_name": "鐵駱駝路線",
+  "description": "2026 鐵駱駝環島每日路線、休息點與 GPX 下載。",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#07111f",
+  "lang": "zh-Hant",
+  "icons": [
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

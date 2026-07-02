@@ -57,6 +57,7 @@ interface Translation {
   restDay: string;
   startMarker: string;
   finishMarker: string;
+  finishDistance: string;
   waypointMarker: string;
   rightSide: string;
   onRoute: string;
@@ -119,6 +120,7 @@ const translations: Record<Language, Translation> = {
     restDay: "休息日",
     startMarker: "起點",
     finishMarker: "終點",
+    finishDistance: "終點距離",
     waypointMarker: "路點",
     rightSide: "順向側",
     onRoute: "路線旁",
@@ -179,6 +181,7 @@ const translations: Record<Language, Translation> = {
     restDay: "Rest day",
     startMarker: "Start",
     finishMarker: "Finish",
+    finishDistance: "Finish distance",
     waypointMarker: "Waypoint",
     rightSide: "same side",
     onRoute: "on route",
@@ -239,6 +242,7 @@ const translations: Record<Language, Translation> = {
     restDay: "休息日",
     startMarker: "出発地",
     finishMarker: "到着地",
+    finishDistance: "到着距離",
     waypointMarker: "経由地",
     rightSide: "順方向側",
     onRoute: "ルート沿い",
@@ -270,7 +274,9 @@ interface AppState {
   layer: Leaflet.LayerGroup | null;
   locationLayer: Leaflet.LayerGroup | null;
   markerElements: Map<string, HTMLElement>;
+  markerInstances: Map<string, Leaflet.Marker>;
   pinnedMarkerId: string | null;
+  followDateRoute: boolean;
   currentIndex: number;
   showConvenienceStores: boolean;
   language: Language;
@@ -292,7 +298,9 @@ const state: AppState = {
   layer: null,
   locationLayer: null,
   markerElements: new Map(),
+  markerInstances: new Map(),
   pinnedMarkerId: null,
+  followDateRoute: false,
   currentIndex: 0,
   showConvenienceStores: true,
   language: "zh",
@@ -438,6 +446,33 @@ function dayCode(day: RouteDay): string {
   return day.day === 0 ? "D0" : `D${day.day}`;
 }
 
+function localDateString(date = new Date()): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function routeIndexForDate(date: string): number {
+  return state.routes.findIndex((route) => route.date === date);
+}
+
+function replaceUrl(url: URL): void {
+  window.history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
+}
+
+function updateRouteDayQuery(day: RouteDay): void {
+  const url = new URL(window.location.href);
+  url.searchParams.set("day", String(day.day));
+  replaceUrl(url);
+}
+
+function clearRouteDayQuery(): void {
+  const url = new URL(window.location.href);
+  url.searchParams.delete("day");
+  replaceUrl(url);
+}
+
 function routeStyle(index: number, selected = false): Leaflet.PathOptions {
   return {
     color: selected ? "#38bdf8" : colors[index % colors.length],
@@ -497,6 +532,7 @@ function markerIdForStore(store: ConvenienceStore): string {
 }
 
 function registerMarker(markerId: string, marker: Leaflet.Marker): void {
+  state.markerInstances.set(markerId, marker);
   const element = marker.getElement();
   if (element) {
     state.markerElements.set(markerId, element);
@@ -514,9 +550,30 @@ function highlightMarker(markerId: string | null): void {
   }
 }
 
+function openMarkerPopup(markerId: string | null): void {
+  if (!markerId) {
+    return;
+  }
+
+  const marker = state.markerInstances.get(markerId);
+  if (marker) {
+    marker.openPopup();
+  }
+}
+
+function closeMarkerPopup(): void {
+  requireMap().closePopup();
+}
+
 function togglePinnedMarker(markerId: string | null): void {
   state.pinnedMarkerId = state.pinnedMarkerId === markerId ? null : markerId;
   highlightMarker(state.pinnedMarkerId);
+  if (state.pinnedMarkerId) {
+    openMarkerPopup(state.pinnedMarkerId);
+    return;
+  }
+
+  closeMarkerPopup();
 }
 
 function sidebarMarkerTarget(eventTarget: EventTarget | null): HTMLElement | null {
@@ -570,6 +627,7 @@ function initMap(): void {
 function clearMap(): void {
   requireLayer().clearLayers();
   state.markerElements.clear();
+  state.markerInstances.clear();
   state.pinnedMarkerId = null;
 }
 
@@ -590,6 +648,28 @@ function formatDistance(day: RouteDay): string {
   }
 
   return `${day.distanceKm.toFixed(1)} km`;
+}
+
+function finishDistanceMarkup(day: RouteDay): string | null {
+  if (!isRideDay(day)) {
+    return null;
+  }
+
+  const distanceParts = [
+    `${t("pdfLabel")} ${day.distanceKm.toFixed(1)} km`,
+    typeof day.generatedDistanceKm === "number" ? `${t("networkLabel")} ${day.generatedDistanceKm.toFixed(1)} km` : null,
+  ].filter((part): part is string => Boolean(part));
+
+  return `${escapeHtml(t("finishDistance"))}：${distanceParts.map(escapeHtml).join(" / ")}`;
+}
+
+function waypointPopupMarkup(day: RouteDay, waypoint: Waypoint, type: WaypointMarkerType): string {
+  const distanceLine = type === "finish" ? finishDistanceMarkup(day) : null;
+  return [
+    `<b>${markerLabel(type)}｜${escapeHtml(waypoint.name)}</b>`,
+    `${dayCode(day)}｜${escapeHtml(day.title)}`,
+    distanceLine,
+  ].filter((line): line is string => Boolean(line)).join("<br>");
 }
 
 function formatStoreSide(side: NonNullable<RouteDay["convenienceStores"]>[number]["sideOfRoute"]): string {
@@ -792,7 +872,7 @@ function drawMarkers(day: RouteDay, positions: Leaflet.LatLngExpression[]): void
     positions.push(position);
     const marker = L.marker(position, { icon: pointIcon(type) })
       .addTo(requireLayer())
-      .bindPopup(`<b>${markerLabel(type)}｜${escapeHtml(waypoint.name)}</b><br>${dayCode(day)}｜${escapeHtml(day.title)}`);
+      .bindPopup(waypointPopupMarkup(day, waypoint, type));
     registerMarker(markerIdForWaypoint(index), marker);
   });
 }
@@ -840,6 +920,15 @@ function drawDay(index: number): void {
   fitPositions(bounds);
 }
 
+function drawManualDay(index: number): void {
+  state.followDateRoute = false;
+  drawDay(index);
+  const day = state.routes[state.currentIndex];
+  if (day) {
+    updateRouteDayQuery(day);
+  }
+}
+
 function drawOverview(): void {
   clearMap();
   renderInfo(null);
@@ -881,8 +970,34 @@ function initialRouteIndex(): number {
     }
   }
 
+  state.followDateRoute = true;
+  const currentDateIndex = routeIndexForDate(localDateString());
+  if (currentDateIndex >= 0) {
+    return currentDateIndex;
+  }
+
   const firstRideIndex = state.routes.findIndex(isRideDay);
   return firstRideIndex >= 0 ? firstRideIndex : 0;
+}
+
+function startDateRouteWatcher(): void {
+  let lastDate = localDateString();
+  window.setInterval(() => {
+    const currentDate = localDateString();
+    if (currentDate === lastDate) {
+      return;
+    }
+
+    lastDate = currentDate;
+    if (!state.followDateRoute) {
+      return;
+    }
+
+    const currentDateIndex = routeIndexForDate(currentDate);
+    if (currentDateIndex >= 0) {
+      drawDay(currentDateIndex);
+    }
+  }, 60_000);
 }
 
 async function main(): Promise<void> {
@@ -901,15 +1016,20 @@ async function main(): Promise<void> {
         setLanguage(nextLanguage);
       }
     });
-    elements.daySelect.addEventListener("change", () => drawDay(Number(elements.daySelect.value)));
-    elements.prevButton.addEventListener("click", () => drawDay(state.currentIndex - 1));
-    elements.nextButton.addEventListener("click", () => drawDay(state.currentIndex + 1));
-    elements.allButton.addEventListener("click", drawOverview);
+    elements.daySelect.addEventListener("change", () => drawManualDay(Number(elements.daySelect.value)));
+    elements.prevButton.addEventListener("click", () => drawManualDay(state.currentIndex - 1));
+    elements.nextButton.addEventListener("click", () => drawManualDay(state.currentIndex + 1));
+    elements.allButton.addEventListener("click", () => {
+      state.followDateRoute = false;
+      clearRouteDayQuery();
+      drawOverview();
+    });
     elements.locationButton.addEventListener("click", showCurrentLocation);
     elements.info.addEventListener("pointerover", (event) => {
       const target = sidebarMarkerTarget(event.target);
       if (target) {
         highlightMarker(target.dataset.markerId ?? null);
+        openMarkerPopup(target.dataset.markerId ?? null);
       }
     });
     elements.info.addEventListener("pointerout", (event) => {
@@ -917,6 +1037,11 @@ async function main(): Promise<void> {
       const relatedTarget = event.relatedTarget instanceof Node ? event.relatedTarget : null;
       if (target && (!relatedTarget || !target.contains(relatedTarget))) {
         highlightMarker(state.pinnedMarkerId);
+        if (state.pinnedMarkerId) {
+          openMarkerPopup(state.pinnedMarkerId);
+        } else {
+          closeMarkerPopup();
+        }
       }
     });
     elements.info.addEventListener("click", (event) => {
@@ -944,6 +1069,7 @@ async function main(): Promise<void> {
     });
 
     drawDay(initialRouteIndex());
+    startDateRouteWatcher();
   } catch (error) {
     elements.summary.textContent = t("loadFailedSummary");
     elements.info.innerHTML = `
@@ -959,4 +1085,17 @@ async function main(): Promise<void> {
   }
 }
 
+function registerServiceWorker(): void {
+  if (!import.meta.env.PROD || !("serviceWorker" in navigator)) {
+    return;
+  }
+
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`).catch((error: unknown) => {
+      console.warn("Service worker registration failed", error);
+    });
+  });
+}
+
 main();
+registerServiceWorker();

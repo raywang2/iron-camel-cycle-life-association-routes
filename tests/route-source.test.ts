@@ -93,4 +93,40 @@ describe("route waypoint source", () => {
     expect(day14.end).toBe("國立臺灣體育運動大學");
     expect(day14.endAccommodation).toBe("國立臺灣體育運動大學");
   });
+
+  it("keeps road-level shaping waypoints for day 1 PDF route text", () => {
+    const day1 = sourceRoutes().find((route) => route.day === 1)!;
+    const waypointNames = day1.waypoints.map((waypoint) => waypoint.name);
+
+    expect(waypointNames).toEqual(expect.arrayContaining([
+      "崇德路一段",
+      "崇德路二段",
+      "崇德路三段",
+      "崇德路四段",
+      "崇德路五段",
+      "豐原大道",
+      "豐科路",
+      "后科路",
+      "台13三義段",
+      "山線鐵路自行車道",
+      "苗28",
+      "貓貍山公園",
+      "公園路",
+    ]));
+  });
+
+  it("keeps day 2 on land and follows the 17km coast into Nanliao", () => {
+    const day2 = sourceRoutes().find((route) => route.day === 2)!;
+    const waypointNames = day2.waypoints.map((waypoint) => waypoint.name);
+    const coastalWaypoint = day2.waypoints.find((waypoint) => waypoint.name === "苗栗濱海自行車道")!;
+
+    expect(coastalWaypoint.lon).toBeGreaterThan(120.85);
+    expect(waypointNames).toEqual(expect.arrayContaining([
+      "苗栗濱海自行車道",
+      "海山漁港",
+      "香山濕地",
+      "港南濱海風景區",
+      "南寮漁港",
+    ]));
+  });
 });

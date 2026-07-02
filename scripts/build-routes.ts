@@ -18,8 +18,18 @@ const SOURCE_PATH = path.join(ROOT, "data", "route-waypoints.json");
 const SCHEDULE_PATH = path.join(ROOT, "routes.csv");
 const ROUTES_PATH = path.join(ROOT, "data", "routes.json");
 const GPX_DIR = path.join(ROOT, "gpx");
+const FAST_ROAD_CACHE_PATH = process.env.FAST_ROAD_CACHE_PATH || path.join(ROOT, "tmp", "fast-roads-overpass.json");
+export const DEFAULT_ROUTER_ENGINE = "valhalla";
+export const DEFAULT_ROUTER_PROFILE = "bicycle";
+export const DEFAULT_BICYCLE_USE_ROADS = 0;
+export const DEFAULT_BROUTER_PROFILE = "trekking";
+const ROUTER_ENGINE = process.env.ROUTER_ENGINE || DEFAULT_ROUTER_ENGINE;
 const ROUTER_URL = process.env.ROUTER_URL || "https://router.project-osrm.org";
-const ROUTER_PROFILE = process.env.ROUTER_PROFILE || "driving";
+const VALHALLA_URL = process.env.VALHALLA_URL || "https://valhalla1.openstreetmap.de";
+const ROUTER_PROFILE = process.env.ROUTER_PROFILE || DEFAULT_ROUTER_PROFILE;
+const BROUTER_URL = process.env.BROUTER_URL || "https://brouter.m11n.de/brouter-engine/brouter";
+const BROUTER_PROFILE = process.env.BROUTER_PROFILE || DEFAULT_BROUTER_PROFILE;
+const BICYCLE_USE_ROADS = Number(process.env.BICYCLE_USE_ROADS ?? DEFAULT_BICYCLE_USE_ROADS);
 const ALLOW_ROUTE_FALLBACK = process.env.ALLOW_ROUTE_FALLBACK === "1";
 const OVERPASS_URLS = (
   process.env.OVERPASS_URLS ||
@@ -33,6 +43,13 @@ const POI_RADIUS_M = Number(process.env.POI_RADIUS_M || "1200");
 const REST_INTERVAL_KM = Number(process.env.REST_INTERVAL_KM || "10");
 const REST_WINDOW_KM = Number(process.env.REST_WINDOW_KM || "6");
 const FINISH_EXCLUSION_KM = Number(process.env.FINISH_EXCLUSION_KM || "10");
+const FINISH_EXCLUSION_TOLERANCE_KM = Number(process.env.FINISH_EXCLUSION_TOLERANCE_KM || "0.5");
+const AVOID_FAST_ROADS = process.env.AVOID_FAST_ROADS !== "0";
+const FAST_ROAD_MATCH_DISTANCE_M = Number(process.env.FAST_ROAD_MATCH_DISTANCE_M || "22");
+const FAST_ROAD_MAX_HEADING_DIFF_DEG = Number(process.env.FAST_ROAD_MAX_HEADING_DIFF_DEG || "35");
+const FAST_ROAD_MIN_AVOID_KM = Number(process.env.FAST_ROAD_MIN_AVOID_KM || "1");
+const FAST_ROAD_REROUTE_ATTEMPTS = Number(process.env.FAST_ROAD_REROUTE_ATTEMPTS || "4");
+const FAST_ROAD_GRID_SIZE_DEG = 0.01;
 const MEANINGFUL_ROUTE_SAVING_KM = Number(process.env.MEANINGFUL_ROUTE_SAVING_KM || "8");
 const COMPARABLE_DISTANCE_DELTA_KM = Number(process.env.COMPARABLE_DISTANCE_DELTA_KM || "2");
 const OVERPASS_DELAY_MS = Number(process.env.OVERPASS_DELAY_MS || "3500");
@@ -59,6 +76,31 @@ interface OsrmRouteResponse {
   }>;
 }
 
+interface ValhallaRouteResponse {
+  error?: string;
+  trip?: {
+    summary?: {
+      has_highway?: boolean;
+      length?: number;
+    };
+    legs?: Array<{
+      shape?: string;
+    }>;
+  };
+}
+
+interface BrouterRouteResponse {
+  features?: Array<{
+    properties?: {
+      messages?: string[][];
+    };
+    geometry?: {
+      type?: string;
+      coordinates?: number[][];
+    };
+  }>;
+}
+
 interface RouteCandidateDefinition {
   id: string;
   label: string;
@@ -75,6 +117,10 @@ interface OverpassElement {
   id: number;
   lat?: number;
   lon?: number;
+  geometry?: Array<{
+    lat: number;
+    lon: number;
+  }>;
   center?: {
     lat: number;
     lon: number;
@@ -106,6 +152,24 @@ interface SegmentProjection {
   t: number;
   sideOfRoute: ConvenienceStore["sideOfRoute"];
 }
+
+interface FastRoadSegment {
+  id: string;
+  label: string;
+  start: CoordinatePoint;
+  end: CoordinatePoint;
+  heading: number;
+}
+
+interface FastRoadMatch {
+  id: string;
+  label: string;
+  matchedKm: number;
+  firstKm: number;
+  lastKm: number;
+}
+
+type FastRoadIndex = Map<string, FastRoadSegment[]>;
 
 function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
@@ -209,6 +273,29 @@ function haversineKm(a: CoordinatePoint, b: CoordinatePoint): number {
     Math.sin(dLat / 2) ** 2 +
     Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
   return 2 * radiusKm * Math.asin(Math.sqrt(h));
+}
+
+function localPoint(point: CoordinatePoint, origin: CoordinatePoint): { x: number; y: number } {
+  return {
+    x: (point.lon - origin.lon) * 111_320 * Math.cos((origin.lat * Math.PI) / 180),
+    y: (point.lat - origin.lat) * 110_540,
+  };
+}
+
+function headingDeg(start: CoordinatePoint, end: CoordinatePoint): number {
+  const origin = {
+    lat: (start.lat + end.lat) / 2,
+    lon: (start.lon + end.lon) / 2,
+  };
+  const a = localPoint(start, origin);
+  const b = localPoint(end, origin);
+  return ((Math.atan2(b.y - a.y, b.x - a.x) * 180) / Math.PI + 360) % 360;
+}
+
+function headingDiffDeg(a: number, b: number): number {
+  const diff = Math.abs(a - b) % 360;
+  const normalized = diff > 180 ? 360 - diff : diff;
+  return Math.min(normalized, 180 - normalized);
 }
 
 function fallbackGeometry(waypoints: Waypoint[]): LineStringGeometry {
@@ -463,10 +550,281 @@ async function routeWithOsrm(waypoints: Waypoint[]): Promise<LineStringGeometry>
   return payload.routes[0].geometry;
 }
 
+export function brouterFastRoadLabels(payload: BrouterRouteResponse): string[] {
+  const messages = payload.features?.[0]?.properties?.messages ?? [];
+  const header = messages[0] ?? [];
+  const wayTagsIndex = header.indexOf("WayTags");
+  const nodeTagsIndex = header.indexOf("NodeTags");
+  const fastRoadPattern = /\b(?:highway=(?:motorway|motorway_link|trunk|trunk_link)|motorroad=yes)\b/;
+  const labels = new Set<string>();
+
+  for (const row of messages.slice(1)) {
+    const wayTags = wayTagsIndex >= 0 ? row[wayTagsIndex] : "";
+    const nodeTags = nodeTagsIndex >= 0 ? row[nodeTagsIndex] : "";
+    const tags = [wayTags, nodeTags].filter(Boolean).join(" ");
+    if (fastRoadPattern.test(tags)) {
+      labels.add(tags);
+    }
+  }
+
+  return [...labels];
+}
+
+async function routeWithBrouter(waypoints: Waypoint[]): Promise<LineStringGeometry> {
+  const endpoint = new URL(BROUTER_URL);
+  endpoint.searchParams.set("lonlats", waypoints.map((point) => `${point.lon},${point.lat}`).join("|"));
+  endpoint.searchParams.set("profile", BROUTER_PROFILE);
+  endpoint.searchParams.set("alternativeidx", "0");
+  endpoint.searchParams.set("format", "geojson");
+  let payload: BrouterRouteResponse;
+
+  try {
+    const response = await fetch(endpoint, {
+      headers: {
+        "Accept": "application/json",
+        "User-Agent": "2026-iron-camel-routes/1.0",
+      },
+    });
+    if (!response.ok) {
+      throw new Error(`BRouter request failed: ${response.status} ${response.statusText}`);
+    }
+    payload = (await response.json()) as BrouterRouteResponse;
+  } catch (error) {
+    const { stdout } = await execFileAsync(
+      "curl",
+      [
+        "-fsSL",
+        "-G",
+        "-H",
+        "Accept: application/json",
+        "-H",
+        "User-Agent: 2026-iron-camel-routes/1.0",
+        "--data-urlencode",
+        `lonlats=${waypoints.map((point) => `${point.lon},${point.lat}`).join("|")}`,
+        "--data-urlencode",
+        `profile=${BROUTER_PROFILE}`,
+        "--data-urlencode",
+        "alternativeidx=0",
+        "--data-urlencode",
+        "format=geojson",
+        BROUTER_URL,
+      ],
+      {
+        maxBuffer: 20 * 1024 * 1024,
+      },
+    );
+    payload = JSON.parse(stdout) as BrouterRouteResponse;
+    if (!payload) {
+      throw error;
+    }
+  }
+
+  if (AVOID_FAST_ROADS) {
+    const fastRoadLabels = brouterFastRoadLabels(payload);
+    if (fastRoadLabels.length > 0) {
+      throw new Error(`BRouter route uses fast-road tags: ${fastRoadLabels.slice(0, 5).join("; ")}`);
+    }
+  }
+
+  const coordinates = payload.features?.[0]?.geometry?.coordinates
+    ?.map((coordinate) => {
+      const [lon, lat] = coordinate;
+      return typeof lon === "number" && typeof lat === "number" ? [lon, lat] as [number, number] : null;
+    })
+    .filter((coordinate): coordinate is [number, number] => Boolean(coordinate)) ?? [];
+
+  if (coordinates.length < 2) {
+    throw new Error(`BRouter response did not include geometry: ${JSON.stringify(payload).slice(0, 300)}`);
+  }
+
+  const geometry: LineStringGeometry = {
+    type: "LineString",
+    coordinates,
+  };
+
+  return geometry;
+}
+
+function decodeValhallaShape(shape: string, precision = 6): CoordinatePoint[] {
+  const coordinates: CoordinatePoint[] = [];
+  const factor = 10 ** precision;
+  let index = 0;
+  let lat = 0;
+  let lon = 0;
+
+  while (index < shape.length) {
+    let result = 1;
+    let shift = 0;
+    let byte = 0;
+    do {
+      byte = shape.charCodeAt(index) - 63 - 1;
+      index += 1;
+      result += byte << shift;
+      shift += 5;
+    } while (byte >= 0x1f);
+    lat += (result & 1) !== 0 ? ~(result >> 1) : result >> 1;
+
+    result = 1;
+    shift = 0;
+    do {
+      byte = shape.charCodeAt(index) - 63 - 1;
+      index += 1;
+      result += byte << shift;
+      shift += 5;
+    } while (byte >= 0x1f);
+    lon += (result & 1) !== 0 ? ~(result >> 1) : result >> 1;
+
+    coordinates.push({
+      lat: lat / factor,
+      lon: lon / factor,
+    });
+  }
+
+  return coordinates;
+}
+
+function valhallaPayload(waypoints: Waypoint[], excludeLocations: CoordinatePoint[]): string {
+  return JSON.stringify({
+    locations: waypoints.map((point) => ({
+      lat: point.lat,
+      lon: point.lon,
+      type: "break",
+    })),
+    costing: ROUTER_PROFILE,
+    costing_options: ROUTER_PROFILE === "bicycle"
+      ? {
+          bicycle: {
+            use_roads: BICYCLE_USE_ROADS,
+          },
+        }
+      : undefined,
+    exclude_locations: excludeLocations.length > 0
+      ? excludeLocations.map((point) => ({
+          lat: point.lat,
+          lon: point.lon,
+        }))
+      : undefined,
+    directions_options: {
+      units: "kilometers",
+    },
+  });
+}
+
+async function requestValhallaGeometry(
+  waypoints: Waypoint[],
+  excludeLocations: CoordinatePoint[],
+): Promise<LineStringGeometry> {
+  const endpoint = `${VALHALLA_URL.replace(/\/$/, "")}/route`;
+  const body = valhallaPayload(waypoints, excludeLocations);
+  let payload: ValhallaRouteResponse;
+
+  try {
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "user-agent": "2026-routes",
+      },
+      body,
+    });
+    if (!response.ok) {
+      throw new Error(`Routing request failed: ${response.status} ${response.statusText}`);
+    }
+    payload = (await response.json()) as ValhallaRouteResponse;
+  } catch (error) {
+    const { stdout } = await execFileAsync(
+      "curl",
+      ["-fsSL", "-X", "POST", "-H", "content-type: application/json", "-H", "user-agent: 2026-routes", "-d", body, endpoint],
+      {
+        maxBuffer: 20 * 1024 * 1024,
+      },
+    );
+    payload = JSON.parse(stdout) as ValhallaRouteResponse;
+    if (!payload) {
+      throw error;
+    }
+  }
+
+  if (payload.error) {
+    throw new Error(`Routing response error: ${payload.error}`);
+  }
+  if (payload.trip?.summary?.has_highway) {
+    throw new Error("Valhalla route summary indicates highway usage");
+  }
+
+  const points: CoordinatePoint[] = [];
+  for (const leg of payload.trip?.legs ?? []) {
+    if (!leg.shape) {
+      continue;
+    }
+    const legPoints = decodeValhallaShape(leg.shape);
+    if (points.length > 0) {
+      legPoints.shift();
+    }
+    points.push(...legPoints);
+  }
+
+  if (points.length < 2) {
+    throw new Error(`Routing response did not include geometry: ${JSON.stringify(payload).slice(0, 300)}`);
+  }
+
+  return {
+    type: "LineString",
+    coordinates: points.map((point) => [point.lon, point.lat]),
+  };
+}
+
+async function routeWithValhalla(waypoints: Waypoint[]): Promise<LineStringGeometry> {
+  const excludeLocations: CoordinatePoint[] = [];
+
+  for (let attempt = 0; attempt <= FAST_ROAD_REROUTE_ATTEMPTS; attempt += 1) {
+    const geometry = await requestValhallaGeometry(waypoints, excludeLocations);
+    if (!AVOID_FAST_ROADS) {
+      return geometry;
+    }
+
+    const matches = await fastRoadMatches(geometry);
+    if (matches.length === 0) {
+      return geometry;
+    }
+    if (attempt >= FAST_ROAD_REROUTE_ATTEMPTS) {
+      throw new Error(
+        `Route still uses fast roads after ${FAST_ROAD_REROUTE_ATTEMPTS} reroutes: ${
+          matches.map((match) => `${match.label} ${match.matchedKm.toFixed(1)}km`).join("; ")
+        }`,
+      );
+    }
+
+    for (const match of matches) {
+      const avoidPoint = routePointAtKm(geometry, (match.firstKm + match.lastKm) / 2);
+      if (
+        !excludeLocations.some((point) => haversineKm(point, avoidPoint) < 0.2)
+      ) {
+        excludeLocations.push(avoidPoint);
+      }
+    }
+  }
+
+  throw new Error("Route fast-road avoidance failed unexpectedly");
+}
+
+async function routeWithRouter(waypoints: Waypoint[]): Promise<LineStringGeometry> {
+  if (ROUTER_ENGINE === "valhalla") {
+    return routeWithValhalla(waypoints);
+  }
+  if (ROUTER_ENGINE === "osrm") {
+    return routeWithOsrm(waypoints);
+  }
+  if (ROUTER_ENGINE === "brouter") {
+    return routeWithBrouter(waypoints);
+  }
+  throw new Error(`Unsupported router engine: ${ROUTER_ENGINE}`);
+}
+
 async function buildRouteCandidates(day: RouteDay): Promise<BuiltRouteCandidate[]> {
   const candidates: BuiltRouteCandidate[] = [];
   for (const definition of routeCandidateDefinitions(day)) {
-    const geometry = await routeWithOsrm(definition.waypoints);
+    const geometry = await routeWithRouter(definition.waypoints);
     const generatedDistanceKm = geometryDistanceKm(geometry);
     candidates.push({
       id: definition.id,
@@ -620,6 +978,177 @@ function routePointAtKm(geometry: LineStringGeometry, targetKm: number): Coordin
   return { lat, lon };
 }
 
+function fastRoadQuery(): string {
+  return `
+[out:json][timeout:180];
+(
+  way["highway"~"^(motorway|motorway_link|trunk|trunk_link)$"](21.8,119.2,25.5,122.2);
+  way["motorroad"="yes"](21.8,119.2,25.5,122.2);
+);
+out geom tags;
+`;
+}
+
+function fastRoadLabel(tags: Record<string, string> | undefined): string {
+  return [tags?.ref, tags?.name, tags?.highway, tags?.motorroad === "yes" ? "motorroad=yes" : null]
+    .filter((part): part is string => Boolean(part))
+    .join(" / ");
+}
+
+function buildFastRoadSegments(elements: OverpassElement[]): FastRoadSegment[] {
+  const segments: FastRoadSegment[] = [];
+  for (const element of elements) {
+    if (element.type !== "way" || !Array.isArray(element.geometry)) {
+      continue;
+    }
+    for (let index = 1; index < element.geometry.length; index += 1) {
+      const previous = element.geometry[index - 1];
+      const current = element.geometry[index];
+      if (!previous || !current) {
+        continue;
+      }
+      const start = { lat: previous.lat, lon: previous.lon };
+      const end = { lat: current.lat, lon: current.lon };
+      segments.push({
+        id: `${element.type}/${element.id}`,
+        label: fastRoadLabel(element.tags),
+        start,
+        end,
+        heading: headingDeg(start, end),
+      });
+    }
+  }
+  return segments;
+}
+
+function gridRange(min: number, max: number): number[] {
+  const values = [];
+  for (
+    let value = Math.floor(min / FAST_ROAD_GRID_SIZE_DEG);
+    value <= Math.floor(max / FAST_ROAD_GRID_SIZE_DEG);
+    value += 1
+  ) {
+    values.push(value);
+  }
+  return values;
+}
+
+function buildFastRoadIndex(segments: FastRoadSegment[]): FastRoadIndex {
+  const index: FastRoadIndex = new Map();
+  for (const segment of segments) {
+    for (
+      const latCell of gridRange(
+        Math.min(segment.start.lat, segment.end.lat) - 0.002,
+        Math.max(segment.start.lat, segment.end.lat) + 0.002,
+      )
+    ) {
+      for (
+        const lonCell of gridRange(
+          Math.min(segment.start.lon, segment.end.lon) - 0.002,
+          Math.max(segment.start.lon, segment.end.lon) + 0.002,
+        )
+      ) {
+        const key = `${latCell},${lonCell}`;
+        const bucket = index.get(key) ?? [];
+        bucket.push(segment);
+        index.set(key, bucket);
+      }
+    }
+  }
+  return index;
+}
+
+function nearbyFastRoadSegments(index: FastRoadIndex, point: CoordinatePoint): FastRoadSegment[] {
+  const latCell = Math.floor(point.lat / FAST_ROAD_GRID_SIZE_DEG);
+  const lonCell = Math.floor(point.lon / FAST_ROAD_GRID_SIZE_DEG);
+  const result: FastRoadSegment[] = [];
+  for (let dLat = -1; dLat <= 1; dLat += 1) {
+    for (let dLon = -1; dLon <= 1; dLon += 1) {
+      result.push(...(index.get(`${latCell + dLat},${lonCell + dLon}`) ?? []));
+    }
+  }
+  return result;
+}
+
+let fastRoadIndexPromise: Promise<FastRoadIndex> | null = null;
+
+async function fastRoadElements(): Promise<OverpassElement[]> {
+  try {
+    const payload = JSON.parse(await fs.readFile(FAST_ROAD_CACHE_PATH, "utf8")) as OverpassResponse;
+    if (Array.isArray(payload.elements)) {
+      return payload.elements;
+    }
+  } catch {
+    // Cache miss; query Overpass below.
+  }
+
+  const elements = await queryOverpass(fastRoadQuery());
+  await fs.mkdir(path.dirname(FAST_ROAD_CACHE_PATH), { recursive: true });
+  await fs.writeFile(FAST_ROAD_CACHE_PATH, JSON.stringify({ elements }), "utf8");
+  return elements;
+}
+
+async function fastRoadIndex(): Promise<FastRoadIndex> {
+  fastRoadIndexPromise ??= fastRoadElements().then(buildFastRoadSegments).then(buildFastRoadIndex);
+  return fastRoadIndexPromise;
+}
+
+async function fastRoadMatches(geometry: LineStringGeometry): Promise<FastRoadMatch[]> {
+  const roads = await fastRoadIndex();
+  const groups = new Map<string, FastRoadMatch>();
+  let routeProgressKm = 0;
+
+  for (let routeIndex = 1; routeIndex < geometry.coordinates.length; routeIndex += 1) {
+    const previous = geometry.coordinates[routeIndex - 1];
+    const current = geometry.coordinates[routeIndex];
+    if (!previous || !current) {
+      continue;
+    }
+    const start = { lat: previous[1], lon: previous[0] };
+    const end = { lat: current[1], lon: current[0] };
+    const segmentKm = haversineKm(start, end);
+    const midpoint = {
+      lat: (start.lat + end.lat) / 2,
+      lon: (start.lon + end.lon) / 2,
+    };
+    const routeHeading = headingDeg(start, end);
+    let best: { road: FastRoadSegment; distanceM: number } | null = null;
+
+    for (const road of nearbyFastRoadSegments(roads, midpoint)) {
+      const distanceM = pointToSegmentDistanceM(midpoint, road.start, road.end).distanceM;
+      if (distanceM > FAST_ROAD_MATCH_DISTANCE_M) {
+        continue;
+      }
+      if (headingDiffDeg(routeHeading, road.heading) > FAST_ROAD_MAX_HEADING_DIFF_DEG) {
+        continue;
+      }
+      if (!best || distanceM < best.distanceM) {
+        best = { road, distanceM };
+      }
+    }
+
+    if (best) {
+      const group = groups.get(best.road.id) ?? {
+        id: best.road.id,
+        label: best.road.label,
+        matchedKm: 0,
+        firstKm: routeProgressKm,
+        lastKm: routeProgressKm,
+      };
+      group.matchedKm += segmentKm;
+      group.firstKm = Math.min(group.firstKm, routeProgressKm);
+      group.lastKm = Math.max(group.lastKm, routeProgressKm + segmentKm);
+      groups.set(best.road.id, group);
+    }
+
+    routeProgressKm += segmentKm;
+  }
+
+  return [...groups.values()]
+    .filter((match) => match.matchedKm >= FAST_ROAD_MIN_AVOID_KM)
+    .sort((a, b) => b.matchedKm - a.matchedKm);
+}
+
 function targetedConvenienceStoreQuery(geometry: LineStringGeometry, targetKms = restStopTargets(geometryDistanceKm(geometry))): string {
   const aroundRadiusM = Math.ceil(REST_WINDOW_KM * 1000 + POI_RADIUS_M);
   const clauses = targetKms
@@ -657,7 +1186,11 @@ async function queryOverpass(query: string): Promise<OverpassElement[]> {
       const timeout = setTimeout(() => controller.abort(), OVERPASS_TIMEOUT_MS);
       const response = await fetch(url, {
         method: "POST",
-        headers: { "content-type": "application/x-www-form-urlencoded" },
+        headers: {
+          "Accept": "application/json",
+          "content-type": "application/x-www-form-urlencoded",
+          "User-Agent": "2026-iron-camel-routes/1.0",
+        },
         body,
         signal: controller.signal,
       });
@@ -672,7 +1205,18 @@ async function queryOverpass(query: string): Promise<OverpassElement[]> {
       try {
         const { stdout } = await execFileAsync(
           "curl",
-          ["--max-time", String(Math.ceil(OVERPASS_TIMEOUT_MS / 1000)), "-fsSL", "--data-urlencode", `data=${query}`, url],
+          [
+            "--max-time",
+            String(Math.ceil(OVERPASS_TIMEOUT_MS / 1000)),
+            "-fsSL",
+            "-H",
+            "Accept: application/json",
+            "-H",
+            "User-Agent: 2026-iron-camel-routes/1.0",
+            "--data-urlencode",
+            `data=${query}`,
+            url,
+          ],
           {
             maxBuffer: 20 * 1024 * 1024,
           },
@@ -902,8 +1446,9 @@ function nearestRouteDistance(
 
 function restStopTargets(generatedDistanceKm: number): number[] {
   const finishExclusionKm = Math.min(FINISH_EXCLUSION_KM, generatedDistanceKm * 0.25);
+  const lastTargetKm = generatedDistanceKm - finishExclusionKm + FINISH_EXCLUSION_TOLERANCE_KM;
   const targets = [];
-  for (let target = REST_INTERVAL_KM; target <= generatedDistanceKm - finishExclusionKm; target += REST_INTERVAL_KM) {
+  for (let target = REST_INTERVAL_KM; target <= lastTargetKm; target += REST_INTERVAL_KM) {
     targets.push(target);
   }
   return targets;
@@ -1127,6 +1672,36 @@ async function enrichCachedConvenienceStores(stores: ConvenienceStore[]): Promis
   return enrichedStores;
 }
 
+async function enrichSelectedConvenienceStores(stores: ConvenienceStore[]): Promise<ConvenienceStore[]> {
+  const enrichedStores: ConvenienceStore[] = [];
+
+  for (const store of stores) {
+    let address = {
+      address: store.address,
+      addressSource: store.addressSource,
+    } satisfies Pick<ConvenienceStore, "address" | "addressSource">;
+
+    if (address.addressSource === "coordinate-fallback") {
+      try {
+        const reverseAddress = await reverseGeocodeAddress(store.lat, store.lon);
+        if (reverseAddress) {
+          address = { address: reverseAddress, addressSource: "reverse-geocode" };
+        }
+      } catch (error) {
+        console.warn(`Store ${store.id}: reverse geocode failed: ${errorMessage(error)}`);
+      }
+    }
+
+    enrichedStores.push({
+      ...withStoreDisplayFields(store),
+      metadataVersion: STORE_METADATA_VERSION,
+      ...address,
+    });
+  }
+
+  return enrichedStores;
+}
+
 async function fetchConvenienceStores(
   day: RouteDay,
   geometry: LineStringGeometry,
@@ -1185,7 +1760,7 @@ async function fetchConvenienceStores(
         console.log(
           `Day ${day.day}: reused ${partialCachedStores.length} cached convenience store rest stops and fetched ${fetchedStores.length}`,
         );
-        return stores;
+        return enrichSelectedConvenienceStores(stores);
       }
       console.warn(`Day ${day.day}: Overpass returned ${stores.length}/${expectedCount} convenience store rest stops`);
     } catch (error) {
@@ -1207,7 +1782,7 @@ async function fetchConvenienceStores(
     console.log(
       `Day ${day.day}: selected ${stores.length} convenience store rest stops every ${REST_INTERVAL_KM}km`,
     );
-    return stores;
+    return enrichSelectedConvenienceStores(stores);
   } catch (error) {
     console.warn(`Day ${day.day}: convenience store lookup failed: ${errorMessage(error)}`);
     const fallbackCachedStores = fallbackCachedConvenienceStores(cachedDay, generatedDistanceKm);

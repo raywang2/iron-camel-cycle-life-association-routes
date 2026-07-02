@@ -80,6 +80,16 @@ describe("reference-style route UI", () => {
     expect(css).toContain(".route-marker.mid span");
   });
 
+  it("shows route distance in the finish marker popup", () => {
+    const app = fs.readFileSync("src/app.ts", "utf8");
+
+    expect(app).toContain("finishDistance");
+    expect(app).toContain("finishDistanceMarkup(");
+    expect(app).toContain('type === "finish"');
+    expect(app).toContain("day.generatedDistanceKm");
+    expect(app).toContain("finishDistanceMarkup(day)");
+  });
+
   it("highlights map markers when hovering sidebar waypoints and convenience stores", () => {
     const app = fs.readFileSync("src/app.ts", "utf8");
     const css = fs.readFileSync("src/styles.css", "utf8");
@@ -92,6 +102,17 @@ describe("reference-style route UI", () => {
     expect(app).toContain('elements.info.addEventListener("pointerout"');
     expect(css).toContain(".route-marker.is-highlighted span");
     expect(css).toContain(".store-marker.is-highlighted span");
+  });
+
+  it("opens the map popup when interacting with sidebar marker labels", () => {
+    const app = fs.readFileSync("src/app.ts", "utf8");
+
+    expect(app).toContain("markerInstances");
+    expect(app).toContain("openMarkerPopup(");
+    expect(app).toContain("closeMarkerPopup(");
+    expect(app).toContain("marker.openPopup()");
+    expect(app).toContain("requireMap().closePopup()");
+    expect(app).toContain("openMarkerPopup(target.dataset.markerId");
   });
 
   it("supports tapping sidebar marker labels on touch devices", () => {
@@ -118,6 +139,26 @@ describe("reference-style route UI", () => {
     expect(app).toContain("currentLocationIcon(");
     expect(app).toContain("locationLayer");
     expect(css).toContain(".current-location-marker span");
+  });
+
+  it("selects and updates the visible route from the current date", () => {
+    const app = fs.readFileSync("src/app.ts", "utf8");
+
+    expect(app).toContain("localDateString(");
+    expect(app).toContain("routeIndexForDate(");
+    expect(app).toContain("startDateRouteWatcher(");
+    expect(app).toContain("window.setInterval");
+    expect(app).toContain("searchParams.get(\"day\")");
+  });
+
+  it("keeps the day query in sync after manual route changes", () => {
+    const app = fs.readFileSync("src/app.ts", "utf8");
+
+    expect(app).toContain("updateRouteDayQuery(");
+    expect(app).toContain("clearRouteDayQuery(");
+    expect(app).toContain("window.history.replaceState");
+    expect(app).toContain("url.searchParams.set(\"day\"");
+    expect(app).toContain("url.searchParams.delete(\"day\")");
   });
 
   it("uses the reference dark split layout styles", () => {

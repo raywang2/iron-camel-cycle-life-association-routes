@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
+import fs from "node:fs";
 import {
+  DEFAULT_BICYCLE_USE_ROADS,
+  DEFAULT_BROUTER_PROFILE,
+  DEFAULT_ROUTER_ENGINE,
+  DEFAULT_ROUTER_PROFILE,
+  brouterFastRoadLabels,
   existingRouteOutputForSkippedDay,
   parseRequestedDays,
   shouldBuildRouteDay,
@@ -25,6 +31,44 @@ function routeDay(day: number, title: string): RouteDay {
 }
 
 describe("build route options", () => {
+  it("defaults generated routes to Valhalla bicycle routing", () => {
+    expect(DEFAULT_ROUTER_ENGINE).toBe("valhalla");
+    expect(DEFAULT_ROUTER_PROFILE).toBe("bicycle");
+    expect(DEFAULT_BICYCLE_USE_ROADS).toBe(0);
+  });
+
+  it("supports BRouter trekking as an alternate bicycle routing engine", () => {
+    const buildScript = fs.readFileSync("scripts/build-routes.ts", "utf8");
+
+    expect(DEFAULT_BROUTER_PROFILE).toBe("trekking");
+    expect(buildScript).toContain('ROUTER_ENGINE === "brouter"');
+  });
+
+  it("detects fast-road way tags in BRouter responses", () => {
+    expect(
+      brouterFastRoadLabels({
+        features: [
+          {
+            properties: {
+              messages: [
+                ["Longitude", "Latitude", "WayTags", "NodeTags"],
+                ["120", "24", "highway=cycleway bicycle=designated", ""],
+                ["120", "24", "highway=trunk motorroad=yes", ""],
+              ],
+            },
+          },
+        ],
+      }),
+    ).toEqual(["highway=trunk motorroad=yes"]);
+  });
+
+  it("sends an explicit user agent to Overpass for POI lookups", () => {
+    const buildScript = fs.readFileSync("scripts/build-routes.ts", "utf8");
+
+    expect(buildScript).toContain('"User-Agent": "2026-iron-camel-routes/1.0"');
+    expect(buildScript).toContain('"Accept": "application/json"');
+  });
+
   it("parses requested route days from CLI arguments", () => {
     expect(parseRequestedDays(["--day", "3"], {})).toEqual(new Set([3]));
     expect(parseRequestedDays(["--days=3,7"], {})).toEqual(new Set([3, 7]));

@@ -7,11 +7,14 @@ function routes(): RouteDay[] {
 }
 
 describe("generated route quality", () => {
-  it("uses the shorter non-looping candidate for day 2", () => {
+  it("keeps day 2 on the full coastal waypoint route", () => {
     const day2 = routes().find((route) => route.day === 2);
 
-    expect(day2?.routeReview?.selectedCandidate).toBe("reduced-waypoints");
+    expect(day2?.routeReview?.selectedCandidate).toBe("pdf-waypoints");
     expect(day2?.generatedDistanceKm).toBeLessThan(60);
+    expect(day2?.routeReview?.candidates.find((candidate) => candidate.selected)?.waypointNames).toEqual(
+      expect.arrayContaining(["苗栗濱海自行車道", "海山漁港", "香山濕地", "港南濱海風景區", "南寮漁港"]),
+    );
   });
 
   it("keeps a convenience stop after 70km for day 3", () => {

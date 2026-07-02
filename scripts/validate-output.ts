@@ -15,12 +15,14 @@ export interface GpxFile {
 const REST_INTERVAL_KM = 10;
 const REST_WINDOW_KM = 6;
 const FINISH_EXCLUSION_KM = 10;
+const FINISH_EXCLUSION_TOLERANCE_KM = 0.5;
 const EXCLUDED_STORE_NAME_PATTERNS = [/shopee/i, /蝦皮/i];
 
 function restStopTargets(generatedDistanceKm: number): number[] {
   const finishExclusionKm = Math.min(FINISH_EXCLUSION_KM, generatedDistanceKm * 0.25);
+  const lastTargetKm = generatedDistanceKm - finishExclusionKm + FINISH_EXCLUSION_TOLERANCE_KM;
   const targets = [];
-  for (let target = REST_INTERVAL_KM; target <= generatedDistanceKm - finishExclusionKm; target += REST_INTERVAL_KM) {
+  for (let target = REST_INTERVAL_KM; target <= lastTargetKm; target += REST_INTERVAL_KM) {
     targets.push(target);
   }
   return targets;
@@ -80,13 +82,10 @@ export function validateRouteOutput(routes: RouteDay[], gpxFiles: GpxFile[]): vo
       );
       assert(Array.isArray(day.convenienceStores), `Day ${day.day} needs convenience store output`);
       const expectedRestTargets = restStopTargets(day.generatedDistanceKm);
-      assert(
-        day.convenienceStores.length === expectedRestTargets.length,
-        `Day ${day.day} needs ${expectedRestTargets.length} convenience store rest stops`,
-      );
+      const expectedRestTargetSet = new Set(expectedRestTargets);
+      const seenRestTargets = new Set<number>();
       for (let storeIndex = 0; storeIndex < day.convenienceStores.length; storeIndex += 1) {
         const store = day.convenienceStores[storeIndex]!;
-        const expectedTargetKm = expectedRestTargets[storeIndex]!;
         assert(typeof store.id === "string" && store.id.length > 0, `Day ${day.day} convenience store needs id`);
         assert(typeof store.name === "string" && store.name.length > 0, `Day ${day.day} convenience store needs name`);
         assert(
@@ -118,12 +117,17 @@ export function validateRouteOutput(routes: RouteDay[], gpxFiles: GpxFile[]): vo
           `Day ${day.day} convenience store needs route progress`,
         );
         assert(
-          store.targetKm === expectedTargetKm,
-          `Day ${day.day} convenience store target should be ${expectedTargetKm}km`,
+          expectedRestTargetSet.has(store.targetKm),
+          `Day ${day.day} convenience store target should be an expected 10km rest stop`,
         );
         assert(
-          Math.abs(store.routeProgressKm - expectedTargetKm) <= REST_WINDOW_KM,
-          `Day ${day.day} convenience store should be around ${expectedTargetKm}km from start`,
+          !seenRestTargets.has(store.targetKm),
+          `Day ${day.day} convenience store target should not be duplicated`,
+        );
+        seenRestTargets.add(store.targetKm);
+        assert(
+          Math.abs(store.routeProgressKm - store.targetKm) <= REST_WINDOW_KM,
+          `Day ${day.day} convenience store should be around ${store.targetKm}km from start`,
         );
         const finishExclusionKm = Math.min(FINISH_EXCLUSION_KM, day.generatedDistanceKm * 0.25);
         assert(

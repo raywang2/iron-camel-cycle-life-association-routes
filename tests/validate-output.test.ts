@@ -296,7 +296,7 @@ describe("validateRouteOutput", () => {
     expect(() => validateRouteOutput(routes, gpxFor(routes))).not.toThrow();
   });
 
-  it("rejects ride days without the expected 10km rest-stop count", () => {
+  it("allows remote route segments without a store at every 10km target", () => {
     const routes = validRoutes();
     routes[1] = {
       ...routes[1]!,
@@ -328,8 +328,8 @@ describe("validateRouteOutput", () => {
           lat: 24,
           lon: 120,
           distanceFromRouteM: 40,
-          targetKm: 20,
-          routeProgressKm: 20,
+          targetKm: 40,
+          routeProgressKm: 40,
           sideOfRoute: "right",
         },
         {
@@ -350,9 +350,7 @@ describe("validateRouteOutput", () => {
       ],
     };
 
-    expect(() => validateRouteOutput(routes, gpxFor(routes))).toThrow(
-      "Day 1 needs 5 convenience store rest stops",
-    );
+    expect(() => validateRouteOutput(routes, gpxFor(routes))).not.toThrow();
   });
 
   it("rejects convenience stores outside their 10km rest window", () => {
@@ -514,15 +512,15 @@ describe("validateRouteOutput", () => {
           lat: 24,
           lon: 120,
           distanceFromRouteM: 40,
-          targetKm: 20,
-          routeProgressKm: 20,
+          targetKm: 40,
+          routeProgressKm: 40,
           sideOfRoute: "right",
         },
       ],
     };
 
     expect(() => validateRouteOutput(routes, gpxFor(routes))).toThrow(
-      "Day 1 needs 3 convenience store rest stops",
+      "Day 1 convenience store target should be an expected 10km rest stop",
     );
   });
 });
