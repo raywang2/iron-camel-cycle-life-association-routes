@@ -1,0 +1,23 @@
+tests/route-source.test.ts
+  s_1ae7bf14fd87ce::t_0b6e129824e9a8 44-56
+data/route-waypoints.json
+  s_1ae7bf14fd87ce::t_bab24ec84ef7fe 15-17
+data/routes.json
+  s_1ae7bf14fd87ce::t_33f59be178fe41 15-21
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.8",
+  "base_commit_sha": "ad6601760e00f1ec7b50219197480988ba1a29fb",
+  "prompts": {},
+  "sessions": {
+    "s_1ae7bf14fd87ce": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f1399-9cdd-7090-bf1a-2b71d472eb20",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Ray Wang <sncorges@gmail.com>"
+    }
+  }
+}
