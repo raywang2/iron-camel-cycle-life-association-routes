@@ -1,0 +1,54 @@
+src/app.ts
+  s_1ae7bf14fd87ce::t_64684b80168c8c 4,306-309,762
+  s_1ae7bf14fd87ce::t_5ca898150cc34f 360,362-364,981
+  s_1ae7bf14fd87ce::t_7f48e695c1b392 279-280,343
+  s_1ae7bf14fd87ce::t_a7f857e111e14d 987-988
+  s_1ae7bf14fd87ce::t_af2354f96de9cd 22,302-305,660-661,667,702,728,738,740,763,767,771
+scripts/build-routes.ts
+  s_1ae7bf14fd87ce::t_2288dbba77bf23 995,2011
+src/styles.css
+  s_1ae7bf14fd87ce::t_02b7c9ad77b88f 100-107,152-160,163-165,168-170,172-182,185-192
+  s_1ae7bf14fd87ce::t_718a6d63708e24 134
+  s_1ae7bf14fd87ce::t_3b75433298fc14 256-261,276,278-279
+index.html
+  s_1ae7bf14fd87ce::t_8c63fd8889dad5 16-20,22-28
+tests/route-text.test.ts
+  s_1ae7bf14fd87ce::t_39b13e833f9444 3,43-48
+  s_1ae7bf14fd87ce::t_f810399b1c2b6e 40-42
+  s_1ae7bf14fd87ce::t_6ba501de961f88 1-2,4-39,49-59
+src/routeText.ts
+  s_1ae7bf14fd87ce::t_807e1d78ccd029 1-7,18-204,210
+  s_1ae7bf14fd87ce::t_d4bce575c5ba04 8-17,206-209
+  s_1ae7bf14fd87ce::t_d13b2431e0aa98 205
+data/routes.json
+  s_1ae7bf14fd87ce::t_9f69972a2894db 60,5788,13220,27773,27776,39840,42301,46233,52305,67514,72770,78098,86862
+tests/reference-layout.test.ts
+  s_1ae7bf14fd87ce::t_c414dd823562fd 20-21
+  s_1ae7bf14fd87ce::t_8a1f9acbc79c8a 71-87
+  s_1ae7bf14fd87ce::t_068c8d347062d3 9-10,32-41,43
+  s_1ae7bf14fd87ce::t_f1797abaf4863f 44,69,171-178,186
+  s_1ae7bf14fd87ce::t_e501c3f73d93c2 272-273
+  s_1ae7bf14fd87ce::t_1bb85105e8099b 159
+  s_1ae7bf14fd87ce::t_332d262126edea 18-19,23-27,67-68,152-154,156,169-170,179-185
+  s_1ae7bf14fd87ce::t_3f2209600e99a9 42
+  s_1ae7bf14fd87ce::t_48a008cfc17d69 155,157-158,160-168
+  s_1ae7bf14fd87ce::t_4b1dbce6af608b 45
+  s_1ae7bf14fd87ce::t_f2a3597f6a9fa9 70
+  s_1ae7bf14fd87ce::t_690baff54b3d48 187
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.8",
+  "base_commit_sha": "21377b90950d45bed6e29386ce4d91bea4735d8e",
+  "prompts": {},
+  "sessions": {
+    "s_1ae7bf14fd87ce": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f1399-9cdd-7090-bf1a-2b71d472eb20",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Ray Wang <sncorges@gmail.com>"
+    }
+  }
+}
