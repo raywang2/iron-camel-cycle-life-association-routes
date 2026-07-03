@@ -47,6 +47,10 @@ interface Translation {
   legendStart: string;
   legendFinish: string;
   legendRest: string;
+  changelogButton: string;
+  changelogTitle: string;
+  changelogIntro: string;
+  changelogClose: string;
   mapLabel: string;
   lecture: string;
   restDay: string;
@@ -104,6 +108,10 @@ const translations: Record<Language, Translation> = {
     legendStart: "起點",
     legendFinish: "終點",
     legendRest: "10km 休息點",
+    changelogButton: "更新紀錄",
+    changelogTitle: "更新紀錄",
+    changelogIntro: "最近調整重點：",
+    changelogClose: "關閉",
     mapLabel: "路線地圖",
     lecture: "行前講習",
     restDay: "休息日",
@@ -159,6 +167,10 @@ const translations: Record<Language, Translation> = {
     legendStart: "Start",
     legendFinish: "Finish",
     legendRest: "10 km rest stop",
+    changelogButton: "Change Log",
+    changelogTitle: "Change Log",
+    changelogIntro: "Recent updates:",
+    changelogClose: "Close",
     mapLabel: "Route map",
     lecture: "Safety briefing",
     restDay: "Rest day",
@@ -214,6 +226,10 @@ const translations: Record<Language, Translation> = {
     legendStart: "出発地",
     legendFinish: "到着地",
     legendRest: "10km 休憩地点",
+    changelogButton: "更新履歴",
+    changelogTitle: "更新履歴",
+    changelogIntro: "最近の更新：",
+    changelogClose: "閉じる",
     mapLabel: "ルート地図",
     lecture: "安全講習",
     restDay: "休息日",
@@ -243,6 +259,66 @@ const translations: Record<Language, Translation> = {
     pdfLabel: "PDF",
     networkLabel: "道路網",
   },
+};
+
+interface ChangelogEntry {
+  date: string;
+  title: string;
+  detail: string;
+}
+
+const changelogEntries: Record<Language, ChangelogEntry[]> = {
+  zh: [
+    {
+      date: "2026-07-03",
+      title: "手機側邊欄操作",
+      detail: "新增側邊欄收合，手機折疊狀態可從地圖右上角按鈕展開。",
+    },
+    {
+      date: "2026-07-03",
+      title: "路線與休息點資料",
+      detail: "更新人工確認路線、每日住宿終點與每 10km 左右便利商店資訊。",
+    },
+    {
+      date: "2026-07-03",
+      title: "定位與日期切換",
+      detail: "支援顯示目前位置，並可依騎乘日期自動切換當日路線。",
+    },
+  ],
+  en: [
+    {
+      date: "2026-07-03",
+      title: "Mobile sidebar controls",
+      detail: "Added collapsible sidebar support with a map button in the upper-right corner on mobile.",
+    },
+    {
+      date: "2026-07-03",
+      title: "Route and rest-stop data",
+      detail: "Updated reviewed routes, overnight finishes, and convenience-store stops around every 10 km.",
+    },
+    {
+      date: "2026-07-03",
+      title: "Location and date switching",
+      detail: "Added current-location display and automatic route switching by riding date.",
+    },
+  ],
+  ja: [
+    {
+      date: "2026-07-03",
+      title: "モバイルのサイドバー操作",
+      detail: "サイドバーの折りたたみに対応し、モバイルでは地図右上のボタンから開けるようにしました。",
+    },
+    {
+      date: "2026-07-03",
+      title: "ルートと休憩地点データ",
+      detail: "確認済みルート、宿泊地の到着地点、約10kmごとのコンビニ休憩地点を更新しました。",
+    },
+    {
+      date: "2026-07-03",
+      title: "現在地と日付切替",
+      detail: "現在地表示と、走行日に応じたルート自動切替に対応しました。",
+    },
+  ],
 };
 
 interface AppState {
@@ -304,6 +380,12 @@ const elements = {
   legendStart: requiredElement("#legendStart", HTMLSpanElement),
   legendFinish: requiredElement("#legendFinish", HTMLSpanElement),
   legendRest: requiredElement("#legendRest", HTMLSpanElement),
+  changelogButton: requiredElement("#changelogBtn", HTMLButtonElement),
+  changelogDialog: requiredElement("#changelogDialog", HTMLDialogElement),
+  changelogTitle: requiredElement("#changelogTitle", HTMLHeadingElement),
+  changelogIntro: requiredElement("#changelogIntro", HTMLParagraphElement),
+  changelogList: requiredElement("#changelogList", HTMLOListElement),
+  changelogCloseButton: requiredElement("#changelogCloseBtn", HTMLButtonElement),
   mapStage: requiredElement(".map-stage", HTMLElement),
   info: requiredElement("#info", HTMLElement),
 };
@@ -392,7 +474,13 @@ function updateStaticText(): void {
   elements.legendStart.textContent = copy.legendStart;
   elements.legendFinish.textContent = copy.legendFinish;
   elements.legendRest.textContent = copy.legendRest;
+  elements.changelogButton.textContent = copy.changelogButton;
+  elements.changelogTitle.textContent = copy.changelogTitle;
+  elements.changelogIntro.textContent = copy.changelogIntro;
+  elements.changelogCloseButton.textContent = copy.changelogClose;
+  elements.changelogCloseButton.setAttribute("aria-label", copy.changelogClose);
   elements.mapStage.setAttribute("aria-label", copy.mapLabel);
+  renderChangelog();
 }
 
 function setLanguage(language: Language, options = { persist: true }): void {
@@ -450,6 +538,32 @@ function escapeHtml(value: string): string {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;");
+}
+
+function renderChangelog(): void {
+  const entries = changelogEntries[state.language];
+  elements.changelogList.innerHTML = entries
+    .map(
+      (entry) => `
+        <li>
+          <time datetime="${escapeHtml(entry.date)}">${escapeHtml(entry.date)}</time>
+          <strong>${escapeHtml(entry.title)}</strong>
+          <span>${escapeHtml(entry.detail)}</span>
+        </li>
+      `,
+    )
+    .join("");
+}
+
+function openChangelog(): void {
+  if (elements.changelogDialog.open) {
+    return;
+  }
+  elements.changelogDialog.showModal();
+}
+
+function closeChangelog(): void {
+  elements.changelogDialog.close();
 }
 
 function dayCode(day: RouteDay): string {
@@ -1034,6 +1148,13 @@ async function main(): Promise<void> {
     elements.nextButton.addEventListener("click", () => drawManualDay(state.currentIndex + 1));
     elements.sidebarToggleButton.addEventListener("click", () => setSidebarCollapsed(!state.sidebarCollapsed));
     elements.mapSidebarToggleButton.addEventListener("click", () => setSidebarCollapsed(!state.sidebarCollapsed));
+    elements.changelogButton.addEventListener("click", openChangelog);
+    elements.changelogCloseButton.addEventListener("click", closeChangelog);
+    elements.changelogDialog.addEventListener("click", (event) => {
+      if (event.target === elements.changelogDialog) {
+        closeChangelog();
+      }
+    });
     elements.allButton.addEventListener("click", () => {
       state.followDateRoute = false;
       clearRouteDayQuery();

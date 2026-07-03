@@ -53,6 +53,7 @@
           </div>
 
           <section id="info" class="card" aria-live="polite"></section>
+          <button id="changelogBtn" class="changelog-link" type="button">更新紀錄</button>
         </div>
       </aside>
 
@@ -61,6 +62,17 @@
         <div id="map"></div>
       </section>
     </main>
+
+    <dialog id="changelogDialog" class="changelog-dialog" aria-labelledby="changelogTitle">
+      <div class="changelog-panel">
+        <div class="changelog-head">
+          <h2 id="changelogTitle">更新紀錄</h2>
+          <button id="changelogCloseBtn" class="changelog-close" type="button" aria-label="關閉">關閉</button>
+        </div>
+        <p id="changelogIntro" class="note"></p>
+        <ol id="changelogList" class="changelog-list"></ol>
+      </div>
+    </dialog>
 
     <script type="module" src="/src/app.ts"></script>
   </body>

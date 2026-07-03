@@ -337,6 +337,106 @@ a.dl {
   border-radius: 18px;
 }
 
+.changelog-link {
+  width: auto;
+  display: inline-block;
+  margin: 12px 0 0;
+  padding: 4px 0;
+  background: transparent;
+  color: var(--muted);
+  border: 0;
+  border-radius: 0;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: left;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  opacity: 0.76;
+}
+
+.changelog-link:hover,
+.changelog-link:focus-visible {
+  color: #f8fafc;
+  opacity: 1;
+}
+
+.changelog-dialog {
+  width: min(92vw, 480px);
+  padding: 0;
+  color: var(--text);
+  background: transparent;
+  border: 0;
+}
+
+.changelog-dialog::backdrop {
+  background: rgba(2, 8, 23, 0.62);
+}
+
+.changelog-panel {
+  padding: 18px;
+  background: #0f172a;
+  border: 1px solid rgba(148, 163, 184, 0.34);
+  border-radius: 12px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+}
+
+.changelog-head {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.changelog-head h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+button.changelog-close {
+  width: auto;
+  margin: 0;
+  padding: 7px 10px;
+  background: #334155;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.changelog-list {
+  display: grid;
+  gap: 10px;
+  padding: 0;
+  margin: 14px 0 0;
+  list-style: none;
+}
+
+.changelog-list li {
+  display: grid;
+  gap: 4px;
+  padding: 0 0 10px;
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.changelog-list li::before {
+  content: none;
+}
+
+.changelog-list time {
+  color: #7dd3fc;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.changelog-list strong {
+  color: #f8fafc;
+}
+
+.changelog-list span {
+  color: #cbd5e1;
+}
+
 .top {
   display: grid;
   gap: 10px;

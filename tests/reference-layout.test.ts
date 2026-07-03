@@ -16,6 +16,8 @@ describe("reference-style route UI", () => {
     expect(html).toContain('id="allBtn"');
     expect(html).toContain('id="locationBtn"');
     expect(html).toContain('id="gpxLink"');
+    expect(html).toContain('id="changelogBtn"');
+    expect(html).toContain('id="changelogDialog"');
     expect(html).toContain('id="languageSwitch"');
     expect(html).toContain("<select");
     expect(html).toContain('value="zh">繁體中文');
@@ -106,6 +108,30 @@ describe("reference-style route UI", () => {
     expect(app).toContain('searchParams.get("day")');
     expect(app).not.toContain("poiToggleButton");
     expect(app).not.toContain("showConvenienceStores");
+  });
+
+  it("adds an unobtrusive changelog dialog with localized copy", () => {
+    const html = fs.readFileSync("index.html", "utf8");
+    const app = fs.readFileSync("src/app.ts", "utf8");
+    const css = fs.readFileSync("src/styles.css", "utf8");
+
+    expect(html).toContain('id="changelogBtn"');
+    expect(html).toContain('class="changelog-link"');
+    expect(html).toContain('id="changelogDialog"');
+    expect(html).toContain('aria-labelledby="changelogTitle"');
+    expect(html).toContain('id="changelogList"');
+    expect(html).toContain('id="changelogCloseBtn"');
+    expect(app).toContain('changelogButton: requiredElement("#changelogBtn"');
+    expect(app).toContain('changelogDialog: requiredElement("#changelogDialog"');
+    expect(app).toContain("renderChangelog()");
+    expect(app).toContain("showModal()");
+    expect(app).toContain("changelogEntries");
+    expect(app).toContain("更新紀錄");
+    expect(app).toContain("Change Log");
+    expect(app).toContain("更新履歴");
+    expect(css).toContain(".changelog-link");
+    expect(css).toContain("background: transparent");
+    expect(css).toContain(".changelog-dialog");
   });
 
   it("uses the browser language as the initial fallback without persisting automatic detection", () => {
