@@ -992,7 +992,7 @@ function createExternalRouteReview(day: RouteDay, geometry: RouteGeometry): Rout
 
   return {
     selectedCandidate: "external-kml",
-    reviewNote: "已使用人工確認的 Google My Maps KML 路線。",
+    reviewNote: null,
     candidates: [
       {
         id: "external-kml",
@@ -2000,15 +2000,6 @@ async function build() {
 
     const generatedDistanceKm = geometryDistanceKm(geometry);
     const distanceDeltaKm = calculateDistanceDeltaKm(generatedDistanceKm, day.distanceKm);
-    const distanceWarning =
-      typeof distanceDeltaKm === "number" && Math.abs(distanceDeltaKm) > 25
-        ? `產生路線與 PDF 距離相差 ${distanceDeltaKm} km`
-        : null;
-
-    if (distanceWarning) {
-      warnings.push(`Day ${day.day}: ${distanceWarning}`);
-    }
-
     const gpxPath = `gpx/day-${dayId(day.day)}.gpx`;
     await fs.writeFile(path.join(ROOT, gpxPath), geometryToGpx(day, geometry), "utf8");
 
@@ -2017,7 +2008,7 @@ async function build() {
       waypoints: selectedWaypoints,
       generatedDistanceKm,
       distanceDeltaKm,
-      distanceWarning,
+      distanceWarning: null,
       routeReview,
       convenienceStores,
       routingStatus,

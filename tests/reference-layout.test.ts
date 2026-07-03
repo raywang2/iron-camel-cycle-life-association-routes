@@ -6,20 +6,41 @@ describe("reference-style route UI", () => {
     const html = fs.readFileSync("index.html", "utf8");
 
     expect(html).toContain('class="app"');
+    expect(html).toContain('class="brand-row"');
+    expect(html).toContain('class="language-row compact"');
     expect(html).toContain('id="daySelect"');
     expect(html).toContain('id="prevBtn"');
     expect(html).toContain('id="nextBtn"');
     expect(html).toContain('id="allBtn"');
-    expect(html).toContain('id="poiToggleBtn"');
     expect(html).toContain('id="locationBtn"');
     expect(html).toContain('id="gpxLink"');
     expect(html).toContain('id="languageSwitch"');
-    expect(html).toContain('data-lang="zh"');
-    expect(html).toContain('data-lang="en"');
-    expect(html).toContain('data-lang="ja"');
+    expect(html).toContain("<select");
+    expect(html).toContain('value="zh">繁體中文');
+    expect(html).toContain('value="en">English');
+    expect(html).toContain('value="ja">日本語');
     expect(html).toContain('id="info"');
+    expect(html).not.toContain('id="summary"');
+    expect(html).not.toContain('id="routeStats"');
+    expect(html).not.toContain('id="poiToggleBtn"');
+    expect(html).not.toContain("依 PDF 路線點位整理");
+    expect(html).not.toContain("12 騎乘日");
     expect(html).not.toContain('id="dayList"');
     expect(html).not.toContain('class="detail-panel"');
+  });
+
+  it("places the language switcher as a compact globe control in the title row", () => {
+    const html = fs.readFileSync("index.html", "utf8");
+    const css = fs.readFileSync("src/styles.css", "utf8");
+
+    expect(html).toContain('<div class="brand-row">');
+    expect(html).toContain('<div class="language-row compact">');
+    expect(css).toContain(".brand-row");
+    expect(css).toContain(".language-row.compact");
+    expect(css).toContain("#languageSwitch");
+    expect(css).toContain("background-image:");
+    expect(html).toContain('aria-label="語言切換"');
+    expect(css).not.toContain(".language-row {\n  display: grid;\n  gap: 5px;\n  margin: 12px 0 10px;");
   });
 
   it("wires dropdown, previous, next, overview, markers, and GPX download in the app script", () => {
@@ -29,7 +50,6 @@ describe("reference-style route UI", () => {
     expect(app).toContain('prevButton: requiredElement("#prevBtn"');
     expect(app).toContain('nextButton: requiredElement("#nextBtn"');
     expect(app).toContain('allButton: requiredElement("#allBtn"');
-    expect(app).toContain('poiToggleButton: requiredElement("#poiToggleBtn"');
     expect(app).toContain('gpxLink: requiredElement("#gpxLink"');
     expect(app).toContain("drawDay(");
     expect(app).toContain("drawOverview(");
@@ -44,6 +64,27 @@ describe("reference-style route UI", () => {
     expect(app).toContain("L.marker(");
     expect(app).toContain("initialRouteIndex(");
     expect(app).toContain('searchParams.get("day")');
+    expect(app).not.toContain("poiToggleButton");
+    expect(app).not.toContain("showConvenienceStores");
+  });
+
+  it("uses the browser language as the initial fallback without persisting automatic detection", () => {
+    const app = fs.readFileSync("src/app.ts", "utf8");
+
+    expect(app).toContain("navigator.language.toLowerCase()");
+    expect(app).toContain('browserLanguage.startsWith("ja")');
+    expect(app).toContain('browserLanguage.startsWith("en")');
+    expect(app).toContain("setLanguage(initialLanguage(), { persist: false })");
+    expect(app).toContain("if (options.persist)");
+  });
+
+  it("persists only user-selected language changes to localStorage", () => {
+    const app = fs.readFileSync("src/app.ts", "utf8");
+
+    expect(app).toContain('window.localStorage.getItem("route-language")');
+    expect(app).toContain('window.localStorage.setItem("route-language", language)');
+    expect(app).toContain('elements.languageSwitch.addEventListener("change"');
+    expect(app).toContain("setLanguage(nextLanguage)");
   });
 
   it("translates static route UI labels across Chinese, English, and Japanese", () => {
@@ -106,6 +147,42 @@ describe("reference-style route UI", () => {
     expect(app).toContain("Estimated distance");
     expect(app).toContain("推定距離");
     expect(app).toContain("externalRouteDistance(");
+  });
+
+  it("keeps daily route options to day code and title only", () => {
+    const app = fs.readFileSync("src/app.ts", "utf8");
+
+    expect(app).toContain("option.textContent = [dayCode(day), routeText(day.title)]");
+    expect(app).not.toContain("option.textContent = [dayCode(day), day.title, formatDistance(day)]");
+  });
+
+  it("uses route and place translations in non-Chinese languages", () => {
+    const app = fs.readFileSync("src/app.ts", "utf8");
+
+    expect(app).toContain("localizedRouteText(");
+    expect(app).toContain("routeText(day.title)");
+    expect(app).toContain("routeText(waypoint.name)");
+    expect(app).toContain("routeText(point.name)");
+    expect(app).toContain("routeText(part)");
+    expect(app).toContain("routeText(day.lunchStop)");
+    expect(app).toContain("routeText(day.endAccommodation)");
+  });
+
+  it("uses localized weekday labels in the day badge", () => {
+    const app = fs.readFileSync("src/app.ts", "utf8");
+
+    expect(app).toContain("localizedWeekday(");
+    expect(app).toContain("weekdayText(day.weekday)");
+    expect(app).not.toContain('t("weekdayPrefix"))}${escapeHtml(day.weekday)');
+  });
+
+  it("does not display generated review notes or distance warnings", () => {
+    const app = fs.readFileSync("src/app.ts", "utf8");
+
+    expect(app).not.toContain("day.routeReview?.reviewNote");
+    expect(app).not.toContain("day.distanceWarning || day.description");
+    expect(app).not.toContain("已使用人工確認的 Google My Maps KML 路線。");
+    expect(app).not.toContain("產生路線與 PDF 距離相差");
   });
 
   it("highlights map markers when hovering sidebar waypoints and convenience stores", () => {
@@ -186,12 +263,13 @@ describe("reference-style route UI", () => {
     expect(css).toContain("grid-template-columns: 430px 1fr");
     expect(css).toContain("#map");
     expect(css).toContain("height: 100vh");
-    expect(css).toContain(".stat");
     expect(css).toContain(".legend");
     expect(css).toContain(".pill");
     expect(css).toContain(".store-list");
     expect(css).toContain(".store-marker");
     expect(css).toContain(".leaflet-popup-content-wrapper");
     expect(css).toContain(".store-name");
+    expect(css).not.toContain(".stat");
+    expect(css).not.toContain(".segmented");
   });
 });

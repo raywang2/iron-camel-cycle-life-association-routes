@@ -13,20 +13,19 @@
   <body>
     <main class="app">
       <aside class="sidebar">
-        <div class="brand">
-          <p id="brandEyebrow" class="eyebrow">2026 鐵駱駝</p>
-          <h1 id="appTitle">環島路線地圖</h1>
-          <p id="summary" class="sub">載入路線資料中...</p>
-        </div>
+        <div class="brand-row">
+          <div class="brand">
+            <p id="brandEyebrow" class="eyebrow">2026 鐵駱駝</p>
+            <h1 id="appTitle">環島路線地圖</h1>
+          </div>
 
-        <div id="routeStats" class="stats" aria-label="路線統計"></div>
-
-        <div class="language-row">
-          <span id="languageLabel" class="control-label">語言</span>
-          <div id="languageSwitch" class="segmented" role="group" aria-label="語言切換">
-            <button type="button" data-lang="zh" aria-pressed="true">中</button>
-            <button type="button" data-lang="en" aria-pressed="false">EN</button>
-            <button type="button" data-lang="ja" aria-pressed="false">日</button>
+          <div class="language-row compact">
+            <label id="languageLabel" class="control-label sr-only" for="languageSwitch">語言</label>
+            <select id="languageSwitch" aria-label="語言切換">
+              <option value="zh">繁體中文</option>
+              <option value="en">English</option>
+              <option value="ja">日本語</option>
+            </select>
           </div>
         </div>
 
@@ -38,7 +37,6 @@
           <button id="nextBtn" type="button">下一天</button>
         </div>
         <button id="allBtn" class="primary" type="button">顯示全路線</button>
-        <button id="poiToggleBtn" type="button" aria-pressed="true">隱藏休息點</button>
         <button id="locationBtn" type="button">顯示現在位置</button>
         <a id="gpxLink" class="dl" href="#" download hidden>下載本日 GPX</a>
 

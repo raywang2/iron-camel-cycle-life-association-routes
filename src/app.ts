@@ -1,6 +1,7 @@
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import type * as Leaflet from "leaflet";
+import { localizedRouteText, localizedWeekday, type RouteTextLanguage } from "./routeText.js";
 import type { ConvenienceStore, RouteDay, Waypoint } from "../types/routes.js";
 
 const colors = [
@@ -18,19 +19,13 @@ const colors = [
   "#f59e0b",
 ];
 
-type Language = "zh" | "en" | "ja";
+type Language = RouteTextLanguage;
 
 interface Translation {
   htmlLang: string;
   documentTitle: string;
   brandEyebrow: string;
   appTitle: string;
-  loading: string;
-  summary: string;
-  routeStatsLabel: string;
-  rideDays: string;
-  pdfKm: string;
-  networkKm: string;
   languageLabel: string;
   languageSwitchLabel: string;
   daySelectLabel: string;
@@ -38,8 +33,6 @@ interface Translation {
   previousDay: string;
   nextDay: string;
   showAllRoutes: string;
-  hideRestStops: string;
-  showRestStops: string;
   locateMe: string;
   locating: string;
   currentLocation: string;
@@ -78,7 +71,6 @@ interface Translation {
   loadFailedSummary: string;
   loadFailedBadge: string;
   loadFailedTitle: string;
-  weekdayPrefix: string;
   pdfLabel: string;
   networkLabel: string;
 }
@@ -89,12 +81,6 @@ const translations: Record<Language, Translation> = {
     documentTitle: "2026 鐵駱駝環島路線｜道路網 GPX",
     brandEyebrow: "2026 鐵駱駝",
     appTitle: "環島路線地圖",
-    loading: "載入路線資料中...",
-    summary: "依 PDF 路線點位整理，每日可查看道路網線段與下載 GPX，方便匯入 Garmin。",
-    routeStatsLabel: "路線統計",
-    rideDays: "騎乘日",
-    pdfKm: "PDF km",
-    networkKm: "道路網 km",
     languageLabel: "語言",
     languageSwitchLabel: "語言切換",
     daySelectLabel: "每日路線",
@@ -102,8 +88,6 @@ const translations: Record<Language, Translation> = {
     previousDay: "上一天",
     nextDay: "下一天",
     showAllRoutes: "顯示全路線",
-    hideRestStops: "隱藏休息點",
-    showRestStops: "顯示休息點",
     locateMe: "顯示現在位置",
     locating: "定位中...",
     currentLocation: "現在位置",
@@ -142,7 +126,6 @@ const translations: Record<Language, Translation> = {
     loadFailedSummary: "路線資料載入失敗。",
     loadFailedBadge: "載入失敗",
     loadFailedTitle: "無法載入路線資料",
-    weekdayPrefix: "週",
     pdfLabel: "PDF",
     networkLabel: "道路網",
   },
@@ -151,12 +134,6 @@ const translations: Record<Language, Translation> = {
     documentTitle: "2026 Iron Camel Taiwan Route｜Network GPX",
     brandEyebrow: "2026 Iron Camel",
     appTitle: "Taiwan Route Map",
-    loading: "Loading route data...",
-    summary: "Built from the PDF waypoints. Review daily routed segments and download GPX files for Garmin.",
-    routeStatsLabel: "Route statistics",
-    rideDays: "Ride days",
-    pdfKm: "PDF km",
-    networkKm: "Network km",
     languageLabel: "Language",
     languageSwitchLabel: "Language switcher",
     daySelectLabel: "Daily route",
@@ -164,8 +141,6 @@ const translations: Record<Language, Translation> = {
     previousDay: "Previous",
     nextDay: "Next",
     showAllRoutes: "Show all routes",
-    hideRestStops: "Hide rest stops",
-    showRestStops: "Show rest stops",
     locateMe: "Show current location",
     locating: "Locating...",
     currentLocation: "Current location",
@@ -204,7 +179,6 @@ const translations: Record<Language, Translation> = {
     loadFailedSummary: "Route data failed to load.",
     loadFailedBadge: "Load failed",
     loadFailedTitle: "Unable to load route data",
-    weekdayPrefix: "",
     pdfLabel: "PDF",
     networkLabel: "Network",
   },
@@ -213,12 +187,6 @@ const translations: Record<Language, Translation> = {
     documentTitle: "2026 アイアンキャメル台湾一周ルート｜道路網 GPX",
     brandEyebrow: "2026 アイアンキャメル",
     appTitle: "台湾一周ルートマップ",
-    loading: "ルートデータを読み込み中...",
-    summary: "PDFの経由地をもとに整理しています。毎日の道路網ルートを確認し、Garmin用GPXをダウンロードできます。",
-    routeStatsLabel: "ルート統計",
-    rideDays: "走行日",
-    pdfKm: "PDF km",
-    networkKm: "道路網 km",
     languageLabel: "言語",
     languageSwitchLabel: "言語切替",
     daySelectLabel: "毎日のルート",
@@ -226,8 +194,6 @@ const translations: Record<Language, Translation> = {
     previousDay: "前日",
     nextDay: "翌日",
     showAllRoutes: "全ルートを表示",
-    hideRestStops: "休憩地点を非表示",
-    showRestStops: "休憩地点を表示",
     locateMe: "現在地を表示",
     locating: "測位中...",
     currentLocation: "現在地",
@@ -266,7 +232,6 @@ const translations: Record<Language, Translation> = {
     loadFailedSummary: "ルートデータの読み込みに失敗しました。",
     loadFailedBadge: "読み込み失敗",
     loadFailedTitle: "ルートデータを読み込めません",
-    weekdayPrefix: "",
     pdfLabel: "PDF",
     networkLabel: "道路網",
   },
@@ -282,7 +247,6 @@ interface AppState {
   pinnedMarkerId: string | null;
   followDateRoute: boolean;
   currentIndex: number;
-  showConvenienceStores: boolean;
   language: Language;
 }
 
@@ -306,23 +270,19 @@ const state: AppState = {
   pinnedMarkerId: null,
   followDateRoute: false,
   currentIndex: 0,
-  showConvenienceStores: true,
   language: "zh",
 };
 
 const elements = {
   brandEyebrow: requiredElement("#brandEyebrow", HTMLParagraphElement),
   appTitle: requiredElement("#appTitle", HTMLHeadingElement),
-  summary: requiredElement("#summary", HTMLParagraphElement),
-  routeStats: requiredElement("#routeStats", HTMLDivElement),
-  languageLabel: requiredElement("#languageLabel", HTMLSpanElement),
-  languageSwitch: requiredElement("#languageSwitch", HTMLDivElement),
+  languageLabel: requiredElement("#languageLabel", HTMLLabelElement),
+  languageSwitch: requiredElement("#languageSwitch", HTMLSelectElement),
   daySelectLabel: requiredElement("#daySelectLabel", HTMLLabelElement),
   daySelect: requiredElement("#daySelect", HTMLSelectElement),
   prevButton: requiredElement("#prevBtn", HTMLButtonElement),
   nextButton: requiredElement("#nextBtn", HTMLButtonElement),
   allButton: requiredElement("#allBtn", HTMLButtonElement),
-  poiToggleButton: requiredElement("#poiToggleBtn", HTMLButtonElement),
   locationButton: requiredElement("#locationBtn", HTMLButtonElement),
   gpxLink: requiredElement("#gpxLink", HTMLAnchorElement),
   legend: requiredElement(".legend", HTMLDivElement),
@@ -337,6 +297,14 @@ const elements = {
 
 function t(key: keyof Translation): string {
   return translations[state.language][key];
+}
+
+function routeText(value: string): string {
+  return localizedRouteText(value, state.language);
+}
+
+function weekdayText(value: string): string {
+  return localizedWeekday(value, state.language);
 }
 
 function isLanguage(value: string | null): value is Language {
@@ -370,9 +338,9 @@ function updateStaticText(): void {
   document.title = copy.documentTitle;
   elements.brandEyebrow.textContent = copy.brandEyebrow;
   elements.appTitle.textContent = copy.appTitle;
-  elements.routeStats.setAttribute("aria-label", copy.routeStatsLabel);
   elements.languageLabel.textContent = copy.languageLabel;
   elements.languageSwitch.setAttribute("aria-label", copy.languageSwitchLabel);
+  elements.languageSwitch.value = state.language;
   elements.daySelectLabel.textContent = copy.daySelectLabel;
   elements.daySelect.setAttribute("aria-label", copy.daySelectAria);
   elements.prevButton.textContent = copy.previousDay;
@@ -387,24 +355,20 @@ function updateStaticText(): void {
   elements.legendFinish.textContent = copy.legendFinish;
   elements.legendRest.textContent = copy.legendRest;
   elements.mapStage.setAttribute("aria-label", copy.mapLabel);
-
-  for (const button of elements.languageSwitch.querySelectorAll<HTMLButtonElement>("[data-lang]")) {
-    button.setAttribute("aria-pressed", String(button.dataset.lang === state.language));
-  }
 }
 
-function setLanguage(language: Language): void {
+function setLanguage(language: Language, options = { persist: true }): void {
   state.language = language;
-  window.localStorage.setItem("route-language", language);
+  if (options.persist) {
+    window.localStorage.setItem("route-language", language);
+  }
   updateStaticText();
   updateNavigation();
 
   if (state.routes.length === 0) {
-    elements.summary.textContent = t("loading");
     return;
   }
 
-  renderStats();
   renderDayOptions();
   drawDay(state.currentIndex);
 }
@@ -693,14 +657,14 @@ function finishDistanceMarkup(day: RouteDay): string | null {
 function waypointPopupMarkup(day: RouteDay, waypoint: Waypoint, type: WaypointMarkerType): string {
   const distanceLine = type === "finish" ? finishDistanceMarkup(day) : null;
   return [
-    `<b>${markerLabel(type)}｜${escapeHtml(waypoint.name)}</b>`,
-    `${dayCode(day)}｜${escapeHtml(day.title)}`,
+    `<b>${markerLabel(type)}｜${escapeHtml(routeText(waypoint.name))}</b>`,
+    `${dayCode(day)}｜${escapeHtml(routeText(day.title))}`,
     distanceLine,
   ].filter((line): line is string => Boolean(line)).join("<br>");
 }
 
 function routePopupText(day: RouteDay): string {
-  return [dayCode(day), escapeHtml(day.title), formatDistance(day)].filter(Boolean).join("｜");
+  return [dayCode(day), escapeHtml(routeText(day.title)), formatDistance(day)].filter(Boolean).join("｜");
 }
 
 function formatStoreSide(side: NonNullable<RouteDay["convenienceStores"]>[number]["sideOfRoute"]): string {
@@ -729,43 +693,25 @@ function storeDetailMarkup(store: NonNullable<RouteDay["convenienceStores"]>[num
   `;
 }
 
-function renderStats(): void {
-  const rideDays = state.routes.filter(isRideDay);
-  const totalPdfDistance = rideDays.reduce((sum, day) => sum + day.distanceKm, 0);
-  const totalGeneratedDistance = rideDays.reduce((sum, day) => sum + (day.generatedDistanceKm ?? 0), 0);
-
-  elements.summary.textContent = t("summary");
-  elements.routeStats.innerHTML = `
-    <div class="stat"><b>${rideDays.length}</b><span>${escapeHtml(t("rideDays"))}</span></div>
-    <div class="stat"><b>${totalPdfDistance.toFixed(1)}</b><span>${escapeHtml(t("pdfKm"))}</span></div>
-    <div class="stat"><b>${totalGeneratedDistance.toFixed(1)}</b><span>${escapeHtml(t("networkKm"))}</span></div>
-  `;
-}
-
 function renderDayOptions(): void {
   elements.daySelect.innerHTML = "";
 
   state.routes.forEach((day, index) => {
     const option = document.createElement("option");
     option.value = String(index);
-    option.textContent = [dayCode(day), day.title, formatDistance(day)].filter(Boolean).join("｜");
+    option.textContent = [dayCode(day), routeText(day.title)].filter(Boolean).join("｜");
     elements.daySelect.append(option);
   });
 }
 
 function renderInfo(day: RouteDay | null): void {
   if (!day) {
-    const rideDays = state.routes.filter(isRideDay);
-    const totalPdfDistance = rideDays.reduce((sum, route) => sum + route.distanceKm, 0);
-    const totalGeneratedDistance = rideDays.reduce((sum, route) => sum + (route.generatedDistanceKm ?? 0), 0);
-
     elements.info.innerHTML = `
       <div class="top">
         <div>
           <span class="badge">${escapeHtml(t("allRoutesBadge"))}</span>
           <h2>${escapeHtml(t("allRoutesTitle"))}</h2>
         </div>
-        <div class="km">${escapeHtml(t("pdfLabel"))} ${totalPdfDistance.toFixed(1)} km<br>${escapeHtml(t("networkLabel"))} ${totalGeneratedDistance.toFixed(1)} km</div>
       </div>
       <p class="note">${escapeHtml(t("overviewNote"))}</p>
     `;
@@ -779,7 +725,7 @@ function renderInfo(day: RouteDay | null): void {
   const waypoints = day.waypoints
     .map(
       (point, index) =>
-        `<span class="pill landmark-item" data-marker-id="${escapeHtml(markerIdForWaypoint(index))}" role="button" tabindex="0" aria-pressed="false">${escapeHtml(point.name)}</span>`,
+        `<span class="pill landmark-item" data-marker-id="${escapeHtml(markerIdForWaypoint(index))}" role="button" tabindex="0" aria-pressed="false">${escapeHtml(routeText(point.name))}</span>`,
     )
     .join("");
   const distanceLine = isRideDay(day)
@@ -788,11 +734,10 @@ function renderInfo(day: RouteDay | null): void {
       : `${escapeHtml(t("pdfLabel"))} ${day.distanceKm.toFixed(1)} km<br>${escapeHtml(t("networkLabel"))} ${(day.generatedDistanceKm ?? 0).toFixed(1)} km`
     : formatDistance(day);
   const distanceBlock = distanceLine ? `<div class="km">${distanceLine}</div>` : "";
-  const reviewNote = day.routeReview?.reviewNote ? `<p class="note">${escapeHtml(day.routeReview.reviewNote)}</p>` : "";
   const lunchParts = [
-    day.lunchStop ? `${t("lunchStop")}：${day.lunchStop}` : null,
+    day.lunchStop ? `${t("lunchStop")}：${routeText(day.lunchStop)}` : null,
     typeof day.lunchDistanceKm === "number" ? `${t("lunchDistance")}：${day.lunchDistanceKm.toFixed(1)} km` : null,
-    day.endAccommodation ? `${t("endAccommodation")}：${day.endAccommodation}` : null,
+    day.endAccommodation ? `${t("endAccommodation")}：${routeText(day.endAccommodation)}` : null,
   ].filter((part): part is string => Boolean(part));
   const lunchBlock = lunchParts.length > 0
     ? `<p class="note">${lunchParts.map(escapeHtml).join("<br>")}</p>`
@@ -814,17 +759,16 @@ function renderInfo(day: RouteDay | null): void {
   elements.info.innerHTML = `
     <div class="top">
       <div>
-        <span class="badge">${dayCode(day)}｜${escapeHtml(day.date)}（${escapeHtml(t("weekdayPrefix"))}${escapeHtml(day.weekday)}）</span>
-        <h2>${escapeHtml(day.title)}</h2>
+        <span class="badge">${dayCode(day)}｜${escapeHtml(day.date)}（${escapeHtml(weekdayText(day.weekday))}）</span>
+        <h2>${escapeHtml(routeText(day.title))}</h2>
       </div>
       ${distanceBlock}
     </div>
-    <ul>${routeParts.map((part) => `<li>${escapeHtml(part)}</li>`).join("")}</ul>
+    <ul>${routeParts.map((part) => `<li>${escapeHtml(routeText(part))}</li>`).join("")}</ul>
     ${lunchBlock}
     ${waypoints ? `<p class="note">${escapeHtml(t("routePoints"))}</p><div>${waypoints}</div>` : ""}
-    ${reviewNote}
     ${storeBlock}
-    <p class="note">${escapeHtml(day.distanceWarning || day.description)}</p>
+    <p class="note">${escapeHtml(routeParts.map(routeText).join("→"))}</p>
   `;
 }
 
@@ -843,8 +787,6 @@ function updateNavigation(): void {
   elements.daySelect.value = String(state.currentIndex);
   elements.prevButton.disabled = state.currentIndex <= 0;
   elements.nextButton.disabled = state.currentIndex >= state.routes.length - 1;
-  elements.poiToggleButton.textContent = state.showConvenienceStores ? t("hideRestStops") : t("showRestStops");
-  elements.poiToggleButton.setAttribute("aria-pressed", String(state.showConvenienceStores));
 }
 
 function drawCurrentLocation(position: GeolocationPosition): void {
@@ -912,10 +854,6 @@ function drawMarkers(day: RouteDay, positions: Leaflet.LatLngExpression[]): void
 }
 
 function drawConvenienceStores(day: RouteDay, positions: Leaflet.LatLngExpression[]): void {
-  if (!state.showConvenienceStores) {
-    return;
-  }
-
   for (const store of day.convenienceStores ?? []) {
     const position: Leaflet.LatLngExpression = [store.lat, store.lon];
     positions.push(position);
@@ -1040,16 +978,14 @@ function startDateRouteWatcher(): void {
 
 async function main(): Promise<void> {
   initMap();
-  setLanguage(initialLanguage());
+  setLanguage(initialLanguage(), { persist: false });
 
   try {
     await loadRoutes();
-    renderStats();
     renderDayOptions();
 
-    elements.languageSwitch.addEventListener("click", (event) => {
-      const button = event.target instanceof HTMLElement ? event.target.closest<HTMLButtonElement>("[data-lang]") : null;
-      const nextLanguage = button?.dataset.lang ?? null;
+    elements.languageSwitch.addEventListener("change", () => {
+      const nextLanguage = elements.languageSwitch.value;
       if (isLanguage(nextLanguage)) {
         setLanguage(nextLanguage);
       }
@@ -1101,15 +1037,9 @@ async function main(): Promise<void> {
         togglePinnedMarker(target.dataset.markerId ?? null);
       }
     });
-    elements.poiToggleButton.addEventListener("click", () => {
-      state.showConvenienceStores = !state.showConvenienceStores;
-      drawDay(state.currentIndex);
-    });
-
     drawDay(initialRouteIndex());
     startDateRouteWatcher();
   } catch (error) {
-    elements.summary.textContent = t("loadFailedSummary");
     elements.info.innerHTML = `
       <div class="top">
         <div>

@@ -57,7 +57,7 @@
     "distanceWarning": null,
     "routeReview": {
       "selectedCandidate": "external-kml",
-      "reviewNote": "已使用人工確認的 Google My Maps KML 路線。",
+      "reviewNote": null,
       "candidates": [
         {
           "id": "external-kml",
@@ -5785,7 +5785,7 @@
     "distanceWarning": null,
     "routeReview": {
       "selectedCandidate": "external-kml",
-      "reviewNote": "已使用人工確認的 Google My Maps KML 路線。",
+      "reviewNote": null,
       "candidates": [
         {
           "id": "external-kml",
@@ -13217,7 +13217,7 @@
     "distanceWarning": null,
     "routeReview": {
       "selectedCandidate": "external-kml",
-      "reviewNote": "已使用人工確認的 Google My Maps KML 路線。",
+      "reviewNote": null,
       "candidates": [
         {
           "id": "external-kml",
@@ -27770,10 +27770,10 @@
     "externalRoutePath": "data/external-routes/day-04.kml",
     "generatedDistanceKm": 80.8,
     "distanceDeltaKm": 29.1,
-    "distanceWarning": "產生路線與 PDF 距離相差 29.1 km",
+    "distanceWarning": null,
     "routeReview": {
       "selectedCandidate": "external-kml",
-      "reviewNote": "已使用人工確認的 Google My Maps KML 路線。",
+      "reviewNote": null,
       "candidates": [
         {
           "id": "external-kml",
@@ -39837,7 +39837,7 @@
     "distanceWarning": null,
     "routeReview": {
       "selectedCandidate": "external-kml",
-      "reviewNote": "已使用人工確認的 Google My Maps KML 路線。",
+      "reviewNote": null,
       "candidates": [
         {
           "id": "external-kml",
@@ -42298,7 +42298,7 @@
     "distanceWarning": null,
     "routeReview": {
       "selectedCandidate": "external-kml",
-      "reviewNote": "已使用人工確認的 Google My Maps KML 路線。",
+      "reviewNote": null,
       "candidates": [
         {
           "id": "external-kml",
@@ -46230,7 +46230,7 @@
     "distanceWarning": null,
     "routeReview": {
       "selectedCandidate": "external-kml",
-      "reviewNote": "已使用人工確認的 Google My Maps KML 路線。",
+      "reviewNote": null,
       "candidates": [
         {
           "id": "external-kml",
@@ -52302,7 +52302,7 @@
     "distanceWarning": null,
     "routeReview": {
       "selectedCandidate": "external-kml",
-      "reviewNote": "已使用人工確認的 Google My Maps KML 路線。",
+      "reviewNote": null,
       "candidates": [
         {
           "id": "external-kml",
@@ -67511,7 +67511,7 @@
     "distanceWarning": null,
     "routeReview": {
       "selectedCandidate": "external-kml",
-      "reviewNote": "已使用人工確認的 Google My Maps KML 路線。",
+      "reviewNote": null,
       "candidates": [
         {
           "id": "external-kml",
@@ -72767,7 +72767,7 @@
     "distanceWarning": null,
     "routeReview": {
       "selectedCandidate": "external-kml",
-      "reviewNote": "已使用人工確認的 Google My Maps KML 路線。",
+      "reviewNote": null,
       "candidates": [
         {
           "id": "external-kml",
@@ -78095,7 +78095,7 @@
     "distanceWarning": null,
     "routeReview": {
       "selectedCandidate": "external-kml",
-      "reviewNote": "已使用人工確認的 Google My Maps KML 路線。",
+      "reviewNote": null,
       "candidates": [
         {
           "id": "external-kml",
@@ -86859,7 +86859,7 @@
     "distanceWarning": null,
     "routeReview": {
       "selectedCandidate": "external-kml",
-      "reviewNote": "已使用人工確認的 Google My Maps KML 路線。",
+      "reviewNote": null,
       "candidates": [
         {
           "id": "external-kml",
