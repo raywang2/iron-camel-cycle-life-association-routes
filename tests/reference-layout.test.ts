@@ -66,6 +66,7 @@ describe("reference-style route UI", () => {
     expect(css).toContain(".map-sidebar-toggle");
     expect(css).toContain("@media (max-width: 860px)");
     expect(css).toContain(".app.sidebar-collapsed .sidebar");
+    expect(css).toContain("top: 72px");
   });
 
   it("wires dropdown, previous, next, overview, markers, and GPX download in the app script", () => {

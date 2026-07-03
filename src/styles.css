@@ -578,6 +578,7 @@ li::before {
 
   .app.sidebar-collapsed .map-sidebar-toggle {
     display: grid;
+    top: 72px;
   }
 
   #map {
