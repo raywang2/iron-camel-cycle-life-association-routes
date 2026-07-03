@@ -33,6 +33,8 @@ interface Translation {
   previousDay: string;
   nextDay: string;
   showAllRoutes: string;
+  collapseSidebar: string;
+  expandSidebar: string;
   locateMe: string;
   locating: string;
   currentLocation: string;
@@ -88,6 +90,8 @@ const translations: Record<Language, Translation> = {
     previousDay: "上一天",
     nextDay: "下一天",
     showAllRoutes: "顯示全路線",
+    collapseSidebar: "收合側邊欄",
+    expandSidebar: "展開側邊欄",
     locateMe: "顯示現在位置",
     locating: "定位中...",
     currentLocation: "現在位置",
@@ -141,6 +145,8 @@ const translations: Record<Language, Translation> = {
     previousDay: "Previous",
     nextDay: "Next",
     showAllRoutes: "Show all routes",
+    collapseSidebar: "Collapse sidebar",
+    expandSidebar: "Expand sidebar",
     locateMe: "Show current location",
     locating: "Locating...",
     currentLocation: "Current location",
@@ -194,6 +200,8 @@ const translations: Record<Language, Translation> = {
     previousDay: "前日",
     nextDay: "翌日",
     showAllRoutes: "全ルートを表示",
+    collapseSidebar: "サイドバーを閉じる",
+    expandSidebar: "サイドバーを開く",
     locateMe: "現在地を表示",
     locating: "測位中...",
     currentLocation: "現在地",
@@ -246,6 +254,7 @@ interface AppState {
   markerInstances: Map<string, Leaflet.Marker>;
   pinnedMarkerId: string | null;
   followDateRoute: boolean;
+  sidebarCollapsed: boolean;
   currentIndex: number;
   language: Language;
 }
@@ -269,11 +278,13 @@ const state: AppState = {
   markerInstances: new Map(),
   pinnedMarkerId: null,
   followDateRoute: false,
+  sidebarCollapsed: false,
   currentIndex: 0,
   language: "zh",
 };
 
 const elements = {
+  app: requiredElement(".app", HTMLElement),
   brandEyebrow: requiredElement("#brandEyebrow", HTMLParagraphElement),
   appTitle: requiredElement("#appTitle", HTMLHeadingElement),
   languageLabel: requiredElement("#languageLabel", HTMLLabelElement),
@@ -283,6 +294,8 @@ const elements = {
   prevButton: requiredElement("#prevBtn", HTMLButtonElement),
   nextButton: requiredElement("#nextBtn", HTMLButtonElement),
   allButton: requiredElement("#allBtn", HTMLButtonElement),
+  sidebarToggleButton: requiredElement("#sidebarToggleBtn", HTMLButtonElement),
+  mapSidebarToggleButton: requiredElement("#mapSidebarToggleBtn", HTMLButtonElement),
   locationButton: requiredElement("#locationBtn", HTMLButtonElement),
   gpxLink: requiredElement("#gpxLink", HTMLAnchorElement),
   legend: requiredElement(".legend", HTMLDivElement),
@@ -332,6 +345,28 @@ function initialLanguage(): Language {
   return "zh";
 }
 
+function initialSidebarCollapsed(): boolean {
+  return window.localStorage.getItem("route-sidebar-collapsed") === "true";
+}
+
+function scheduleMapResize(): void {
+  window.setTimeout(() => {
+    state.map?.invalidateSize();
+  }, 240);
+}
+
+function setSidebarCollapsed(collapsed: boolean, options = { persist: true }): void {
+  state.sidebarCollapsed = collapsed;
+  elements.app.classList.toggle("sidebar-collapsed", collapsed);
+  elements.sidebarToggleButton.setAttribute("aria-expanded", String(!collapsed));
+  elements.mapSidebarToggleButton.setAttribute("aria-expanded", String(!collapsed));
+  if (options.persist) {
+    window.localStorage.setItem("route-sidebar-collapsed", String(collapsed));
+  }
+  updateStaticText();
+  scheduleMapResize();
+}
+
 function updateStaticText(): void {
   const copy = translations[state.language];
   document.documentElement.lang = copy.htmlLang;
@@ -346,6 +381,9 @@ function updateStaticText(): void {
   elements.prevButton.textContent = copy.previousDay;
   elements.nextButton.textContent = copy.nextDay;
   elements.allButton.textContent = copy.showAllRoutes;
+  const sidebarToggleLabel = state.sidebarCollapsed ? copy.expandSidebar : copy.collapseSidebar;
+  elements.sidebarToggleButton.setAttribute("aria-label", sidebarToggleLabel);
+  elements.mapSidebarToggleButton.setAttribute("aria-label", sidebarToggleLabel);
   elements.locationButton.textContent = copy.locateMe;
   elements.gpxLink.textContent = copy.downloadGpx;
   elements.legend.setAttribute("aria-label", copy.legendLabel);
@@ -979,6 +1017,7 @@ function startDateRouteWatcher(): void {
 async function main(): Promise<void> {
   initMap();
   setLanguage(initialLanguage(), { persist: false });
+  setSidebarCollapsed(initialSidebarCollapsed(), { persist: false });
 
   try {
     await loadRoutes();
@@ -993,6 +1032,8 @@ async function main(): Promise<void> {
     elements.daySelect.addEventListener("change", () => drawManualDay(Number(elements.daySelect.value)));
     elements.prevButton.addEventListener("click", () => drawManualDay(state.currentIndex - 1));
     elements.nextButton.addEventListener("click", () => drawManualDay(state.currentIndex + 1));
+    elements.sidebarToggleButton.addEventListener("click", () => setSidebarCollapsed(!state.sidebarCollapsed));
+    elements.mapSidebarToggleButton.addEventListener("click", () => setSidebarCollapsed(!state.sidebarCollapsed));
     elements.allButton.addEventListener("click", () => {
       state.followDateRoute = false;
       clearRouteDayQuery();

@@ -19,39 +19,45 @@
             <h1 id="appTitle">環島路線地圖</h1>
           </div>
 
-          <div class="language-row compact">
-            <label id="languageLabel" class="control-label sr-only" for="languageSwitch">語言</label>
-            <select id="languageSwitch" aria-label="語言切換">
-              <option value="zh">繁體中文</option>
-              <option value="en">English</option>
-              <option value="ja">日本語</option>
-            </select>
+          <div class="sidebar-actions">
+            <div class="language-row compact">
+              <label id="languageLabel" class="control-label sr-only" for="languageSwitch">語言</label>
+              <select id="languageSwitch" aria-label="語言切換">
+                <option value="zh">繁體中文</option>
+                <option value="en">English</option>
+                <option value="ja">日本語</option>
+              </select>
+            </div>
+            <button id="sidebarToggleBtn" class="icon-button sidebar-toggle" type="button" aria-expanded="true" aria-label="收合側邊欄"><span aria-hidden="true"></span></button>
           </div>
         </div>
 
-        <label id="daySelectLabel" class="control-label" for="daySelect">每日路線</label>
-        <select id="daySelect" aria-label="選擇每日路線"></select>
+        <div class="sidebar-content">
+          <label id="daySelectLabel" class="control-label" for="daySelect">每日路線</label>
+          <select id="daySelect" aria-label="選擇每日路線"></select>
 
-        <div class="grid2">
-          <button id="prevBtn" type="button">上一天</button>
-          <button id="nextBtn" type="button">下一天</button>
+          <div class="grid2">
+            <button id="prevBtn" type="button">上一天</button>
+            <button id="nextBtn" type="button">下一天</button>
+          </div>
+          <button id="allBtn" class="primary" type="button">顯示全路線</button>
+          <button id="locationBtn" type="button">顯示現在位置</button>
+          <a id="gpxLink" class="dl" href="#" download hidden>下載本日 GPX</a>
+
+          <div class="legend" aria-label="地圖圖例">
+            <span><i class="dot blue"></i><span id="legendRide">單日路線</span></span>
+            <span><i class="dot gray"></i><span id="legendNonRide">非騎乘日</span></span>
+            <span><i class="dot teal"></i><span id="legendStart">起點</span></span>
+            <span><i class="dot red"></i><span id="legendFinish">終點</span></span>
+            <span><i class="dot green"></i><span id="legendRest">10km 休息點</span></span>
+          </div>
+
+          <section id="info" class="card" aria-live="polite"></section>
         </div>
-        <button id="allBtn" class="primary" type="button">顯示全路線</button>
-        <button id="locationBtn" type="button">顯示現在位置</button>
-        <a id="gpxLink" class="dl" href="#" download hidden>下載本日 GPX</a>
-
-        <div class="legend" aria-label="地圖圖例">
-          <span><i class="dot blue"></i><span id="legendRide">單日路線</span></span>
-          <span><i class="dot gray"></i><span id="legendNonRide">非騎乘日</span></span>
-          <span><i class="dot teal"></i><span id="legendStart">起點</span></span>
-          <span><i class="dot red"></i><span id="legendFinish">終點</span></span>
-          <span><i class="dot green"></i><span id="legendRest">10km 休息點</span></span>
-        </div>
-
-        <section id="info" class="card" aria-live="polite"></section>
       </aside>
 
       <section class="map-stage" aria-label="路線地圖">
+        <button id="mapSidebarToggleBtn" class="icon-button map-sidebar-toggle" type="button" aria-expanded="false" aria-label="展開側邊欄"><span aria-hidden="true"></span></button>
         <div id="map"></div>
       </section>
     </main>

@@ -8,6 +8,8 @@ describe("reference-style route UI", () => {
     expect(html).toContain('class="app"');
     expect(html).toContain('class="brand-row"');
     expect(html).toContain('class="language-row compact"');
+    expect(html).toContain('id="sidebarToggleBtn"');
+    expect(html).toContain('id="mapSidebarToggleBtn"');
     expect(html).toContain('id="daySelect"');
     expect(html).toContain('id="prevBtn"');
     expect(html).toContain('id="nextBtn"');
@@ -41,6 +43,29 @@ describe("reference-style route UI", () => {
     expect(css).toContain("background-image:");
     expect(html).toContain('aria-label="語言切換"');
     expect(css).not.toContain(".language-row {\n  display: grid;\n  gap: 5px;\n  margin: 12px 0 10px;");
+  });
+
+  it("supports a responsive collapsible sidebar", () => {
+    const html = fs.readFileSync("index.html", "utf8");
+    const app = fs.readFileSync("src/app.ts", "utf8");
+    const css = fs.readFileSync("src/styles.css", "utf8");
+
+    expect(html).toContain('class="sidebar-content"');
+    expect(html).toContain('id="sidebarToggleBtn"');
+    expect(html).toContain('id="mapSidebarToggleBtn"');
+    expect(app).toContain('app: requiredElement(".app"');
+    expect(app).toContain('sidebarToggleButton: requiredElement("#sidebarToggleBtn"');
+    expect(app).toContain('mapSidebarToggleButton: requiredElement("#mapSidebarToggleBtn"');
+    expect(app).toContain('window.localStorage.getItem("route-sidebar-collapsed")');
+    expect(app).toContain('window.localStorage.setItem("route-sidebar-collapsed"');
+    expect(app).toContain('classList.toggle("sidebar-collapsed"');
+    expect(app).toContain("invalidateSize()");
+    expect(css).toContain(".app.sidebar-collapsed");
+    expect(css).toContain("grid-template-columns: 58px 1fr");
+    expect(css).toContain(".app.sidebar-collapsed .sidebar-content");
+    expect(css).toContain(".map-sidebar-toggle");
+    expect(css).toContain("@media (max-width: 860px)");
+    expect(css).toContain(".app.sidebar-collapsed .sidebar");
   });
 
   it("wires dropdown, previous, next, overview, markers, and GPX download in the app script", () => {
