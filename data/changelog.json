@@ -2,31 +2,16 @@
   {
     "date": "2026-07-03",
     "zh": {
-      "title": "路線資料更新",
-      "detail": "更新 D1、D2、D3、D14 路線，並重新計算便利商店休息點。"
+      "title": "路線資料與使用體驗",
+      "detail": "更新 D1、D2、D3、D14 路線並重新計算便利商店休息點，也改善語系切換、日期切換、目前位置、手機側欄與更新紀錄。"
     },
     "en": {
-      "title": "Route data update",
-      "detail": "Updated D1, D2, D3, and D14 routes and recalculated convenience-store rest stops."
+      "title": "Route data and usability",
+      "detail": "Updated D1, D2, D3, and D14 routes, recalculated convenience-store rest stops, and improved language switching, date switching, current location, mobile sidebar behavior, and the change log."
     },
     "ja": {
-      "title": "ルートデータ更新",
-      "detail": "D1、D2、D3、D14 を更新し、コンビニ休憩地点を再計算しました。"
-    }
-  },
-  {
-    "date": "2026-07-03",
-    "zh": {
-      "title": "手機與使用體驗",
-      "detail": "改善語系切換、日期切換、目前位置、手機側欄與更新紀錄。"
-    },
-    "en": {
-      "title": "Mobile and usability",
-      "detail": "Improved language switching, date switching, current location, mobile sidebar behavior, and the change log."
-    },
-    "ja": {
-      "title": "モバイルと使いやすさ",
-      "detail": "言語切替、日付切替、現在地、モバイルサイドバー、更新履歴を改善しました。"
+      "title": "ルートデータと使いやすさ",
+      "detail": "D1、D2、D3、D14 を更新してコンビニ休憩地点を再計算し、言語切替、日付切替、現在地、モバイルサイドバー、更新履歴も改善しました。"
     }
   },
   {

@@ -190,6 +190,7 @@ describe("reference-style route UI", () => {
     expect(changelog.map((entry) => entry.date)).toEqual(
       [...changelog].map((entry) => entry.date).sort().reverse(),
     );
+    expect(new Set(changelog.map((entry) => entry.date)).size).toBe(changelog.length);
     expect(changelog[0]?.zh.detail).toContain("更新 D1、D2、D3、D14");
     expect(changelog[0]?.en.detail).toContain("Updated D1, D2, D3, and D14");
     expect(changelog[0]?.ja.detail).toContain("D1、D2、D3、D14 を更新");
