@@ -24,6 +24,7 @@ describe("offline PWA support", () => {
     const manifest = fs.readFileSync("public/manifest.webmanifest", "utf8");
 
     expect(serviceWorker).toContain("data/routes.json");
+    expect(serviceWorker).toContain("data/changelog.json");
     expect(serviceWorker).toContain("gpx/day-01.gpx");
     expect(serviceWorker).toContain("gpx/day-14.gpx");
     expect(serviceWorker).toContain("self.addEventListener(\"fetch\"");
@@ -39,6 +40,7 @@ describe("offline PWA support", () => {
 
     expect(serviceWorker).toContain("function isFreshContentRequest");
     expect(serviceWorker).toContain('requestUrl.pathname.endsWith("/data/routes.json")');
+    expect(serviceWorker).toContain('requestUrl.pathname.endsWith("/data/changelog.json")');
     expect(serviceWorker).toContain('requestUrl.pathname.includes("/gpx/")');
     expect(serviceWorker).toContain("networkFirstContent(request)");
     expect(serviceWorker).toContain('fetch(request, { cache: "no-store" })');

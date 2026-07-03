@@ -165,20 +165,34 @@ describe("reference-style route UI", () => {
     expect(app).toContain('changelogDialog: requiredElement("#changelogDialog"');
     expect(app).toContain("renderChangelog()");
     expect(app).toContain("showModal()");
-    expect(app).toContain("changelogEntries");
-    expect(app).toContain("2026-06-29");
-    expect(app).toContain("網站基礎");
-    expect(app).toContain("Website foundation");
-    expect(app).toContain("サイト基盤");
-    expect(app).toContain("2026-07-02");
-    expect(app).toContain("PWA");
-    expect(app.indexOf('date: "2026-07-03"')).toBeLessThan(app.indexOf('date: "2026-06-29"'));
+    expect(app).toContain("loadChangelog()");
+    expect(app).toContain('fetch("data/changelog.json"');
+    expect(app).toContain("state.changelogEntries");
     expect(app).toContain("更新紀錄");
     expect(app).toContain("Change Log");
     expect(app).toContain("更新履歴");
     expect(css).toContain(".changelog-link");
     expect(css).toContain("background: transparent");
     expect(css).toContain(".changelog-dialog");
+  });
+
+  it("stores the localized changelog in JSON newest first", () => {
+    const changelog = JSON.parse(fs.readFileSync("data/changelog.json", "utf8")) as Array<{
+      date: string;
+      zh: { title: string; detail: string };
+      en: { title: string; detail: string };
+      ja: { title: string; detail: string };
+    }>;
+
+    expect(changelog.length).toBeGreaterThan(0);
+    expect(changelog[0]?.date).toBe("2026-07-03");
+    expect(changelog.at(-1)?.date).toBe("2026-06-29");
+    expect(changelog.map((entry) => entry.date)).toEqual(
+      [...changelog].map((entry) => entry.date).sort().reverse(),
+    );
+    expect(changelog[0]?.zh.detail).toContain("更新 D1、D2、D3、D14");
+    expect(changelog[0]?.en.detail).toContain("Updated D1, D2, D3, and D14");
+    expect(changelog[0]?.ja.detail).toContain("D1、D2、D3、D14 を更新");
   });
 
   it("uses the browser language as the initial fallback without persisting automatic detection", () => {

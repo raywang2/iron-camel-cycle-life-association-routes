@@ -1,0 +1,92 @@
+[
+  {
+    "date": "2026-07-03",
+    "zh": {
+      "title": "路線資料更新",
+      "detail": "更新 D1、D2、D3、D14 路線，並重新計算便利商店休息點。"
+    },
+    "en": {
+      "title": "Route data update",
+      "detail": "Updated D1, D2, D3, and D14 routes and recalculated convenience-store rest stops."
+    },
+    "ja": {
+      "title": "ルートデータ更新",
+      "detail": "D1、D2、D3、D14 を更新し、コンビニ休憩地点を再計算しました。"
+    }
+  },
+  {
+    "date": "2026-07-03",
+    "zh": {
+      "title": "手機與使用體驗",
+      "detail": "改善語系切換、日期切換、目前位置、手機側欄與更新紀錄。"
+    },
+    "en": {
+      "title": "Mobile and usability",
+      "detail": "Improved language switching, date switching, current location, mobile sidebar behavior, and the change log."
+    },
+    "ja": {
+      "title": "モバイルと使いやすさ",
+      "detail": "言語切替、日付切替、現在地、モバイルサイドバー、更新履歴を改善しました。"
+    }
+  },
+  {
+    "date": "2026-07-02",
+    "zh": {
+      "title": "路線資料與 PWA",
+      "detail": "更新 D0、住宿終點、外部 KML 與多段路線，並改善 PWA 重新整理資料。"
+    },
+    "en": {
+      "title": "Route data and PWA",
+      "detail": "Updated D0, overnight finishes, external KML and multi-segment routes, and improved PWA refresh behavior."
+    },
+    "ja": {
+      "title": "ルートデータと PWA",
+      "detail": "D0、宿泊地の到着地点、外部 KML と複数区間ルートを更新し、PWA の再読み込み挙動を改善しました。"
+    }
+  },
+  {
+    "date": "2026-07-01",
+    "zh": {
+      "title": "部署與地圖互動",
+      "detail": "加入 GitHub Pages 部署、指定天數路線產生，以及側欄與地圖 marker 的互動。"
+    },
+    "en": {
+      "title": "Deployment and map interaction",
+      "detail": "Added GitHub Pages deployment, targeted route builds, and sidebar-to-map marker interaction."
+    },
+    "ja": {
+      "title": "公開と地図操作",
+      "detail": "GitHub Pages 公開、日付指定のルート生成、サイドバーと地図 marker の連動を追加しました。"
+    }
+  },
+  {
+    "date": "2026-06-30",
+    "zh": {
+      "title": "路線瀏覽功能",
+      "detail": "完成 Vite、TypeScript、Leaflet 地圖、每日路線、GPX 下載、便利商店資訊與多語系。"
+    },
+    "en": {
+      "title": "Route browsing",
+      "detail": "Added Vite, TypeScript, Leaflet maps, daily routes, GPX downloads, convenience-store details, and language switching."
+    },
+    "ja": {
+      "title": "ルート閲覧機能",
+      "detail": "Vite、TypeScript、Leaflet 地図、日別ルート、GPX ダウンロード、コンビニ情報、多言語切替を追加しました。"
+    }
+  },
+  {
+    "date": "2026-06-29",
+    "zh": {
+      "title": "網站基礎",
+      "detail": "建立路線網站規格與實作基礎。"
+    },
+    "en": {
+      "title": "Website foundation",
+      "detail": "Set up the route website design and implementation foundation."
+    },
+    "ja": {
+      "title": "サイト基盤",
+      "detail": "ルートサイトの仕様と実装基盤を整備しました。"
+    }
+  }
+]

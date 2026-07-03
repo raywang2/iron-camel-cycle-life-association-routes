@@ -2,6 +2,7 @@ const CACHE_NAME = "iron-camel-routes-v1";
 const CORE_ASSETS = [
   "./manifest.webmanifest",
   "./icons/icon.svg",
+  "./data/changelog.json",
   "./data/routes.json",
   "./gpx/day-01.gpx",
   "./gpx/day-02.gpx",
@@ -139,6 +140,7 @@ async function networkFirstNavigation(request) {
 
 function isFreshContentRequest(requestUrl) {
   return (
+    requestUrl.pathname.endsWith("/data/changelog.json") ||
     requestUrl.pathname.endsWith("/data/routes.json") ||
     (requestUrl.pathname.includes("/gpx/") && requestUrl.pathname.endsWith(".gpx"))
   );
