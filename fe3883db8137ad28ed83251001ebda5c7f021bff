@@ -1,0 +1,19 @@
+docs/superpowers/specs/2026-06-29-iron-camel-routes-design.md
+  s_1ae7bf14fd87ce::t_3d9225375d6bdd 1-92
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "fe3883db8137ad28ed83251001ebda5c7f021bff",
+  "prompts": {},
+  "sessions": {
+    "s_1ae7bf14fd87ce": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f1399-9cdd-7090-bf1a-2b71d472eb20",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Ray Wang <Ray.Wang@westpharma.com>"
+    }
+  }
+}

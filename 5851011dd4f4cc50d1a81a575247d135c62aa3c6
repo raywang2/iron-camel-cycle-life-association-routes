@@ -1,0 +1,57 @@
+scripts/validate-output.mjs
+  s_1ae7bf14fd87ce::t_baf12f5c558e56 1-82
+data/routes.json
+  s_1ae7bf14fd87ce::t_baf12f5c558e56 1-91433
+scripts/build-routes.mjs
+  s_1ae7bf14fd87ce::t_baf12f5c558e56 1-193
+gpx/day-05.gpx
+  s_1ae7bf14fd87ce::t_0cb5a5ba335474 1-544
+gpx/day-14.gpx
+  s_1ae7bf14fd87ce::t_3352307af1e4d4 1-1455
+data/route-waypoints.json
+  s_1ae7bf14fd87ce::t_baf12f5c558e56 1-291
+src/app.js
+  s_1ae7bf14fd87ce::t_c90ce610f3e0f1 1-196
+src/styles.css
+  s_1ae7bf14fd87ce::t_2931931dda7ca1 1-193
+gpx/day-01.gpx
+  s_1ae7bf14fd87ce::t_446cd8c4b4d512 1-1154
+package.json
+  s_1ae7bf14fd87ce::t_baf12f5c558e56 1-11
+gpx/day-07.gpx
+  s_1ae7bf14fd87ce::t_826eb08584e019 1-1214
+gpx/day-04.gpx
+  s_1ae7bf14fd87ce::t_6fa32efa63f965 1-2056
+index.html
+  s_1ae7bf14fd87ce::t_baf12f5c558e56 1-40
+gpx/day-03.gpx
+  s_1ae7bf14fd87ce::t_168b8db262368f 1-2551
+gpx/day-02.gpx
+  s_1ae7bf14fd87ce::t_edfa6b47e0d95d 1-1279
+gpx/day-13.gpx
+  s_1ae7bf14fd87ce::t_3352307af1e4d4 1-2544
+gpx/day-08.gpx
+  s_1ae7bf14fd87ce::t_6320b553d48e47 1-1428
+gpx/day-09.gpx
+  s_1ae7bf14fd87ce::t_bd3338626eef8e 1-4498
+gpx/day-11.gpx
+  s_1ae7bf14fd87ce::t_70a0b4284d5226 1-1896
+gpx/day-12.gpx
+  s_1ae7bf14fd87ce::t_2119410b21e9a2 1-2179
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "5851011dd4f4cc50d1a81a575247d135c62aa3c6",
+  "prompts": {},
+  "sessions": {
+    "s_1ae7bf14fd87ce": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f1399-9cdd-7090-bf1a-2b71d472eb20",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Ray Wang <Ray.Wang@westpharma.com>"
+    }
+  }
+}

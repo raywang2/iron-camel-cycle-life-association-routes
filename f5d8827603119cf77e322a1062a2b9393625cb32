@@ -1,0 +1,24 @@
+vite.config.ts
+  s_1ae7bf14fd87ce::t_7c251842fa130b 1-5
+.github/workflows/deploy-pages.yml
+  s_1ae7bf14fd87ce::t_61db414cac6e96 1-23,25-26,28-55,57-70
+  s_1ae7bf14fd87ce::t_17294996164870 24,27,56
+tests/github-pages.test.ts
+  s_1ae7bf14fd87ce::t_133216cc1ac8d0 1-24
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.5",
+  "base_commit_sha": "f5d8827603119cf77e322a1062a2b9393625cb32",
+  "prompts": {},
+  "sessions": {
+    "s_1ae7bf14fd87ce": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f1399-9cdd-7090-bf1a-2b71d472eb20",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Ray Wang <sncorges@gmail.com>"
+    }
+  }
+}

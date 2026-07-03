@@ -1,0 +1,23 @@
+scripts/validate-output.mjs
+  s_1ae7bf14fd87ce::t_6ab955b224ce2e 10-13,19,34,57-62
+.superpowers/sdd/task-3-report.md
+  s_1ae7bf14fd87ce::t_9410cfdb729a57 15-27
+  s_1ae7bf14fd87ce::t_dde927bed2109a 28-45
+  s_1ae7bf14fd87ce::t_7b971f2a53b260 1-14
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "f1b39d8582f72aadb9a3ed6a2e33a5fdc4408d7b",
+  "prompts": {},
+  "sessions": {
+    "s_1ae7bf14fd87ce": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f1399-9cdd-7090-bf1a-2b71d472eb20",
+        "model": "gpt-5.4-mini"
+      },
+      "human_author": "Ray Wang <Ray.Wang@westpharma.com>"
+    }
+  }
+}

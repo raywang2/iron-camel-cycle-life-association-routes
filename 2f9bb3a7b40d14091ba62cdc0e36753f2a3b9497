@@ -1,0 +1,20 @@
+.superpowers/sdd/task-2-report.md
+  s_1ae7bf14fd87ce::t_3020df1f4a98d0 42-75
+  s_1ae7bf14fd87ce::t_44ac054d388c4c 1-41
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "2f9bb3a7b40d14091ba62cdc0e36753f2a3b9497",
+  "prompts": {},
+  "sessions": {
+    "s_1ae7bf14fd87ce": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f1399-9cdd-7090-bf1a-2b71d472eb20",
+        "model": "gpt-5.4-mini"
+      },
+      "human_author": "Ray Wang <Ray.Wang@westpharma.com>"
+    }
+  }
+}
