@@ -172,6 +172,7 @@ describe("reference-style route UI", () => {
     expect(app).toContain("サイト基盤");
     expect(app).toContain("2026-07-02");
     expect(app).toContain("PWA");
+    expect(app.indexOf('date: "2026-07-03"')).toBeLessThan(app.indexOf('date: "2026-06-29"'));
     expect(app).toContain("更新紀錄");
     expect(app).toContain("Change Log");
     expect(app).toContain("更新履歴");
