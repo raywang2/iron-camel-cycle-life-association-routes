@@ -1,0 +1,21 @@
+tests/reference-layout.test.ts
+  s_1ae7bf14fd87ce::t_752e2968200f56 69
+src/styles.css
+  s_1ae7bf14fd87ce::t_a9d9aab7465610 581
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "fc3b40d38a8b6cb96dee941c92a170678b4bba94",
+  "prompts": {},
+  "sessions": {
+    "s_1ae7bf14fd87ce": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f1399-9cdd-7090-bf1a-2b71d472eb20",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Ray Wang <sncorges@gmail.com>"
+    }
+  }
+}
