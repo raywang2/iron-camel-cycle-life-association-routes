@@ -66,7 +66,21 @@ describe("reference-style route UI", () => {
     expect(css).toContain(".map-sidebar-toggle");
     expect(css).toContain("@media (max-width: 860px)");
     expect(css).toContain(".app.sidebar-collapsed .sidebar");
-    expect(css).toContain("top: 72px");
+    const mobileMapToggleBlock =
+      css.match(/\.app\.sidebar-collapsed \.map-sidebar-toggle \{[\s\S]*?\n  \}/)?.[0] ?? "";
+
+    expect(mobileMapToggleBlock).toContain("top: 14px");
+    expect(mobileMapToggleBlock).toContain("right: 14px");
+    expect(mobileMapToggleBlock).toContain("left: auto");
+    expect(mobileMapToggleBlock).toContain("width: 42px");
+    expect(mobileMapToggleBlock).toContain("height: 42px");
+    expect(mobileMapToggleBlock).toContain("min-height: 42px");
+    expect(mobileMapToggleBlock).toContain("background: #fff");
+    expect(mobileMapToggleBlock).toContain("color: #000");
+    expect(mobileMapToggleBlock).toContain("border: 2px solid rgba(0, 0, 0, 0.2)");
+    expect(mobileMapToggleBlock).toContain("border-radius: 999px");
+    expect(mobileMapToggleBlock).toContain("background-clip: padding-box");
+    expect(mobileMapToggleBlock).toContain("box-shadow: none");
   });
 
   it("wires dropdown, previous, next, overview, markers, and GPX download in the app script", () => {

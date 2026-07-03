@@ -578,7 +578,23 @@ li::before {
 
   .app.sidebar-collapsed .map-sidebar-toggle {
     display: grid;
-    top: 72px;
+    top: 14px;
+    right: 14px;
+    left: auto;
+    width: 42px;
+    height: 42px;
+    min-height: 42px;
+    background: #fff;
+    background-clip: padding-box;
+    color: #000;
+    border: 2px solid rgba(0, 0, 0, 0.2);
+    border-radius: 999px;
+    box-shadow: none;
+  }
+
+  .app.sidebar-collapsed .map-sidebar-toggle:hover,
+  .app.sidebar-collapsed .map-sidebar-toggle:focus {
+    background: #f4f4f4;
   }
 
   #map {
