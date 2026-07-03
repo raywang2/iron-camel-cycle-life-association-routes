@@ -35,7 +35,7 @@ describe("generated route quality", () => {
     const day2 = routes().find((route) => route.day === 2);
 
     expect(day2?.routeReview?.selectedCandidate).toBe("external-kml");
-    expect(day2?.generatedDistanceKm).toBe(65);
+    expect(day2?.generatedDistanceKm).toBe(51.2);
     expect(day2?.routeReview?.candidates.find((candidate) => candidate.selected)?.waypointNames).toEqual(
       ["苗栗高中", "培英國中"],
     );
