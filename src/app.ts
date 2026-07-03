@@ -267,56 +267,87 @@ interface ChangelogEntry {
   detail: string;
 }
 
+// Keep this user-facing log high level: group small fixes by date or theme.
 const changelogEntries: Record<Language, ChangelogEntry[]> = {
   zh: [
     {
-      date: "2026-07-03",
-      title: "手機側邊欄操作",
-      detail: "新增側邊欄收合，手機折疊狀態可從地圖右上角按鈕展開。",
+      date: "2026-06-29",
+      title: "網站基礎",
+      detail: "建立路線網站規格與實作基礎。",
+    },
+    {
+      date: "2026-06-30",
+      title: "路線瀏覽功能",
+      detail: "完成 Vite、TypeScript、Leaflet 地圖、每日路線、GPX 下載、便利商店資訊與多語系。",
+    },
+    {
+      date: "2026-07-01",
+      title: "部署與地圖互動",
+      detail: "加入 GitHub Pages 部署、指定天數路線產生，以及側欄與地圖 marker 的互動。",
+    },
+    {
+      date: "2026-07-02",
+      title: "路線資料與 PWA",
+      detail: "更新 D0、住宿終點、外部 KML 與多段路線，並改善 PWA 重新整理資料。",
     },
     {
       date: "2026-07-03",
-      title: "路線與休息點資料",
-      detail: "更新人工確認路線、每日住宿終點與每 10km 左右便利商店資訊。",
-    },
-    {
-      date: "2026-07-03",
-      title: "定位與日期切換",
-      detail: "支援顯示目前位置，並可依騎乘日期自動切換當日路線。",
+      title: "手機與使用體驗",
+      detail: "改善語系切換、日期切換、目前位置、手機側欄與更新紀錄。",
     },
   ],
   en: [
     {
-      date: "2026-07-03",
-      title: "Mobile sidebar controls",
-      detail: "Added collapsible sidebar support with a map button in the upper-right corner on mobile.",
+      date: "2026-06-29",
+      title: "Website foundation",
+      detail: "Set up the route website design and implementation foundation.",
+    },
+    {
+      date: "2026-06-30",
+      title: "Route browsing",
+      detail: "Added Vite, TypeScript, Leaflet maps, daily routes, GPX downloads, convenience-store details, and language switching.",
+    },
+    {
+      date: "2026-07-01",
+      title: "Deployment and map interaction",
+      detail: "Added GitHub Pages deployment, targeted route builds, and sidebar-to-map marker interaction.",
+    },
+    {
+      date: "2026-07-02",
+      title: "Route data and PWA",
+      detail: "Updated D0, overnight finishes, external KML and multi-segment routes, and improved PWA refresh behavior.",
     },
     {
       date: "2026-07-03",
-      title: "Route and rest-stop data",
-      detail: "Updated reviewed routes, overnight finishes, and convenience-store stops around every 10 km.",
-    },
-    {
-      date: "2026-07-03",
-      title: "Location and date switching",
-      detail: "Added current-location display and automatic route switching by riding date.",
+      title: "Mobile and usability",
+      detail: "Improved language switching, date switching, current location, mobile sidebar behavior, and the change log.",
     },
   ],
   ja: [
     {
-      date: "2026-07-03",
-      title: "モバイルのサイドバー操作",
-      detail: "サイドバーの折りたたみに対応し、モバイルでは地図右上のボタンから開けるようにしました。",
+      date: "2026-06-29",
+      title: "サイト基盤",
+      detail: "ルートサイトの仕様と実装基盤を整備しました。",
+    },
+    {
+      date: "2026-06-30",
+      title: "ルート閲覧機能",
+      detail: "Vite、TypeScript、Leaflet 地図、日別ルート、GPX ダウンロード、コンビニ情報、多言語切替を追加しました。",
+    },
+    {
+      date: "2026-07-01",
+      title: "公開と地図操作",
+      detail: "GitHub Pages 公開、日付指定のルート生成、サイドバーと地図 marker の連動を追加しました。",
+    },
+    {
+      date: "2026-07-02",
+      title: "ルートデータと PWA",
+      detail: "D0、宿泊地の到着地点、外部 KML と複数区間ルートを更新し、PWA の再読み込み挙動を改善しました。",
     },
     {
       date: "2026-07-03",
-      title: "ルートと休憩地点データ",
-      detail: "確認済みルート、宿泊地の到着地点、約10kmごとのコンビニ休憩地点を更新しました。",
-    },
-    {
-      date: "2026-07-03",
-      title: "現在地と日付切替",
-      detail: "現在地表示と、走行日に応じたルート自動切替に対応しました。",
+      title: "モバイルと使いやすさ",
+      detail: "言語切替、日付切替、現在地、モバイルサイドバー、更新履歴を改善しました。",
     },
   ],
 };

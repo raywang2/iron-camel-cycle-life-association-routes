@@ -126,6 +126,12 @@ describe("reference-style route UI", () => {
     expect(app).toContain("renderChangelog()");
     expect(app).toContain("showModal()");
     expect(app).toContain("changelogEntries");
+    expect(app).toContain("2026-06-29");
+    expect(app).toContain("網站基礎");
+    expect(app).toContain("Website foundation");
+    expect(app).toContain("サイト基盤");
+    expect(app).toContain("2026-07-02");
+    expect(app).toContain("PWA");
     expect(app).toContain("更新紀錄");
     expect(app).toContain("Change Log");
     expect(app).toContain("更新履歴");
