@@ -404,6 +404,7 @@ const elements = {
   sidebarToggleButton: requiredElement("#sidebarToggleBtn", HTMLButtonElement),
   mapSidebarToggleButton: requiredElement("#mapSidebarToggleBtn", HTMLButtonElement),
   locationButton: requiredElement("#locationBtn", HTMLButtonElement),
+  locationStatus: requiredElement("#locationStatus", HTMLParagraphElement),
   gpxLink: requiredElement("#gpxLink", HTMLAnchorElement),
   legend: requiredElement(".legend", HTMLDivElement),
   legendRide: requiredElement("#legendRide", HTMLSpanElement),
@@ -595,6 +596,11 @@ function openChangelog(): void {
 
 function closeChangelog(): void {
   elements.changelogDialog.close();
+}
+
+function setLocationStatus(message: string | null): void {
+  elements.locationStatus.textContent = message ?? "";
+  elements.locationStatus.hidden = !message;
 }
 
 function dayCode(day: RouteDay): string {
@@ -999,20 +1005,22 @@ function drawCurrentLocation(position: GeolocationPosition): void {
 
 function showCurrentLocation(): void {
   if (!navigator.geolocation) {
-    window.alert(t("locationUnavailable"));
+    setLocationStatus(t("locationUnavailable"));
     return;
   }
 
+  setLocationStatus(null);
   elements.locationButton.disabled = true;
   elements.locationButton.textContent = t("locating");
   navigator.geolocation.getCurrentPosition(
     (position) => {
       drawCurrentLocation(position);
+      setLocationStatus(null);
       elements.locationButton.disabled = false;
       elements.locationButton.textContent = t("locateMe");
     },
     () => {
-      window.alert(t("locationUnavailable"));
+      setLocationStatus(t("locationUnavailable"));
       elements.locationButton.disabled = false;
       elements.locationButton.textContent = t("locateMe");
     },

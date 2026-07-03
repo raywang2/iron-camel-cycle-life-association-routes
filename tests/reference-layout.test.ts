@@ -85,6 +85,35 @@ describe("reference-style route UI", () => {
     expect(mobileMapToggleBlock).toContain("box-shadow: none");
   });
 
+  it("prioritizes mobile route context and fixes landscape map space", () => {
+    const css = fs.readFileSync("src/styles.css", "utf8");
+
+    expect(css).toContain("--z-map-control: 800");
+    expect(css).toContain("--z-marker-active: 900");
+    expect(css).toContain("--z-dialog: 1000");
+    expect(css).toContain(".sidebar-content");
+    expect(css).toContain("flex-direction: column");
+    expect(css).toContain("#info {\n    order: -1;");
+    expect(css).toContain("max-height: min(34vh, 260px)");
+    expect(css).toContain("overflow: auto");
+    expect(css).toContain("@media (max-width: 860px) and (max-height: 520px)");
+    expect(css).toContain("grid-template-columns: minmax(300px, 38vw) 1fr");
+    expect(css).toContain("max-height: 100vh");
+    expect(css).toContain("height: 100vh");
+    expect(css).toContain("z-index: var(--z-marker-active)");
+  });
+
+  it("keeps secondary mobile controls tappable", () => {
+    const css = fs.readFileSync("src/styles.css", "utf8");
+
+    expect(css).toContain(".changelog-link");
+    expect(css).toContain("min-height: 44px");
+    expect(css).toContain("padding: 10px 0");
+    expect(css).toContain(".store-marker");
+    expect(css).toContain("width: 36px");
+    expect(css).toContain("height: 36px");
+  });
+
   it("wires dropdown, previous, next, overview, markers, and GPX download in the app script", () => {
     const app = fs.readFileSync("src/app.ts", "utf8");
 
@@ -108,6 +137,17 @@ describe("reference-style route UI", () => {
     expect(app).toContain('searchParams.get("day")');
     expect(app).not.toContain("poiToggleButton");
     expect(app).not.toContain("showConvenienceStores");
+  });
+
+  it("uses inline location status instead of blocking alerts", () => {
+    const html = fs.readFileSync("index.html", "utf8");
+    const app = fs.readFileSync("src/app.ts", "utf8");
+
+    expect(html).toContain('id="locationStatus"');
+    expect(app).toContain('locationStatus: requiredElement("#locationStatus"');
+    expect(app).toContain("setLocationStatus(");
+    expect(app).toContain("locationStatus.hidden");
+    expect(app).not.toContain("window.alert");
   });
 
   it("adds an unobtrusive changelog dialog with localized copy", () => {
