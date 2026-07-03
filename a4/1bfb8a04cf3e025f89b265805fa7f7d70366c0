@@ -1,0 +1,29 @@
+tests/reference-layout.test.ts
+  s_1ae7bf14fd87ce::t_608167800d1c89 88-96,99-116,142-151
+  s_1ae7bf14fd87ce::t_ef9d84b3aca525 97-98
+  s_1ae7bf14fd87ce::t_0325d97c6d8ca3 152
+src/app.ts
+  s_1ae7bf14fd87ce::t_b1a0b39a390ad7 407,601-605,1008,1012,1018,1023
+index.html
+  s_1ae7bf14fd87ce::t_f5d51cc80794fe 45
+src/styles.css
+  s_1ae7bf14fd87ce::t_40918efc332cc6 14-16,160,343-353,358-359,384,636-643,645,665,696-702,705-708,745-759,762-763
+  s_1ae7bf14fd87ce::t_e3d9dca706c7f1 703-704
+  s_1ae7bf14fd87ce::t_2bdc1a6e584ee3 760-761
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "a41bfb8a04cf3e025f89b265805fa7f7d70366c0",
+  "prompts": {},
+  "sessions": {
+    "s_1ae7bf14fd87ce": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f1399-9cdd-7090-bf1a-2b71d472eb20",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Ray Wang <sncorges@gmail.com>"
+    }
+  }
+}
