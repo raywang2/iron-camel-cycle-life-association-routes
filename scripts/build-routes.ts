@@ -514,27 +514,19 @@ function formatNominatimAddress(payload: NominatimReverseResponse): string | nul
 }
 
 export function geometryToGpx(day: RouteDay, geometry: RouteGeometry): string {
-  const lineStrings = geometryLineStrings(geometry);
-  const tracks = lineStrings
-    .map((coordinates, index) => {
-      const points = coordinates
-        .map(
-          ([lon, lat]) =>
-            `      <trkpt lat="${lat.toFixed(6)}" lon="${lon.toFixed(6)}"></trkpt>`,
-        )
-        .join("\n");
-      const trackName = lineStrings.length > 1
-        ? `Day ${day.day} ${day.title} - ${index + 1}/${lineStrings.length}`
-        : `Day ${day.day} ${day.title}`;
+  const points = geometryCoordinates(geometry)
+    .map(
+      ([lon, lat]) =>
+        `      <trkpt lat="${lat.toFixed(6)}" lon="${lon.toFixed(6)}"></trkpt>`,
+    )
+    .join("\n");
 
-      return `  <trk>
-    <name>${escapeXml(trackName)}</name>
+  const track = `  <trk>
+    <name>${escapeXml(`Day ${day.day} ${day.title}`)}</name>
     <trkseg>
 ${points}
     </trkseg>
   </trk>`;
-    })
-    .join("\n");
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <gpx version="1.1" creator="2026-routes" xmlns="http://www.topografix.com/GPX/1/1">
@@ -542,7 +534,7 @@ ${points}
     <name>${escapeXml(day.title)}</name>
     <desc>${escapeXml(day.description)}</desc>
   </metadata>
-${tracks}
+${track}
 </gpx>
 `;
 }

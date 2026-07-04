@@ -186,7 +186,7 @@ describe("build route options", () => {
     });
   });
 
-  it("writes each MultiLineString segment as its own GPX track for import compatibility", () => {
+  it("writes each MultiLineString as one GPX track and segment for Garmin import compatibility", () => {
     const gpx = geometryToGpx(routeDay(2, "多段路線"), {
       type: "MultiLineString",
       coordinates: [
@@ -201,10 +201,11 @@ describe("build route options", () => {
       ],
     });
 
-    expect(gpx.match(/<trk>/g)?.length).toBe(2);
-    expect(gpx.match(/<trkseg>/g)?.length).toBe(2);
-    expect(gpx).toContain("<name>Day 2 多段路線 - 1/2</name>");
-    expect(gpx).toContain("<name>Day 2 多段路線 - 2/2</name>");
+    expect(gpx.match(/<trk>/g)?.length).toBe(1);
+    expect(gpx.match(/<trkseg>/g)?.length).toBe(1);
+    expect(gpx.match(/<trkpt /g)?.length).toBe(4);
+    expect(gpx).toContain("<name>Day 2 多段路線</name>");
+    expect(gpx).not.toContain(" - 1/2");
   });
 
   it("sends an explicit user agent to Overpass for POI lookups", () => {

@@ -5,7 +5,7 @@
     <desc>羅東==== 新城車站→台8→太魯閣遊客中心→台8→新城→台9→縣道193→七星潭→台9→中原國小</desc>
   </metadata>
   <trk>
-    <name>Day 5 新城到中原國小 - 1/2</name>
+    <name>Day 5 新城到中原國小</name>
     <trkseg>
       <trkpt lat="24.682640" lon="121.767740"></trkpt>
       <trkpt lat="24.682470" lon="121.768400"></trkpt>
@@ -35,11 +35,6 @@
       <trkpt lat="24.677880" lon="121.774150"></trkpt>
       <trkpt lat="24.677890" lon="121.774170"></trkpt>
       <trkpt lat="24.677910" lon="121.774180"></trkpt>
-    </trkseg>
-  </trk>
-  <trk>
-    <name>Day 5 新城到中原國小 - 2/2</name>
-    <trkseg>
       <trkpt lat="24.127580" lon="121.641000"></trkpt>
       <trkpt lat="24.127730" lon="121.641090"></trkpt>
       <trkpt lat="24.127420" lon="121.641750"></trkpt>

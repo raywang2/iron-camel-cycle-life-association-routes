@@ -5,7 +5,7 @@
     <desc>新竹→台1→竹北→縣118→新埔→台3→龍潭→台3乙→石門水庫→台4→大溪→A4大鶯綠野景觀自行車道→鶯歌→大漢溪左岸自行車道→新莊→新月橋→板橋→大漢溪左岸自行車道→華江橋自行車便道→萬華→新店溪右岸自行車道→景美→景美溪河濱自行車道→寶僑→北新國小</desc>
   </metadata>
   <trk>
-    <name>Day 3 新竹到北新國小 - 1/2</name>
+    <name>Day 3 新竹到北新國小</name>
     <trkseg>
       <trkpt lat="24.794560" lon="120.978120"></trkpt>
       <trkpt lat="24.794790" lon="120.978760"></trkpt>
@@ -868,11 +868,6 @@
       <trkpt lat="24.811140" lon="121.198470"></trkpt>
       <trkpt lat="24.811450" lon="121.198820"></trkpt>
       <trkpt lat="24.811690" lon="121.199070"></trkpt>
-    </trkseg>
-  </trk>
-  <trk>
-    <name>Day 3 新竹到北新國小 - 2/2</name>
-    <trkseg>
       <trkpt lat="24.811970" lon="121.199300"></trkpt>
       <trkpt lat="24.812860" lon="121.199850"></trkpt>
       <trkpt lat="24.812920" lon="121.199870"></trkpt>

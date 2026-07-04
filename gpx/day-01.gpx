@@ -5,7 +5,7 @@
     <desc>臺中→崇德路→豐原→豐原大道→豐科路→后里→后科路→台13→三義→銅鑼→山線鐵路自行車道→苗28→貓貍山公園→公園路→苗栗高中</desc>
   </metadata>
   <trk>
-    <name>Day 1 台中到苗栗高中 - 1/3</name>
+    <name>Day 1 台中到苗栗高中</name>
     <trkseg>
       <trkpt lat="24.148750" lon="120.687480"></trkpt>
       <trkpt lat="24.148760" lon="120.687490"></trkpt>
@@ -535,11 +535,6 @@
       <trkpt lat="24.325590" lon="120.728040"></trkpt>
       <trkpt lat="24.325790" lon="120.728290"></trkpt>
       <trkpt lat="24.325750" lon="120.728600"></trkpt>
-    </trkseg>
-  </trk>
-  <trk>
-    <name>Day 1 台中到苗栗高中 - 2/3</name>
-    <trkseg>
       <trkpt lat="24.325750" lon="120.728600"></trkpt>
       <trkpt lat="24.325790" lon="120.728290"></trkpt>
       <trkpt lat="24.325880" lon="120.728290"></trkpt>
@@ -1257,11 +1252,6 @@
       <trkpt lat="24.522180" lon="120.791520"></trkpt>
       <trkpt lat="24.522240" lon="120.791550"></trkpt>
       <trkpt lat="24.522450" lon="120.791620"></trkpt>
-    </trkseg>
-  </trk>
-  <trk>
-    <name>Day 1 台中到苗栗高中 - 3/3</name>
-    <trkseg>
       <trkpt lat="24.522450" lon="120.791620"></trkpt>
       <trkpt lat="24.522550" lon="120.791670"></trkpt>
       <trkpt lat="24.522810" lon="120.791850"></trkpt>
