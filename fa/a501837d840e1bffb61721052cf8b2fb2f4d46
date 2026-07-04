@@ -1,0 +1,29 @@
+gpx/day-01.gpx
+  s_1ae7bf14fd87ce::t_9a22e8554dedc8 8
+gpx/day-02.gpx
+  s_1ae7bf14fd87ce::t_6922d070002fcf 8
+gpx/day-03.gpx
+  s_1ae7bf14fd87ce::t_26787e66bb3b82 8
+gpx/day-05.gpx
+  s_1ae7bf14fd87ce::t_a72114c6eb241d 8
+gpx/day-08.gpx
+  s_1ae7bf14fd87ce::t_ab530f8cf0ca59 8
+gpx/day-13.gpx
+  s_1ae7bf14fd87ce::t_bf5a5d7cab0e0b 8
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "faa501837d840e1bffb61721052cf8b2fb2f4d46",
+  "prompts": {},
+  "sessions": {
+    "s_1ae7bf14fd87ce": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f1399-9cdd-7090-bf1a-2b71d472eb20",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Ray Wang <sncorges@gmail.com>"
+    }
+  }
+}
