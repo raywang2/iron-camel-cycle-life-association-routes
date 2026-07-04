@@ -5,7 +5,7 @@
     <desc>苗栗→台13→竹南→苗栗濱海自行車道→南寮→南寮-頭前溪自行車道→培英國中</desc>
   </metadata>
   <trk>
-    <name>Day 2 苗栗到培英國中</name>
+    <name>Day 2 苗栗到培英國中 - 1/3</name>
     <trkseg>
       <trkpt lat="24.558790" lon="120.816460"></trkpt>
       <trkpt lat="24.559330" lon="120.817080"></trkpt>
@@ -589,6 +589,9 @@
       <trkpt lat="24.675250" lon="120.834480"></trkpt>
       <trkpt lat="24.675090" lon="120.834830"></trkpt>
     </trkseg>
+  </trk>
+  <trk>
+    <name>Day 2 苗栗到培英國中 - 2/3</name>
     <trkseg>
       <trkpt lat="24.675310" lon="120.834840"></trkpt>
       <trkpt lat="24.675340" lon="120.834860"></trkpt>
@@ -1353,6 +1356,9 @@
       <trkpt lat="24.778540" lon="120.914420"></trkpt>
       <trkpt lat="24.778750" lon="120.914420"></trkpt>
     </trkseg>
+  </trk>
+  <trk>
+    <name>Day 2 苗栗到培英國中 - 3/3</name>
     <trkseg>
       <trkpt lat="24.778750" lon="120.914570"></trkpt>
       <trkpt lat="24.778730" lon="120.914680"></trkpt>

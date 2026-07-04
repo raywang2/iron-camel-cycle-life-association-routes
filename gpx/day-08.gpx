@@ -5,7 +5,7 @@
     <desc>玉里→台9→富里→池上→關山→鹿野→卑南→台9→新生國中</desc>
   </metadata>
   <trk>
-    <name>Day 8 玉里到新生國中</name>
+    <name>Day 8 玉里到新生國中 - 1/2</name>
     <trkseg>
       <trkpt lat="23.346480" lon="121.318360"></trkpt>
       <trkpt lat="23.346390" lon="121.318320"></trkpt>
@@ -462,6 +462,9 @@
       <trkpt lat="23.270150" lon="121.307480"></trkpt>
       <trkpt lat="23.270070" lon="121.307370"></trkpt>
     </trkseg>
+  </trk>
+  <trk>
+    <name>Day 8 玉里到新生國中 - 2/2</name>
     <trkseg>
       <trkpt lat="23.270070" lon="121.307370"></trkpt>
       <trkpt lat="23.269270" lon="121.306130"></trkpt>

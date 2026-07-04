@@ -513,18 +513,26 @@ function formatNominatimAddress(payload: NominatimReverseResponse): string | nul
   return composed || payload.display_name?.trim() || null;
 }
 
-function geometryToGpx(day: RouteDay, geometry: RouteGeometry): string {
-  const trackSegments = geometryLineStrings(geometry)
-    .map((coordinates) => {
+export function geometryToGpx(day: RouteDay, geometry: RouteGeometry): string {
+  const lineStrings = geometryLineStrings(geometry);
+  const tracks = lineStrings
+    .map((coordinates, index) => {
       const points = coordinates
         .map(
           ([lon, lat]) =>
             `      <trkpt lat="${lat.toFixed(6)}" lon="${lon.toFixed(6)}"></trkpt>`,
         )
         .join("\n");
-      return `    <trkseg>
+      const trackName = lineStrings.length > 1
+        ? `Day ${day.day} ${day.title} - ${index + 1}/${lineStrings.length}`
+        : `Day ${day.day} ${day.title}`;
+
+      return `  <trk>
+    <name>${escapeXml(trackName)}</name>
+    <trkseg>
 ${points}
-    </trkseg>`;
+    </trkseg>
+  </trk>`;
     })
     .join("\n");
 
@@ -534,10 +542,7 @@ ${points}
     <name>${escapeXml(day.title)}</name>
     <desc>${escapeXml(day.description)}</desc>
   </metadata>
-  <trk>
-    <name>${escapeXml(`Day ${day.day} ${day.title}`)}</name>
-${trackSegments}
-  </trk>
+${tracks}
 </gpx>
 `;
 }

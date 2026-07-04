@@ -1,5 +1,20 @@
 [
   {
+    "date": "2026-07-04",
+    "zh": {
+      "title": "GPX 匯入相容性",
+      "detail": "修正多段 KML 路線匯出 GPX 時部分裝置只顯示第一段的問題，改為每段輸出成獨立 track。"
+    },
+    "en": {
+      "title": "GPX import compatibility",
+      "detail": "Fixed multi-segment KML routes exporting to GPX so devices that only showed the first segment now receive each segment as its own track."
+    },
+    "ja": {
+      "title": "GPX インポート互換性",
+      "detail": "複数区間 KML ルートを GPX に出力した際、一部の端末で最初の区間しか表示されない問題を修正し、各区間を独立した track として出力するようにしました。"
+    }
+  },
+  {
     "date": "2026-07-03",
     "zh": {
       "title": "路線資料與使用體驗",

@@ -5,7 +5,7 @@
     <desc>嘉義→台1→民雄→斗南→台1丁→斗六→台3→林內→南投竹山→社寮→台3丙→集集→台16→水里→台21→日月潭→魚池→溪南國小</desc>
   </metadata>
   <trk>
-    <name>Day 13 嘉義到溪南國小</name>
+    <name>Day 13 嘉義到溪南國小 - 1/2</name>
     <trkseg>
       <trkpt lat="23.474040" lon="120.452860"></trkpt>
       <trkpt lat="23.474110" lon="120.453720"></trkpt>
@@ -2023,6 +2023,9 @@
       <trkpt lat="23.968070" lon="120.960470"></trkpt>
       <trkpt lat="23.968130" lon="120.960480"></trkpt>
     </trkseg>
+  </trk>
+  <trk>
+    <name>Day 13 嘉義到溪南國小 - 2/2</name>
     <trkseg>
       <trkpt lat="23.967940" lon="120.960610"></trkpt>
       <trkpt lat="23.967880" lon="120.960840"></trkpt>

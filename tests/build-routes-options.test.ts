@@ -8,6 +8,7 @@ import {
   DEFAULT_ROUTER_PROFILE,
   brouterFastRoadLabels,
   existingRouteOutputForSkippedDay,
+  geometryToGpx,
   parseKmlLineStringGeometry,
   parseRequestedDays,
   restStopTargets,
@@ -183,6 +184,27 @@ describe("build route options", () => {
         ],
       ],
     });
+  });
+
+  it("writes each MultiLineString segment as its own GPX track for import compatibility", () => {
+    const gpx = geometryToGpx(routeDay(2, "多段路線"), {
+      type: "MultiLineString",
+      coordinates: [
+        [
+          [120.0, 24.0],
+          [120.1, 24.1],
+        ],
+        [
+          [121.0, 25.0],
+          [121.1, 25.1],
+        ],
+      ],
+    });
+
+    expect(gpx.match(/<trk>/g)?.length).toBe(2);
+    expect(gpx.match(/<trkseg>/g)?.length).toBe(2);
+    expect(gpx).toContain("<name>Day 2 多段路線 - 1/2</name>");
+    expect(gpx).toContain("<name>Day 2 多段路線 - 2/2</name>");
   });
 
   it("sends an explicit user agent to Overpass for POI lookups", () => {

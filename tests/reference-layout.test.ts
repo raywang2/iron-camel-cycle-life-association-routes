@@ -185,15 +185,15 @@ describe("reference-style route UI", () => {
     }>;
 
     expect(changelog.length).toBeGreaterThan(0);
-    expect(changelog[0]?.date).toBe("2026-07-03");
+    expect(changelog[0]?.date).toBe("2026-07-04");
     expect(changelog.at(-1)?.date).toBe("2026-06-29");
     expect(changelog.map((entry) => entry.date)).toEqual(
       [...changelog].map((entry) => entry.date).sort().reverse(),
     );
     expect(new Set(changelog.map((entry) => entry.date)).size).toBe(changelog.length);
-    expect(changelog[0]?.zh.detail).toContain("更新 D1、D2、D3、D14");
-    expect(changelog[0]?.en.detail).toContain("Updated D1, D2, D3, and D14");
-    expect(changelog[0]?.ja.detail).toContain("D1、D2、D3、D14 を更新");
+    expect(changelog[0]?.zh.detail).toContain("多段 KML 路線");
+    expect(changelog[0]?.en.detail).toContain("multi-segment KML routes");
+    expect(changelog[0]?.ja.detail).toContain("複数区間 KML ルート");
   });
 
   it("uses the browser language as the initial fallback without persisting automatic detection", () => {
