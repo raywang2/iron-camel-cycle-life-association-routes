@@ -47,6 +47,7 @@ jobs:
         run: |
           mkdir -p dist/data dist/gpx
           cp data/routes.json dist/data/routes.json
+          cp data/changelog.json dist/data/changelog.json
           cp gpx/*.gpx dist/gpx/
 
       - name: Configure Pages

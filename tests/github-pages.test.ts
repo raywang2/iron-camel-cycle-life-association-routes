@@ -13,6 +13,7 @@ describe("GitHub Pages deployment", () => {
     expect(workflow).toContain("npm run validate");
     expect(workflow).toContain("npm run build");
     expect(workflow).toContain("cp data/routes.json dist/data/routes.json");
+    expect(workflow).toContain("cp data/changelog.json dist/data/changelog.json");
     expect(workflow).toContain("cp gpx/*.gpx dist/gpx/");
   });
 
